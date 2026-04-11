@@ -32,6 +32,7 @@ export interface Database {
           avatar_url?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       bourbons: {
         Row: {
@@ -72,6 +73,7 @@ export interface Database {
           description?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       user_collection: {
         Row: {
@@ -102,6 +104,22 @@ export interface Database {
           bottle_status?: "sealed" | "open" | "empty";
           notes?: string | null;
         };
+        Relationships: [
+          {
+            foreignKeyName: "user_collection_bourbon_id_fkey";
+            columns: ["bourbon_id"];
+            isOneToOne: false;
+            referencedRelation: "bourbons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_collection_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       user_wishlist: {
         Row: {
@@ -123,6 +141,22 @@ export interface Database {
           priority?: number;
           notes?: string | null;
         };
+        Relationships: [
+          {
+            foreignKeyName: "user_wishlist_bourbon_id_fkey";
+            columns: ["bourbon_id"];
+            isOneToOne: false;
+            referencedRelation: "bourbons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_wishlist_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       tastings: {
         Row: {
@@ -158,6 +192,29 @@ export interface Database {
           overall_notes?: string | null;
           tasted_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "tastings_bourbon_id_fkey";
+            columns: ["bourbon_id"];
+            isOneToOne: false;
+            referencedRelation: "bourbons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tastings_collection_id_fkey";
+            columns: ["collection_id"];
+            isOneToOne: false;
+            referencedRelation: "user_collection";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tastings_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: Record<string, never>;
