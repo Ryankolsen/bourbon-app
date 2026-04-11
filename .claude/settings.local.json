@@ -1,22 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm typecheck:*)",
       "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
       "Bash(npm test:*)",
-      "WebFetch(domain:valibot.dev)",
+      "Bash(npx expo:*)",
+      "Bash(supabase:*)",
       "Bash(git add:*)",
-      "Bash(pnpm run typecheck:*)",
-      "Bash(pnpm run test:*)",
+      "Bash(git commit:*)",
+      "Bash(gh issue:*)",
+      "Bash(gh pr:*)",
       "Bash(grep:*)",
       "Bash(ls:*)",
-      "Bash(wc*)",
-      "Bash(head:*)",
-      "Bash(npx vitest:*)",
-      "Bash(git add*)",
-      "Bash(git commit -m ':*)",
-      "Bash(gh issue:*)",
-      "Bash(pnpm vitest:*)"
+      "Bash(wc:*)",
+      "Bash(head:*)"
     ]
   }
 }
