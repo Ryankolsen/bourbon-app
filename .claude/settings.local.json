@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm typecheck:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm test:*)",
+      "WebFetch(domain:valibot.dev)",
+      "Bash(git add:*)",
+      "Bash(pnpm run typecheck:*)",
+      "Bash(pnpm run test:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(wc*)",
+      "Bash(head:*)",
+      "Bash(npx vitest:*)",
+      "Bash(git add*)",
+      "Bash(git commit -m ':*)",
+      "Bash(gh issue:*)",
+      "Bash(pnpm vitest:*)"
+    ]
+  }
+}
