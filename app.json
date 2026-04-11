@@ -14,9 +14,14 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ryankolsen.bourbonvault",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.ryankolsen.bourbonvault",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -31,6 +36,13 @@
       "expo-router",
       "expo-secure-store",
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3e15eee4-f1d6-49f2-8e6d-3f8ebc6223f4"
+      }
+    },
+    "owner": "ryankolsen"
   }
 }

@@ -35,7 +35,7 @@ create trigger on_auth_user_created
 -- BOURBONS (master list)
 -- ─────────────────────────────────────────
 create table public.bourbons (
-  id            uuid default uuid_generate_v4() primary key,
+  id            uuid default gen_random_uuid() primary key,
   name          text not null,
   distillery    text,
   mashbill      text,
@@ -53,7 +53,7 @@ create table public.bourbons (
 -- USER COLLECTION
 -- ─────────────────────────────────────────
 create table public.user_collection (
-  id                uuid default uuid_generate_v4() primary key,
+  id                uuid default gen_random_uuid() primary key,
   user_id           uuid references public.profiles(id) on delete cascade not null,
   bourbon_id        uuid references public.bourbons(id) on delete cascade not null,
   purchase_price    numeric(8,2),
@@ -70,7 +70,7 @@ create table public.user_collection (
 -- USER WISHLIST
 -- ─────────────────────────────────────────
 create table public.user_wishlist (
-  id         uuid default uuid_generate_v4() primary key,
+  id         uuid default gen_random_uuid() primary key,
   user_id    uuid references public.profiles(id) on delete cascade not null,
   bourbon_id uuid references public.bourbons(id) on delete cascade not null,
   priority   integer default 5 check (priority between 1 and 10),
@@ -83,7 +83,7 @@ create table public.user_wishlist (
 -- TASTINGS
 -- ─────────────────────────────────────────
 create table public.tastings (
-  id            uuid default uuid_generate_v4() primary key,
+  id            uuid default gen_random_uuid() primary key,
   user_id       uuid references public.profiles(id) on delete cascade not null,
   bourbon_id    uuid references public.bourbons(id) on delete cascade not null,
   collection_id uuid references public.user_collection(id) on delete set null,

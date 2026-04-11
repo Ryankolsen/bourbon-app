@@ -10,7 +10,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const redirectTo = makeRedirectUri();
+  const redirectTo = makeRedirectUri({ scheme: "bourbonvault", path: "auth/callback" });
 
   async function signInWithGoogle() {
     try {
@@ -26,11 +26,22 @@ export default function LoginScreen() {
       if (error) throw error;
       if (data.url) {
         const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+        console.log("WebBrowser result:", JSON.stringify(result));
         if (result.type === "success") {
-          const url = new URL(result.url);
-          const code = url.searchParams.get("code");
-          if (code) {
-            await supabase.auth.exchangeCodeForSession(code);
+          const hash = result.url.split("#")[1] ?? "";
+          const params = new URLSearchParams(hash);
+          const access_token = params.get("access_token");
+          const refresh_token = params.get("refresh_token");
+          const code = new URL(result.url).searchParams.get("code");
+
+          if (access_token && refresh_token) {
+            const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
+            if (sessionError) setError(sessionError.message);
+          } else if (code) {
+            const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+            if (sessionError) setError(sessionError.message);
+          } else {
+            setError("No auth tokens in redirect — check Supabase config");
           }
         }
       }
@@ -56,10 +67,18 @@ export default function LoginScreen() {
       if (data.url) {
         const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
         if (result.type === "success") {
-          const url = new URL(result.url);
-          const code = url.searchParams.get("code");
-          if (code) {
-            await supabase.auth.exchangeCodeForSession(code);
+          const hash = result.url.split("#")[1] ?? "";
+          const params = new URLSearchParams(hash);
+          const access_token = params.get("access_token");
+          const refresh_token = params.get("refresh_token");
+          const code = new URL(result.url).searchParams.get("code");
+
+          if (access_token && refresh_token) {
+            const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
+            if (sessionError) setError(sessionError.message);
+          } else if (code) {
+            const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+            if (sessionError) setError(sessionError.message);
           }
         }
       }
