@@ -1,0 +1,167 @@
+// Generated types will be placed here after running:
+// npx supabase gen types typescript --project-id YOUR_PROJECT_ID > types/database.ts
+//
+// For now, a manual definition that matches our schema.
+
+export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
+
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string;
+          username: string | null;
+          display_name: string | null;
+          avatar_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          username?: string | null;
+          display_name?: string | null;
+          avatar_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          username?: string | null;
+          display_name?: string | null;
+          avatar_url?: string | null;
+          updated_at?: string;
+        };
+      };
+      bourbons: {
+        Row: {
+          id: string;
+          name: string;
+          distillery: string | null;
+          mashbill: string | null;
+          age_statement: number | null;
+          proof: number | null;
+          type: string | null;
+          msrp: number | null;
+          image_url: string | null;
+          description: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          distillery?: string | null;
+          mashbill?: string | null;
+          age_statement?: number | null;
+          proof?: number | null;
+          type?: string | null;
+          msrp?: number | null;
+          image_url?: string | null;
+          description?: string | null;
+        };
+        Update: {
+          name?: string;
+          distillery?: string | null;
+          mashbill?: string | null;
+          age_statement?: number | null;
+          proof?: number | null;
+          type?: string | null;
+          msrp?: number | null;
+          image_url?: string | null;
+          description?: string | null;
+          updated_at?: string;
+        };
+      };
+      user_collection: {
+        Row: {
+          id: string;
+          user_id: string;
+          bourbon_id: string;
+          purchase_price: number | null;
+          purchase_date: string | null;
+          purchase_location: string | null;
+          bottle_status: "sealed" | "open" | "empty";
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          bourbon_id: string;
+          purchase_price?: number | null;
+          purchase_date?: string | null;
+          purchase_location?: string | null;
+          bottle_status?: "sealed" | "open" | "empty";
+          notes?: string | null;
+        };
+        Update: {
+          purchase_price?: number | null;
+          purchase_date?: string | null;
+          purchase_location?: string | null;
+          bottle_status?: "sealed" | "open" | "empty";
+          notes?: string | null;
+        };
+      };
+      user_wishlist: {
+        Row: {
+          id: string;
+          user_id: string;
+          bourbon_id: string;
+          priority: number;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          bourbon_id: string;
+          priority?: number;
+          notes?: string | null;
+        };
+        Update: {
+          priority?: number;
+          notes?: string | null;
+        };
+      };
+      tastings: {
+        Row: {
+          id: string;
+          user_id: string;
+          bourbon_id: string;
+          collection_id: string | null;
+          rating: number | null;
+          nose: string | null;
+          palate: string | null;
+          finish: string | null;
+          overall_notes: string | null;
+          tasted_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          bourbon_id: string;
+          collection_id?: string | null;
+          rating?: number | null;
+          nose?: string | null;
+          palate?: string | null;
+          finish?: string | null;
+          overall_notes?: string | null;
+          tasted_at?: string;
+        };
+        Update: {
+          rating?: number | null;
+          nose?: string | null;
+          palate?: string | null;
+          finish?: string | null;
+          overall_notes?: string | null;
+          tasted_at?: string;
+        };
+      };
+    };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+  };
+}
