@@ -13,7 +13,9 @@
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(wc:*)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "Bash(eas build:configure:*)",
+      "Bash(eas build:*)"
     ]
   }
 }

@@ -13,7 +13,7 @@ Custom status line showing model, context window usage, token counts, and sessio
 ### `~/.claude/statusline.sh`
 
 Bash script that receives Claude Code session JSON via stdin and formats the status line.
-
+    
 ```bash
 #!/bin/bash
 input=$(cat)
