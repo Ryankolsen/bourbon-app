@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useState } from "react";
+import { useRouter } from "expo-router";
 import { useBourbons } from "@/hooks/use-bourbons";
 import { useAddToCollection } from "@/hooks/use-collection";
 import { useAuth } from "@/hooks/use-auth";
@@ -16,6 +17,7 @@ export default function ExploreScreen() {
   const { user } = useAuth();
   const { data: bourbons, isLoading } = useBourbons(search);
   const addToCollection = useAddToCollection();
+  const router = useRouter();
 
   return (
     <View className="flex-1 bg-bourbon-900">
@@ -39,7 +41,10 @@ export default function ExploreScreen() {
           keyExtractor={(item) => item.id}
           contentContainerClassName="px-4 pb-4 gap-3"
           renderItem={({ item }) => (
-            <View className="bg-bourbon-800 rounded-2xl p-4">
+            <TouchableOpacity
+              className="bg-bourbon-800 rounded-2xl p-4"
+              onPress={() => router.push(`/bourbon/${item.id}`)}
+            >
               <Text className="text-bourbon-100 font-bold text-base">{item.name}</Text>
               <Text className="text-bourbon-400 text-sm mt-0.5">
                 {item.distillery ?? "Unknown distillery"}
@@ -71,7 +76,7 @@ export default function ExploreScreen() {
                   {addToCollection.isPending ? "Adding..." : "+ Add to Collection"}
                 </Text>
               </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           )}
           ListEmptyComponent={
             <View className="items-center py-12">

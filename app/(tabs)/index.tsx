@@ -1,9 +1,11 @@
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
+import { useRouter } from "expo-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useCollection } from "@/hooks/use-collection";
 
 export default function CollectionScreen() {
   const { user } = useAuth();
+  const router = useRouter();
   const { data: collection, isLoading, isError } = useCollection(user?.id);
 
   if (isLoading) {
@@ -45,7 +47,10 @@ export default function CollectionScreen() {
         renderItem={({ item }) => {
           const bourbon = (item as any).bourbons;
           return (
-            <View className="bg-bourbon-800 rounded-2xl p-4">
+            <TouchableOpacity
+              className="bg-bourbon-800 rounded-2xl p-4"
+              onPress={() => router.push(`/bourbon/${item.bourbon_id}`)}
+            >
               <View className="flex-row justify-between items-start">
                 <View className="flex-1">
                   <Text className="text-bourbon-100 font-bold text-lg">
@@ -86,7 +91,7 @@ export default function CollectionScreen() {
                   </Text>
                 )}
               </View>
-            </View>
+            </TouchableOpacity>
           );
         }}
       />
