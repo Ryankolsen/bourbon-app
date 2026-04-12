@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/use-auth";
 import {
   useGroup,
   useGroupMembers,
+  useGroupRecommendations,
   useInviteToGroup,
   useLeaveGroup,
 } from "@/hooks/use-groups";
@@ -26,6 +27,7 @@ export default function GroupDetailScreen() {
 
   const { data: group, isLoading: groupLoading } = useGroup(id);
   const { data: members, isLoading: membersLoading } = useGroupMembers(id);
+  const { data: recommendations = [] } = useGroupRecommendations(id);
   const inviteToGroup = useInviteToGroup();
   const leaveGroup = useLeaveGroup();
 
@@ -356,6 +358,61 @@ export default function GroupDetailScreen() {
                 </Text>
               )}
             </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Recommendations */}
+        {recommendations.length > 0 && (
+          <View className="mb-6">
+            <Text className="text-bourbon-400 text-xs font-semibold uppercase mb-2">
+              Recommendations
+            </Text>
+            {recommendations.map((rec) => {
+              const recAny = rec as {
+                id: string;
+                note: string | null;
+                created_at: string;
+                profiles: { display_name: string | null; username: string | null } | null;
+                bourbons: { id: string; name: string; distillery: string | null } | null;
+              };
+              const recommenderName =
+                recAny.profiles?.display_name ?? recAny.profiles?.username ?? "Someone";
+              const bourbonName = recAny.bourbons?.name ?? "Unknown bourbon";
+              const distillery = recAny.bourbons?.distillery;
+              const bourbonId = recAny.bourbons?.id;
+              const date = new Date(recAny.created_at).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              });
+              return (
+                <TouchableOpacity
+                  key={recAny.id}
+                  onPress={() => bourbonId ? router.push(`/bourbon/${bourbonId}` as never) : undefined}
+                  className="bg-bourbon-800 rounded-2xl p-4 mb-2"
+                >
+                  <View className="flex-row items-start justify-between">
+                    <View className="flex-1">
+                      <Text className="text-bourbon-100 text-sm font-semibold">
+                        {bourbonName}
+                      </Text>
+                      {distillery ? (
+                        <Text className="text-bourbon-400 text-xs mt-0.5">{distillery}</Text>
+                      ) : null}
+                      {recAny.note ? (
+                        <Text className="text-bourbon-300 text-xs mt-1 leading-relaxed">
+                          "{recAny.note}"
+                        </Text>
+                      ) : null}
+                    </View>
+                    <View className="items-end ml-2">
+                      <Text className="text-bourbon-300 text-xs font-medium">{recommenderName}</Text>
+                      <Text className="text-bourbon-500 text-xs mt-0.5">{date}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         )}
 

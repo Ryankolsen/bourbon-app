@@ -321,6 +321,50 @@ export interface Database {
           },
         ];
       };
+      group_recommendations: {
+        Row: {
+          id: string;
+          group_id: string;
+          bourbon_id: string;
+          recommended_by: string;
+          note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          group_id: string;
+          bourbon_id: string;
+          recommended_by: string;
+          note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          note?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "group_recommendations_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_recommendations_bourbon_id_fkey";
+            columns: ["bourbon_id"];
+            isOneToOne: false;
+            referencedRelation: "bourbons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_recommendations_recommended_by_fkey";
+            columns: ["recommended_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       group_members: {
         Row: {
           group_id: string;

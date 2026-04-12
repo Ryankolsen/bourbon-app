@@ -14,7 +14,7 @@ import { useAddToCollection } from "@/hooks/use-collection";
 import { useIsWishlisted, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
 import { useComments, useGroupComments, useAddComment, useDeleteComment } from "@/hooks/use-comments";
 import { useBourbonRatingStats, useGroupRatingStats } from "@/hooks/use-ratings";
-import { useMyGroups } from "@/hooks/use-groups";
+import { useMyGroups, useRecommendBourbon } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function BourbonDetailScreen() {
@@ -37,6 +37,8 @@ export default function BourbonDetailScreen() {
   const { data: myGroups = [] } = useMyGroups(user?.id);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [commentVisibility, setCommentVisibility] = useState<"public" | "group">("public");
+  const recommendBourbon = useRecommendBourbon();
+  const [showRecommendPicker, setShowRecommendPicker] = useState(false);
 
   // Resolve the active group (default to first if only one)
   const activeGroupId = selectedGroupId ?? (myGroups.length === 1
@@ -83,6 +85,25 @@ export default function BourbonDetailScreen() {
       onSuccess: () => setCommentBody(""),
       onError: () => Alert.alert("Error", "Failed to post comment."),
     });
+  }
+
+  function handleRecommend(groupId: string) {
+    if (!user || !bourbon) return;
+    recommendBourbon.mutate(
+      { groupId, bourbonId: bourbon.id, userId: user.id },
+      {
+        onSuccess: () => {
+          setShowRecommendPicker(false);
+          Alert.alert("Recommended!", "Bourbon recommended to the group.");
+        },
+        onError: (err) => {
+          setShowRecommendPicker(false);
+          const msg = err instanceof Error ? err.message : "Failed to recommend.";
+          // unique constraint violation means already recommended
+          Alert.alert("Already recommended", msg.includes("unique") ? "You already recommended this bourbon to that group." : msg);
+        },
+      }
+    );
   }
 
   function handleDeleteComment(commentId: string, groupId?: string | null) {
@@ -308,6 +329,50 @@ export default function BourbonDetailScreen() {
               {wishlistItem ? "★ Remove from Wishlist" : "☆ Add to Wishlist"}
             </Text>
           </TouchableOpacity>
+
+          {/* Recommend to Group (only if user belongs to at least one group) */}
+          {hasGroups && (
+            <>
+              <TouchableOpacity
+                onPress={() => {
+                  if (myGroups.length === 1) {
+                    handleRecommend((myGroups[0] as { group_id: string }).group_id);
+                  } else {
+                    setShowRecommendPicker((v) => !v);
+                  }
+                }}
+                disabled={recommendBourbon.isPending}
+                className="bg-bourbon-800 border border-bourbon-600 rounded-2xl py-4 items-center"
+              >
+                <Text className="text-bourbon-200 font-semibold text-base">
+                  {recommendBourbon.isPending ? "Recommending…" : "👍 Recommend to Group"}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Group picker for multi-group members */}
+              {showRecommendPicker && myGroups.length > 1 && (
+                <View className="bg-bourbon-800 rounded-2xl p-4 gap-2">
+                  <Text className="text-bourbon-400 text-xs font-semibold uppercase mb-1">
+                    Choose a group
+                  </Text>
+                  {myGroups.map((m) => {
+                    const gm = m as { group_id: string; groups: { name: string } | null };
+                    return (
+                      <TouchableOpacity
+                        key={gm.group_id}
+                        onPress={() => handleRecommend(gm.group_id)}
+                        className="bg-bourbon-700 rounded-xl py-3 items-center"
+                      >
+                        <Text className="text-bourbon-100 text-sm font-medium">
+                          {gm.groups?.name ?? "Group"}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+            </>
+          )}
         </View>
 
         {/* ── COMMENTS ── */}

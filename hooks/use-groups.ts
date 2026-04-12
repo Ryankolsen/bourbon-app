@@ -209,6 +209,59 @@ export function useDeclineGroupInvite() {
   });
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Recommendations
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** List all recommendations for a group (accepted members only, via RLS) */
+export function useGroupRecommendations(groupId: string | undefined) {
+  return useQuery({
+    queryKey: ["group-recommendations", groupId],
+    queryFn: async () => {
+      if (!groupId) return [];
+      const { data, error } = await supabase
+        .from("group_recommendations")
+        .select(
+          "*, profiles!group_recommendations_recommended_by_fkey(display_name, username, avatar_url), bourbons(id, name, distillery)"
+        )
+        .eq("group_id", groupId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!groupId,
+  });
+}
+
+/** Recommend a bourbon to a group */
+export function useRecommendBourbon() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      groupId,
+      bourbonId,
+      userId,
+      note,
+    }: {
+      groupId: string;
+      bourbonId: string;
+      userId: string;
+      note?: string;
+    }) => {
+      const { error } = await supabase.from("group_recommendations").insert({
+        group_id: groupId,
+        bourbon_id: bourbonId,
+        recommended_by: userId,
+        note: note ?? null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_data, { groupId }) => {
+      qc.invalidateQueries({ queryKey: ["group-recommendations", groupId] });
+    },
+  });
+}
+
 /** Leave a group (delete own membership row) */
 export function useLeaveGroup() {
   const qc = useQueryClient();
