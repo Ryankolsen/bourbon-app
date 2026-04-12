@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useBourbon } from "@/hooks/use-bourbons";
 import { useLogTasting } from "@/hooks/use-tastings";
 import { useAuth } from "@/hooks/use-auth";
+import { buildTastingPayload } from "@/lib/tastings";
 
 const RATING_STEPS = [1, 2, 3, 4, 5];
 const STAR_LABELS: Record<number, string> = {
@@ -40,15 +41,7 @@ export default function NewTastingScreen() {
   function handleSubmit() {
     if (!user || !bourbonId) return;
     logTasting.mutate(
-      {
-        user_id: user.id,
-        bourbon_id: bourbonId,
-        rating,
-        nose: nose.trim() || null,
-        palate: palate.trim() || null,
-        finish: finish.trim() || null,
-        overall_notes: overallNotes.trim() || null,
-      },
+      buildTastingPayload(user.id, bourbonId, { rating, nose, palate, finish, overallNotes }),
       {
         onSuccess: () => {
           router.back();
