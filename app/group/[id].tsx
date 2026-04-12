@@ -18,7 +18,7 @@ import {
   useInviteToGroup,
   useLeaveGroup,
 } from "@/hooks/use-groups";
-import { useProfileByUsername } from "@/hooks/use-profile";
+import { useProfileByUsername, useProfileByEmail } from "@/hooks/use-profile";
 
 export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -31,14 +31,18 @@ export default function GroupDetailScreen() {
   const inviteToGroup = useInviteToGroup();
   const leaveGroup = useLeaveGroup();
 
-  const [inviteUsername, setInviteUsername] = useState("");
-  // The username we actually fire the lookup for (only set when user presses Find/Send)
-  const [lookupUsername, setLookupUsername] = useState<string | undefined>(
-    undefined
-  );
+  const [inviteInput, setInviteInput] = useState("");
+  // The value we actually fire the lookup for (only set when user presses Find)
+  const [lookupUsername, setLookupUsername] = useState<string | undefined>(undefined);
+  const [lookupEmail, setLookupEmail] = useState<string | undefined>(undefined);
 
-  const { data: foundProfile, isFetching: profileFetching } =
+  const { data: foundByUsername, isFetching: fetchingByUsername } =
     useProfileByUsername(lookupUsername);
+  const { data: foundByEmail, isFetching: fetchingByEmail } =
+    useProfileByEmail(lookupEmail);
+
+  const profileFetching = fetchingByUsername || fetchingByEmail;
+  const foundProfile = foundByUsername ?? foundByEmail ?? null;
 
   const isLoading = groupLoading || membersLoading;
 
@@ -51,9 +55,16 @@ export default function GroupDetailScreen() {
   const memberIds = new Set(members?.map((m) => m.user_id) ?? []);
 
   function handleFindUser() {
-    const uname = inviteUsername.trim().toLowerCase().replace(/^@/, "");
-    if (!uname) return;
-    setLookupUsername(uname);
+    const raw = inviteInput.trim();
+    if (!raw) return;
+    // Detect email vs. username
+    if (raw.includes("@") && raw.includes(".")) {
+      setLookupEmail(raw.toLowerCase());
+      setLookupUsername(undefined);
+    } else {
+      setLookupUsername(raw.toLowerCase().replace(/^@/, ""));
+      setLookupEmail(undefined);
+    }
   }
 
   function handleInvite() {
@@ -71,8 +82,9 @@ export default function GroupDetailScreen() {
       { groupId: id, inviteeId: foundProfile.id, inviterId: user.id },
       {
         onSuccess: () => {
-          setInviteUsername("");
+          setInviteInput("");
           setLookupUsername(undefined);
+          setLookupEmail(undefined);
           Alert.alert("Invited", "Invitation sent.");
         },
         onError: (err) => {
@@ -132,7 +144,8 @@ export default function GroupDetailScreen() {
   }
 
   // Derived state for invite UI
-  const lookupDone = lookupUsername !== undefined && !profileFetching;
+  const lookupFired = (lookupUsername !== undefined || lookupEmail !== undefined);
+  const lookupDone = lookupFired && !profileFetching;
   const inviteeName =
     foundProfile?.display_name ?? foundProfile?.username ?? null;
 
@@ -268,23 +281,25 @@ export default function GroupDetailScreen() {
 
             <View className="flex-row gap-2 mb-3">
               <TextInput
-                value={inviteUsername}
+                value={inviteInput}
                 onChangeText={(v) => {
-                  setInviteUsername(v);
+                  setInviteInput(v);
                   // Clear lookup result when input changes
                   if (lookupUsername !== undefined) setLookupUsername(undefined);
+                  if (lookupEmail !== undefined) setLookupEmail(undefined);
                 }}
-                placeholder="@username"
+                placeholder="@username or email"
                 placeholderTextColor="#7c6a50"
                 className="bg-bourbon-700 rounded-xl px-4 py-3 text-bourbon-100 text-sm flex-1"
                 autoCapitalize="none"
                 autoCorrect={false}
+                keyboardType="email-address"
                 returnKeyType="search"
                 onSubmitEditing={handleFindUser}
               />
               <TouchableOpacity
                 onPress={handleFindUser}
-                disabled={!inviteUsername.trim() || profileFetching}
+                disabled={!inviteInput.trim() || profileFetching}
                 className="bg-bourbon-700 rounded-xl px-4 py-3 justify-center"
               >
                 {profileFetching ? (
@@ -298,7 +313,7 @@ export default function GroupDetailScreen() {
             </View>
 
             {/* Lookup result */}
-            {lookupDone && lookupUsername && (
+            {lookupDone && (
               <>
                 {foundProfile ? (
                   <View className="bg-bourbon-900 rounded-xl p-3 mb-3 flex-row items-center gap-3">
@@ -331,7 +346,7 @@ export default function GroupDetailScreen() {
                   </View>
                 ) : (
                   <Text className="text-bourbon-500 text-sm mb-3">
-                    No user found with username @{lookupUsername}.
+                    No user found for "{inviteInput}".
                   </Text>
                 )}
               </>

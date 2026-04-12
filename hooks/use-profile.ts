@@ -142,6 +142,21 @@ export function useUserPublicStats(userId: string | undefined) {
   });
 }
 
+/** Look up a single profile by email address (uses SECURITY DEFINER RPC) */
+export function useProfileByEmail(email: string | undefined) {
+  return useQuery({
+    queryKey: ["profile-by-email", email],
+    queryFn: async () => {
+      if (!email) return null;
+      const { data, error } = await supabase
+        .rpc("find_profile_by_email", { p_email: email.trim().toLowerCase() });
+      if (error) throw error;
+      return (data?.[0] as ProfileRow) ?? null;
+    },
+    enabled: !!email,
+  });
+}
+
 /** Look up a single profile by exact username */
 export function useProfileByUsername(username: string | undefined) {
   return useQuery({

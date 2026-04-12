@@ -184,7 +184,7 @@ export function useAcceptGroupInvite() {
   });
 }
 
-/** Decline a pending group invite */
+/** Decline a pending group invite — removes the membership row entirely */
 export function useDeclineGroupInvite() {
   const qc = useQueryClient();
   return useMutation({
@@ -197,9 +197,10 @@ export function useDeclineGroupInvite() {
     }) => {
       const { error } = await supabase
         .from("group_members")
-        .update({ status: "declined" })
+        .delete()
         .eq("group_id", groupId)
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .eq("status", "pending");
       if (error) throw error;
     },
     onSuccess: (_data, { groupId, userId }) => {

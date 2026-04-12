@@ -440,6 +440,10 @@ export interface Database {
         Args: { p_user_id: string };
         Returns: { tasting_count: number; collection_count: number }[];
       };
+      find_profile_by_email: {
+        Args: { p_email: string };
+        Returns: Database["public"]["Tables"]["profiles"]["Row"][];
+      };
     };
     Enums: Record<string, never>;
   };
