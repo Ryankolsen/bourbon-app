@@ -51,10 +51,11 @@ export default function GroupsScreen() {
           router.push(`/group/${group.id}`);
         },
         onError: (err) => {
-          Alert.alert(
-            "Error",
-            err instanceof Error ? err.message : "Failed to create group."
-          );
+          const pgErr = err as any;
+          const message =
+            pgErr?.message ?? pgErr?.code ?? "Failed to create group.";
+          console.error("[createGroup]", pgErr);
+          Alert.alert("Error", message);
         },
       }
     );
@@ -66,10 +67,9 @@ export default function GroupsScreen() {
       { groupId, userId: user.id },
       {
         onError: (err) => {
-          Alert.alert(
-            "Error",
-            err instanceof Error ? err.message : "Failed to accept invite."
-          );
+          const pgErr = err as any;
+          console.error("[acceptInvite]", pgErr);
+          Alert.alert("Error", pgErr?.message ?? pgErr?.code ?? "Failed to accept invite.");
         },
       }
     );
@@ -81,10 +81,9 @@ export default function GroupsScreen() {
       { groupId, userId: user.id },
       {
         onError: (err) => {
-          Alert.alert(
-            "Error",
-            err instanceof Error ? err.message : "Failed to decline invite."
-          );
+          const pgErr = err as any;
+          console.error("[declineInvite]", pgErr);
+          Alert.alert("Error", pgErr?.message ?? pgErr?.code ?? "Failed to decline invite.");
         },
       }
     );
