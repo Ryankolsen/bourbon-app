@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/database";
+import { generateAvatarPath } from "@/lib/profile";
 
 type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
@@ -92,7 +93,7 @@ export function useUploadAvatar() {
 
       // Determine file extension from URI or mimeType
       const ext = asset.mimeType === "image/png" ? "png" : "jpg";
-      const filePath = `${userId}/avatar.${ext}`;
+      const filePath = generateAvatarPath(userId, ext);
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
