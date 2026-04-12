@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   ScrollView,
   Alert,
-  FlatList,
   Image,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -18,6 +17,7 @@ import {
   useInviteToGroup,
   useLeaveGroup,
 } from "@/hooks/use-groups";
+import { useProfileByUsername } from "@/hooks/use-profile";
 
 export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,7 +29,14 @@ export default function GroupDetailScreen() {
   const inviteToGroup = useInviteToGroup();
   const leaveGroup = useLeaveGroup();
 
-  const [inviteUserId, setInviteUserId] = useState("");
+  const [inviteUsername, setInviteUsername] = useState("");
+  // The username we actually fire the lookup for (only set when user presses Find/Send)
+  const [lookupUsername, setLookupUsername] = useState<string | undefined>(
+    undefined
+  );
+
+  const { data: foundProfile, isFetching: profileFetching } =
+    useProfileByUsername(lookupUsername);
 
   const isLoading = groupLoading || membersLoading;
 
@@ -38,14 +45,32 @@ export default function GroupDetailScreen() {
   const acceptedMembers = members?.filter((m) => m.status === "accepted") ?? [];
   const pendingMembers = members?.filter((m) => m.status === "pending") ?? [];
 
+  // IDs already in the group (any status) so we don't re-invite
+  const memberIds = new Set(members?.map((m) => m.user_id) ?? []);
+
+  function handleFindUser() {
+    const uname = inviteUsername.trim().toLowerCase().replace(/^@/, "");
+    if (!uname) return;
+    setLookupUsername(uname);
+  }
+
   function handleInvite() {
-    const trimmed = inviteUserId.trim();
-    if (!trimmed || !id || !user?.id) return;
+    if (!foundProfile || !id || !user?.id) return;
+
+    if (memberIds.has(foundProfile.id)) {
+      Alert.alert(
+        "Already a member",
+        `${foundProfile.display_name ?? foundProfile.username} is already in this group.`
+      );
+      return;
+    }
+
     inviteToGroup.mutate(
-      { groupId: id, inviteeId: trimmed, inviterId: user.id },
+      { groupId: id, inviteeId: foundProfile.id, inviterId: user.id },
       {
         onSuccess: () => {
-          setInviteUserId("");
+          setInviteUsername("");
+          setLookupUsername(undefined);
           Alert.alert("Invited", "Invitation sent.");
         },
         onError: (err) => {
@@ -104,6 +129,11 @@ export default function GroupDetailScreen() {
     );
   }
 
+  // Derived state for invite UI
+  const lookupDone = lookupUsername !== undefined && !profileFetching;
+  const inviteeName =
+    foundProfile?.display_name ?? foundProfile?.username ?? null;
+
   return (
     <View className="flex-1 bg-bourbon-900">
       {/* Header */}
@@ -150,9 +180,11 @@ export default function GroupDetailScreen() {
             const name =
               profile?.display_name ?? profile?.username ?? "Unknown";
             const initials = name[0]?.toUpperCase() ?? "?";
+            const isMe = m.user_id === user?.id;
             return (
-              <View
+              <TouchableOpacity
                 key={m.user_id}
+                onPress={() => router.push(`/user/${m.user_id}` as never)}
                 className="flex-row items-center bg-bourbon-800 rounded-2xl p-3 mb-2"
               >
                 {profile?.avatar_url ? (
@@ -162,12 +194,15 @@ export default function GroupDetailScreen() {
                   />
                 ) : (
                   <View className="w-10 h-10 rounded-full bg-bourbon-700 items-center justify-center">
-                    <Text className="text-bourbon-300 font-bold">{initials}</Text>
+                    <Text className="text-bourbon-300 font-bold">
+                      {initials}
+                    </Text>
                   </View>
                 )}
                 <View className="ml-3 flex-1">
                   <Text className="text-bourbon-100 text-sm font-semibold">
                     {name}
+                    {isMe ? " (you)" : ""}
                   </Text>
                   {profile?.username ? (
                     <Text className="text-bourbon-400 text-xs">
@@ -180,7 +215,7 @@ export default function GroupDetailScreen() {
                     <Text className="text-bourbon-100 text-xs">Owner</Text>
                   </View>
                 )}
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>
@@ -222,31 +257,102 @@ export default function GroupDetailScreen() {
           </View>
         )}
 
-        {/* Invite by user ID (owner only) */}
+        {/* Invite by username (owner only) */}
         {isOwner && (
           <View className="bg-bourbon-800 rounded-2xl p-4 mb-4">
-            <Text className="text-bourbon-300 text-sm font-semibold mb-2">
+            <Text className="text-bourbon-300 text-sm font-semibold mb-3">
               Invite Member
             </Text>
-            <TextInput
-              value={inviteUserId}
-              onChangeText={setInviteUserId}
-              placeholder="User ID (UUID)"
-              placeholderTextColor="#7c6a50"
-              className="bg-bourbon-700 rounded-xl px-4 py-3 text-bourbon-100 text-sm mb-3"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+
+            <View className="flex-row gap-2 mb-3">
+              <TextInput
+                value={inviteUsername}
+                onChangeText={(v) => {
+                  setInviteUsername(v);
+                  // Clear lookup result when input changes
+                  if (lookupUsername !== undefined) setLookupUsername(undefined);
+                }}
+                placeholder="@username"
+                placeholderTextColor="#7c6a50"
+                className="bg-bourbon-700 rounded-xl px-4 py-3 text-bourbon-100 text-sm flex-1"
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="search"
+                onSubmitEditing={handleFindUser}
+              />
+              <TouchableOpacity
+                onPress={handleFindUser}
+                disabled={!inviteUsername.trim() || profileFetching}
+                className="bg-bourbon-700 rounded-xl px-4 py-3 justify-center"
+              >
+                {profileFetching ? (
+                  <ActivityIndicator size="small" color="#e39e38" />
+                ) : (
+                  <Text className="text-bourbon-200 text-sm font-semibold">
+                    Find
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* Lookup result */}
+            {lookupDone && lookupUsername && (
+              <>
+                {foundProfile ? (
+                  <View className="bg-bourbon-900 rounded-xl p-3 mb-3 flex-row items-center gap-3">
+                    {foundProfile.avatar_url ? (
+                      <Image
+                        source={{ uri: foundProfile.avatar_url }}
+                        className="w-9 h-9 rounded-full"
+                      />
+                    ) : (
+                      <View className="w-9 h-9 rounded-full bg-bourbon-700 items-center justify-center">
+                        <Text className="text-bourbon-300 font-bold text-sm">
+                          {(
+                            foundProfile.display_name ??
+                            foundProfile.username ??
+                            "?"
+                          )[0].toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+                    <View className="flex-1">
+                      <Text className="text-bourbon-100 text-sm font-semibold">
+                        {inviteeName ?? "—"}
+                      </Text>
+                      {foundProfile.username && (
+                        <Text className="text-bourbon-400 text-xs">
+                          @{foundProfile.username}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                ) : (
+                  <Text className="text-bourbon-500 text-sm mb-3">
+                    No user found with username @{lookupUsername}.
+                  </Text>
+                )}
+              </>
+            )}
+
             <TouchableOpacity
               onPress={handleInvite}
-              disabled={!inviteUserId.trim() || inviteToGroup.isPending}
-              className="bg-bourbon-600 rounded-xl py-3 items-center"
+              disabled={!foundProfile || inviteToGroup.isPending}
+              className={`rounded-xl py-3 items-center ${
+                foundProfile ? "bg-bourbon-600" : "bg-bourbon-700"
+              }`}
             >
               {inviteToGroup.isPending ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text className="text-white font-semibold text-sm">
-                  Send Invite
+                <Text
+                  className={`font-semibold text-sm ${
+                    foundProfile ? "text-white" : "text-bourbon-600"
+                  }`}
+                >
+                  {foundProfile
+                    ? `Invite ${inviteeName ?? "User"}`
+                    : "Send Invite"}
                 </Text>
               )}
             </TouchableOpacity>

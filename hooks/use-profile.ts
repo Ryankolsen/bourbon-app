@@ -127,6 +127,24 @@ export function useUploadAvatar() {
   });
 }
 
+/** Look up a single profile by exact username */
+export function useProfileByUsername(username: string | undefined) {
+  return useQuery({
+    queryKey: ["profile-by-username", username],
+    queryFn: async () => {
+      if (!username) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("username", username.trim().toLowerCase())
+        .maybeSingle();
+      if (error) throw error;
+      return data as ProfileRow | null;
+    },
+    enabled: !!username,
+  });
+}
+
 /** Decode base64 string to Uint8Array for Supabase upload */
 function decode(base64: string): Uint8Array {
   const binaryString = atob(base64);
