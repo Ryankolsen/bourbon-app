@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { buildRecommendationPayload } from "@/lib/groups";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Queries
@@ -249,12 +250,9 @@ export function useRecommendBourbon() {
       userId: string;
       note?: string;
     }) => {
-      const { error } = await supabase.from("group_recommendations").insert({
-        group_id: groupId,
-        bourbon_id: bourbonId,
-        recommended_by: userId,
-        note: note ?? null,
-      });
+      const { error } = await supabase
+        .from("group_recommendations")
+        .insert(buildRecommendationPayload(groupId, bourbonId, userId, note));
       if (error) throw error;
     },
     onSuccess: (_data, { groupId }) => {
