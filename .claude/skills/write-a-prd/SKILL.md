@@ -60,7 +60,8 @@ Do NOT include specific file paths or code snippets. They may end up being outda
 A list of testing decisions that were made. Include:
 
 - A description of what makes a good test (only test external behavior, not implementation details)
-- Which modules will be tested
+- Which modules will be tested using the red-green-refactor loop
+- For each module under test, list the specific unit tests that should be written as tracer bullets — ordered from thinnest vertical slice to widest (core wiring first, then field details, then edge cases and error paths)
 - Prior art for the tests (i.e. similar types of tests in the codebase)
 
 ## Out of Scope

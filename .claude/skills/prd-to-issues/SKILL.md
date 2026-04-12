@@ -80,6 +80,16 @@ Reference by number from the parent PRD:
 - User story 3
 - User story 7
 
+## Tests
+
+Unit tests to write for this slice using the red-green-refactor loop. Order from thinnest slice to widest:
+
+1. **Core wiring** — one assertion that the most essential outcome is produced (e.g., record created with correct type)
+2. **Content details** — verify field values, message format, etc.
+3. **Edge cases / error paths** — one test per dimension (invalid input, not-found, permission denied, etc.)
+
+If this slice has no testable backend logic (e.g., UI-only or schema migration only), write "N/A — frontend or migration only."
+
 </issue-template>
 
 Do NOT close or modify the parent PRD issue.
