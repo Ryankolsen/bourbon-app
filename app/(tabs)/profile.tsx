@@ -17,12 +17,15 @@ import {
   useUpdateProfile,
   useUploadAvatar,
 } from "@/hooks/use-profile";
+import { useFollowerCount, useFollowingCount } from "@/hooks/use-follows";
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const { data: profile, isLoading } = useProfile(user?.id);
   const updateProfile = useUpdateProfile();
   const uploadAvatar = useUploadAvatar();
+  const { data: followerCount } = useFollowerCount(user?.id);
+  const { data: followingCount } = useFollowingCount(user?.id);
 
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState("");
@@ -111,6 +114,23 @@ export default function ProfileScreen() {
             </View>
           </TouchableOpacity>
           <Text className="text-bourbon-400 text-xs mt-2">Tap to change photo</Text>
+        </View>
+
+        {/* Follower / following counts */}
+        <View className="flex-row bg-bourbon-800 rounded-2xl p-4 mb-4 justify-around">
+          <View className="items-center">
+            <Text className="text-bourbon-100 text-xl font-bold">
+              {followerCount ?? 0}
+            </Text>
+            <Text className="text-bourbon-400 text-xs mt-0.5">Followers</Text>
+          </View>
+          <View className="w-px bg-bourbon-700" />
+          <View className="items-center">
+            <Text className="text-bourbon-100 text-xl font-bold">
+              {followingCount ?? 0}
+            </Text>
+            <Text className="text-bourbon-400 text-xs mt-0.5">Following</Text>
+          </View>
         </View>
 
         {/* Profile Info / Edit Form */}
