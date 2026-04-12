@@ -128,8 +128,13 @@ export default function ExploreScreen() {
                       onSuccess: () => {
                         showToast(`${item.name} added to your collection`);
                       },
-                      onError: () => {
-                        showToast("Failed to add to collection", "error");
+                      onError: (err) => {
+                        const pgErr = err as { code?: string };
+                        if (pgErr.code === "23505") {
+                          showToast("Already in your collection", "error");
+                        } else {
+                          showToast("Failed to add to collection", "error");
+                        }
                       },
                       onSettled: () => {
                         setAddingIds((prev) => {

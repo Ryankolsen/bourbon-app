@@ -307,8 +307,13 @@ export default function BourbonDetailScreen() {
                     showToast(`${bourbon.name} added to your collection`);
                     router.back();
                   },
-                  onError: () => {
-                    showToast("Failed to add to collection", "error");
+                  onError: (err) => {
+                    const pgErr = err as { code?: string };
+                    if (pgErr.code === "23505") {
+                      showToast("Already in your collection", "error");
+                    } else {
+                      showToast("Failed to add to collection", "error");
+                    }
                   },
                 }
               );
