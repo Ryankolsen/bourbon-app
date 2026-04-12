@@ -12,6 +12,13 @@ export function useAuth() {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      if (session?.user) {
+        // Ensure profile row exists — handles users created before the trigger
+        // or where the trigger failed. ignoreDuplicates keeps existing data intact.
+        supabase
+          .from("profiles")
+          .upsert({ id: session.user.id }, { onConflict: "id", ignoreDuplicates: true });
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -19,6 +26,11 @@ export function useAuth() {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        if (session?.user) {
+          supabase
+            .from("profiles")
+            .upsert({ id: session.user.id }, { onConflict: "id", ignoreDuplicates: true });
+        }
       }
     );
 

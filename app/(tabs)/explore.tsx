@@ -16,6 +16,8 @@ import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/us
 
 export default function ExploreScreen() {
   const [search, setSearch] = useState("");
+  // Track which bourbon IDs have an in-flight add-to-collection request
+  const [addingIds, setAddingIds] = useState<Set<string>>(new Set());
   const { user } = useAuth();
   const { data: bourbons, isLoading } = useBourbons(search);
   const { data: allRatingStats = [] } = useAllBourbonRatingStats();
@@ -55,6 +57,7 @@ export default function ExploreScreen() {
             const hasRating = stats && stats.rating_count > 0;
             const wishlisted = wishlistMap.has(item.id);
             const wishlistRowId = wishlistMap.get(item.id);
+            const isAdding = addingIds.has(item.id);
             return (
             <TouchableOpacity
               className="bg-bourbon-800 rounded-2xl p-4"
@@ -115,17 +118,26 @@ export default function ExploreScreen() {
               </View>
               <TouchableOpacity
                 onPress={() => {
-                  if (!user) return;
-                  addToCollection.mutate({
-                    user_id: user.id,
-                    bourbon_id: item.id,
-                  });
+                  if (!user || isAdding) return;
+                  setAddingIds((prev) => new Set(prev).add(item.id));
+                  addToCollection.mutate(
+                    { user_id: user.id, bourbon_id: item.id },
+                    {
+                      onSettled: () => {
+                        setAddingIds((prev) => {
+                          const next = new Set(prev);
+                          next.delete(item.id);
+                          return next;
+                        });
+                      },
+                    }
+                  );
                 }}
-                disabled={addToCollection.isPending}
+                disabled={isAdding}
                 className="mt-3 bg-bourbon-600 rounded-xl py-2 items-center"
               >
                 <Text className="text-white font-medium text-sm">
-                  {addToCollection.isPending ? "Adding..." : "+ Add to Collection"}
+                  {isAdding ? "Adding..." : "+ Add to Collection"}
                 </Text>
               </TouchableOpacity>
             </TouchableOpacity>
