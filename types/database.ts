@@ -284,7 +284,17 @@ export interface Database {
         ];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      bourbon_rating_stats: {
+        Row: {
+          bourbon_id: string;
+          avg_rating: number | null;
+          rating_count: number;
+          tasting_count: number;
+        };
+        Relationships: [];
+      };
+    };
     Functions: Record<string, never>;
     Enums: Record<string, never>;
   };

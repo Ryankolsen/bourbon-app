@@ -13,6 +13,7 @@ import { useBourbon } from "@/hooks/use-bourbons";
 import { useAddToCollection } from "@/hooks/use-collection";
 import { useIsWishlisted, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
 import { useComments, useAddComment, useDeleteComment } from "@/hooks/use-comments";
+import { useBourbonRatingStats } from "@/hooks/use-ratings";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function BourbonDetailScreen() {
@@ -25,6 +26,7 @@ export default function BourbonDetailScreen() {
   const addToWishlist = useAddToWishlist();
   const removeFromWishlist = useRemoveFromWishlist();
 
+  const { data: ratingStats } = useBourbonRatingStats(id);
   const { data: comments = [], isLoading: commentsLoading } = useComments(id);
   const addComment = useAddComment();
   const deleteComment = useDeleteComment();
@@ -98,6 +100,35 @@ export default function BourbonDetailScreen() {
             <View className="mt-2 self-start bg-bourbon-700 px-3 py-1 rounded-full">
               <Text className="text-bourbon-200 text-xs font-medium capitalize">
                 {bourbon.type}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Community Rating */}
+        <View className="bg-bourbon-800 rounded-2xl p-4 mb-4 flex-row items-center justify-between">
+          <View>
+            <Text className="text-bourbon-400 text-xs font-semibold uppercase tracking-wider mb-1">
+              Community Rating
+            </Text>
+            {ratingStats && ratingStats.rating_count > 0 ? (
+              <View className="flex-row items-baseline gap-2">
+                <Text className="text-bourbon-100 text-3xl font-bold">
+                  {ratingStats.avg_rating}
+                </Text>
+                <Text className="text-bourbon-400 text-sm">/100</Text>
+              </View>
+            ) : (
+              <Text className="text-bourbon-500 text-sm">No ratings yet</Text>
+            )}
+          </View>
+          {ratingStats && ratingStats.rating_count > 0 && (
+            <View className="items-end">
+              <Text className="text-bourbon-300 text-lg font-semibold">
+                {ratingStats.rating_count}
+              </Text>
+              <Text className="text-bourbon-500 text-xs">
+                {ratingStats.rating_count === 1 ? "rating" : "ratings"}
               </Text>
             </View>
           )}
