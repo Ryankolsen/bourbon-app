@@ -120,6 +120,13 @@ export default function BourbonDetailScreen() {
               {addToCollection.isPending ? "Adding..." : "+ Add to Collection"}
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push(`/tasting/new?bourbonId=${bourbon.id}`)}
+            className="bg-bourbon-800 border border-bourbon-600 rounded-2xl py-4 items-center"
+          >
+            <Text className="text-bourbon-200 font-semibold text-base">📓 Log Tasting</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
