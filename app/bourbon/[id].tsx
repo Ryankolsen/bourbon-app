@@ -8,6 +8,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useBourbon } from "@/hooks/use-bourbons";
 import { useAddToCollection } from "@/hooks/use-collection";
+import { useIsWishlisted, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function BourbonDetailScreen() {
@@ -16,6 +17,9 @@ export default function BourbonDetailScreen() {
   const { data: bourbon, isLoading, isError } = useBourbon(id);
   const { user } = useAuth();
   const addToCollection = useAddToCollection();
+  const { data: wishlistItem } = useIsWishlisted(user?.id, id);
+  const addToWishlist = useAddToWishlist();
+  const removeFromWishlist = useRemoveFromWishlist();
 
   if (isLoading) {
     return (
@@ -126,6 +130,27 @@ export default function BourbonDetailScreen() {
             className="bg-bourbon-800 border border-bourbon-600 rounded-2xl py-4 items-center"
           >
             <Text className="text-bourbon-200 font-semibold text-base">📓 Log Tasting</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              if (!user) return;
+              if (wishlistItem) {
+                removeFromWishlist.mutate({
+                  id: wishlistItem.id,
+                  userId: user.id,
+                  bourbonId: bourbon.id,
+                });
+              } else {
+                addToWishlist.mutate({ user_id: user.id, bourbon_id: bourbon.id });
+              }
+            }}
+            disabled={addToWishlist.isPending || removeFromWishlist.isPending}
+            className="bg-bourbon-800 border border-bourbon-600 rounded-2xl py-4 items-center"
+          >
+            <Text className="text-bourbon-200 font-semibold text-base">
+              {wishlistItem ? "★ Remove from Wishlist" : "☆ Add to Wishlist"}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
