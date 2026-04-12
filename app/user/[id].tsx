@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile, useUserPublicStats } from "@/hooks/use-profile";
@@ -31,6 +32,7 @@ export default function PublicProfileScreen() {
   const unfollowUser = useUnfollowUser();
 
   const isOwnProfile = user?.id === id;
+  const insets = useSafeAreaInsets();
 
   function handleFollowToggle() {
     if (!user?.id || !id) return;
@@ -68,8 +70,8 @@ export default function PublicProfileScreen() {
   return (
     <View className="flex-1 bg-bourbon-900">
       {/* Header */}
-      <View className="px-4 pt-4 pb-2">
-        <TouchableOpacity onPress={() => router.back()}>
+      <View className="px-4 pb-2" style={{ paddingTop: insets.top + 8 }}>
+        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
           <Text className="text-bourbon-400 text-base">← Back</Text>
         </TouchableOpacity>
       </View>
