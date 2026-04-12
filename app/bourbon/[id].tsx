@@ -12,8 +12,9 @@ import { useState } from "react";
 import { useBourbon } from "@/hooks/use-bourbons";
 import { useAddToCollection } from "@/hooks/use-collection";
 import { useIsWishlisted, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
-import { useComments, useAddComment, useDeleteComment } from "@/hooks/use-comments";
-import { useBourbonRatingStats } from "@/hooks/use-ratings";
+import { useComments, useGroupComments, useAddComment, useDeleteComment } from "@/hooks/use-comments";
+import { useBourbonRatingStats, useGroupRatingStats } from "@/hooks/use-ratings";
+import { useMyGroups } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function BourbonDetailScreen() {
@@ -31,6 +32,22 @@ export default function BourbonDetailScreen() {
   const addComment = useAddComment();
   const deleteComment = useDeleteComment();
   const [commentBody, setCommentBody] = useState("");
+
+  // Group state
+  const { data: myGroups = [] } = useMyGroups(user?.id);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [commentVisibility, setCommentVisibility] = useState<"public" | "group">("public");
+
+  // Resolve the active group (default to first if only one)
+  const activeGroupId = selectedGroupId ?? (myGroups.length === 1
+    ? (myGroups[0] as { group_id: string }).group_id
+    : null);
+
+  const { data: groupRating } = useGroupRatingStats(id, activeGroupId ?? undefined);
+  const { data: groupComments = [], isLoading: groupCommentsLoading } = useGroupComments(
+    id,
+    activeGroupId ?? undefined
+  );
 
   if (isLoading) {
     return (
@@ -56,16 +73,19 @@ export default function BourbonDetailScreen() {
   function handlePostComment() {
     const body = commentBody.trim();
     if (!user || !body) return;
-    addComment.mutate(
-      { bourbon_id: bourbon!.id, user_id: user.id, body },
-      {
-        onSuccess: () => setCommentBody(""),
-        onError: () => Alert.alert("Error", "Failed to post comment."),
-      }
-    );
+
+    const entry =
+      commentVisibility === "group" && activeGroupId
+        ? { bourbon_id: bourbon!.id, user_id: user.id, body, visibility: "group" as const, group_id: activeGroupId }
+        : { bourbon_id: bourbon!.id, user_id: user.id, body, visibility: "public" as const };
+
+    addComment.mutate(entry, {
+      onSuccess: () => setCommentBody(""),
+      onError: () => Alert.alert("Error", "Failed to post comment."),
+    });
   }
 
-  function handleDeleteComment(commentId: string) {
+  function handleDeleteComment(commentId: string, groupId?: string | null) {
     Alert.alert("Delete Comment", "Remove this comment?", [
       { text: "Cancel", style: "cancel" },
       {
@@ -73,12 +93,17 @@ export default function BourbonDetailScreen() {
         style: "destructive",
         onPress: () =>
           deleteComment.mutate(
-            { id: commentId, bourbonId: bourbon!.id },
+            { id: commentId, bourbonId: bourbon!.id, groupId },
             { onError: () => Alert.alert("Error", "Failed to delete comment.") }
           ),
       },
     ]);
   }
+
+  const hasGroups = myGroups.length > 0;
+  const activeGroup = myGroups.find(
+    (m) => (m as { group_id: string }).group_id === activeGroupId
+  ) as { group_id: string; groups: { id: string; name: string } | null } | undefined;
 
   return (
     <View className="flex-1 bg-bourbon-900">
@@ -133,6 +158,70 @@ export default function BourbonDetailScreen() {
             </View>
           )}
         </View>
+
+        {/* Group Rating */}
+        {hasGroups && (
+          <View className="bg-bourbon-800 rounded-2xl p-4 mb-4">
+            <View className="flex-row items-center justify-between mb-2">
+              <Text className="text-bourbon-400 text-xs font-semibold uppercase tracking-wider">
+                Group Rating
+              </Text>
+              {myGroups.length > 1 && (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View className="flex-row gap-2">
+                    {myGroups.map((m) => {
+                      const gm = m as { group_id: string; groups: { name: string } | null };
+                      const isActive = activeGroupId === gm.group_id;
+                      return (
+                        <TouchableOpacity
+                          key={gm.group_id}
+                          onPress={() => setSelectedGroupId(gm.group_id)}
+                          className={`px-3 py-1 rounded-full ${isActive ? "bg-bourbon-600" : "bg-bourbon-700"}`}
+                        >
+                          <Text className={`text-xs font-medium ${isActive ? "text-white" : "text-bourbon-300"}`}>
+                            {gm.groups?.name ?? "Group"}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </ScrollView>
+              )}
+            </View>
+
+            {activeGroupId ? (
+              <View className="flex-row items-center justify-between">
+                <View>
+                  {groupRating && groupRating.rating_count > 0 ? (
+                    <View className="flex-row items-baseline gap-2">
+                      <Text className="text-bourbon-100 text-3xl font-bold">
+                        {groupRating.avg_rating}
+                      </Text>
+                      <Text className="text-bourbon-400 text-sm">/100</Text>
+                    </View>
+                  ) : (
+                    <Text className="text-bourbon-500 text-sm">No group ratings yet</Text>
+                  )}
+                  {activeGroup?.groups?.name && myGroups.length === 1 && (
+                    <Text className="text-bourbon-500 text-xs mt-0.5">{activeGroup.groups.name}</Text>
+                  )}
+                </View>
+                {groupRating && groupRating.rating_count > 0 && (
+                  <View className="items-end">
+                    <Text className="text-bourbon-300 text-lg font-semibold">
+                      {groupRating.rating_count}
+                    </Text>
+                    <Text className="text-bourbon-500 text-xs">
+                      {groupRating.rating_count === 1 ? "rating" : "ratings"}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <Text className="text-bourbon-500 text-sm">Select a group above</Text>
+            )}
+          </View>
+        )}
 
         {/* Stats grid */}
         <View className="bg-bourbon-800 rounded-2xl p-4 mb-4">
@@ -221,18 +310,46 @@ export default function BourbonDetailScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Comments */}
+        {/* ── COMMENTS ── */}
         <View className="mt-8">
           <Text className="text-bourbon-400 text-xs font-semibold uppercase tracking-wider mb-3">
-            Comments
+            Community Comments
           </Text>
 
-          {/* Post comment input */}
+          {/* Comment composer */}
           <View className="bg-bourbon-800 rounded-2xl p-3 mb-4">
+            {/* Visibility toggle */}
+            {hasGroups && (
+              <View className="flex-row gap-2 mb-2">
+                <TouchableOpacity
+                  onPress={() => setCommentVisibility("public")}
+                  className={`px-3 py-1 rounded-full ${commentVisibility === "public" ? "bg-bourbon-600" : "bg-bourbon-700"}`}
+                >
+                  <Text className={`text-xs font-medium ${commentVisibility === "public" ? "text-white" : "text-bourbon-300"}`}>
+                    Public
+                  </Text>
+                </TouchableOpacity>
+                {activeGroupId && (
+                  <TouchableOpacity
+                    onPress={() => setCommentVisibility("group")}
+                    className={`px-3 py-1 rounded-full ${commentVisibility === "group" ? "bg-bourbon-600" : "bg-bourbon-700"}`}
+                  >
+                    <Text className={`text-xs font-medium ${commentVisibility === "group" ? "text-white" : "text-bourbon-300"}`}>
+                      {activeGroup?.groups?.name ?? "Group only"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+
             <TextInput
               value={commentBody}
               onChangeText={setCommentBody}
-              placeholder="Share your thoughts…"
+              placeholder={
+                commentVisibility === "group"
+                  ? "Share with your group…"
+                  : "Share your thoughts…"
+              }
               placeholderTextColor="#6b5a3f"
               multiline
               maxLength={1000}
@@ -249,7 +366,7 @@ export default function BourbonDetailScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Comment list */}
+          {/* Public comment list */}
           {commentsLoading ? (
             <ActivityIndicator color="#e39e38" />
           ) : comments.length === 0 ? (
@@ -280,7 +397,7 @@ export default function BourbonDetailScreen() {
                       <Text className="text-bourbon-500 text-xs">{date}</Text>
                       {isOwn && (
                         <TouchableOpacity
-                          onPress={() => handleDeleteComment(comment.id)}
+                          onPress={() => handleDeleteComment(comment.id, comment.group_id)}
                         >
                           <Text className="text-red-400 text-xs">Delete</Text>
                         </TouchableOpacity>
@@ -295,6 +412,60 @@ export default function BourbonDetailScreen() {
             })
           )}
         </View>
+
+        {/* ── GROUP COMMENTS ── */}
+        {hasGroups && activeGroupId && (
+          <View className="mt-6">
+            <Text className="text-bourbon-400 text-xs font-semibold uppercase tracking-wider mb-3">
+              {activeGroup?.groups?.name ? `${activeGroup.groups.name} — Group Comments` : "Group Comments"}
+            </Text>
+
+            {groupCommentsLoading ? (
+              <ActivityIndicator color="#e39e38" />
+            ) : groupComments.length === 0 ? (
+              <Text className="text-bourbon-500 text-sm text-center py-4">
+                No group comments yet.
+              </Text>
+            ) : (
+              groupComments.map((comment) => {
+                const author =
+                  comment.profiles?.display_name ??
+                  comment.profiles?.username ??
+                  "User";
+                const isOwn = user?.id === comment.user_id;
+                const date = new Date(comment.created_at).toLocaleDateString(
+                  undefined,
+                  { month: "short", day: "numeric", year: "numeric" }
+                );
+                return (
+                  <View
+                    key={comment.id}
+                    className="bg-bourbon-800 border border-bourbon-700 rounded-2xl p-4 mb-3"
+                  >
+                    <View className="flex-row justify-between items-start mb-1">
+                      <Text className="text-bourbon-300 text-xs font-semibold">
+                        {author}
+                      </Text>
+                      <View className="flex-row items-center gap-2">
+                        <Text className="text-bourbon-500 text-xs">{date}</Text>
+                        {isOwn && (
+                          <TouchableOpacity
+                            onPress={() => handleDeleteComment(comment.id, comment.group_id)}
+                          >
+                            <Text className="text-red-400 text-xs">Delete</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    </View>
+                    <Text className="text-bourbon-200 text-sm leading-relaxed">
+                      {comment.body}
+                    </Text>
+                  </View>
+                );
+              })
+            )}
+          </View>
+        )}
       </ScrollView>
     </View>
   );

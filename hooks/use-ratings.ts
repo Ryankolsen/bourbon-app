@@ -22,6 +22,34 @@ export function useBourbonRatingStats(bourbonId: string | undefined) {
   });
 }
 
+/** Average rating for a bourbon restricted to accepted members of a group. */
+export function useGroupRatingStats(
+  bourbonId: string | undefined,
+  groupId: string | undefined
+) {
+  return useQuery({
+    queryKey: ["group_rating_stats", groupId, bourbonId],
+    queryFn: async (): Promise<{
+      avg_rating: number | null;
+      rating_count: number;
+    } | null> => {
+      if (!bourbonId || !groupId) return null;
+      const { data, error } = await supabase.rpc("get_group_avg_rating", {
+        p_group_id: groupId,
+        p_bourbon_id: bourbonId,
+      });
+      if (error) throw error;
+      const row = data?.[0];
+      if (!row) return { avg_rating: null, rating_count: 0 };
+      return {
+        avg_rating: row.avg_rating ?? null,
+        rating_count: Number(row.rating_count),
+      };
+    },
+    enabled: !!bourbonId && !!groupId,
+  });
+}
+
 /** Aggregate rating stats for all bourbons — used to annotate list views. */
 export function useAllBourbonRatingStats() {
   return useQuery({

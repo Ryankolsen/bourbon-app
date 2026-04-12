@@ -222,6 +222,8 @@ export interface Database {
           bourbon_id: string;
           user_id: string;
           body: string;
+          visibility: "public" | "group";
+          group_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -229,10 +231,14 @@ export interface Database {
           bourbon_id: string;
           user_id: string;
           body: string;
+          visibility?: "public" | "group";
+          group_id?: string | null;
           created_at?: string;
         };
         Update: {
           body?: string;
+          visibility?: "public" | "group";
+          group_id?: string | null;
         };
         Relationships: [
           {
@@ -375,7 +381,12 @@ export interface Database {
         Relationships: [];
       };
     };
-    Functions: Record<string, never>;
+    Functions: {
+      get_group_avg_rating: {
+        Args: { p_group_id: string; p_bourbon_id: string };
+        Returns: { avg_rating: number | null; rating_count: number }[];
+      };
+    };
     Enums: Record<string, never>;
   };
 }
