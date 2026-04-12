@@ -119,7 +119,6 @@ export default function ExploreScreen() {
                   addToCollection.mutate({
                     user_id: user.id,
                     bourbon_id: item.id,
-                    bottle_status: "sealed",
                   });
                 }}
                 disabled={addToCollection.isPending}

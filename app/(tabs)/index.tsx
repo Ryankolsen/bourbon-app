@@ -60,19 +60,6 @@ export default function CollectionScreen() {
                     {bourbon?.distillery ?? "Unknown distillery"}
                   </Text>
                 </View>
-                <View
-                  className={`px-3 py-1 rounded-full ${
-                    item.bottle_status === "sealed"
-                      ? "bg-green-900"
-                      : item.bottle_status === "open"
-                      ? "bg-bourbon-600"
-                      : "bg-gray-800"
-                  }`}
-                >
-                  <Text className="text-xs font-medium text-bourbon-100 capitalize">
-                    {item.bottle_status}
-                  </Text>
-                </View>
               </View>
               <View className="flex-row gap-4 mt-3">
                 {bourbon?.proof && (

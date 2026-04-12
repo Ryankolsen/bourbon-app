@@ -46,6 +46,9 @@ export interface Database {
           msrp: number | null;
           image_url: string | null;
           description: string | null;
+          city: string | null;
+          state: string | null;
+          country: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -60,6 +63,9 @@ export interface Database {
           msrp?: number | null;
           image_url?: string | null;
           description?: string | null;
+          city?: string | null;
+          state?: string | null;
+          country?: string | null;
         };
         Update: {
           name?: string;
@@ -71,6 +77,9 @@ export interface Database {
           msrp?: number | null;
           image_url?: string | null;
           description?: string | null;
+          city?: string | null;
+          state?: string | null;
+          country?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -83,7 +92,6 @@ export interface Database {
           purchase_price: number | null;
           purchase_date: string | null;
           purchase_location: string | null;
-          bottle_status: "sealed" | "open" | "empty";
           notes: string | null;
           created_at: string;
         };
@@ -94,14 +102,12 @@ export interface Database {
           purchase_price?: number | null;
           purchase_date?: string | null;
           purchase_location?: string | null;
-          bottle_status?: "sealed" | "open" | "empty";
           notes?: string | null;
         };
         Update: {
           purchase_price?: number | null;
           purchase_date?: string | null;
           purchase_location?: string | null;
-          bottle_status?: "sealed" | "open" | "empty";
           notes?: string | null;
         };
         Relationships: [

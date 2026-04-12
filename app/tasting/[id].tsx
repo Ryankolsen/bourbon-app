@@ -12,7 +12,14 @@ import { useState, useEffect } from "react";
 import { useTasting, useUpdateTasting } from "@/hooks/use-tastings";
 import { useAuth } from "@/hooks/use-auth";
 
-const RATING_STEPS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+const RATING_STEPS = [1, 2, 3, 4, 5];
+const STAR_LABELS: Record<number, string> = {
+  1: "Poor",
+  2: "Fair",
+  3: "Good",
+  4: "Great",
+  5: "Exceptional",
+};
 
 export default function TastingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -141,32 +148,38 @@ export default function TastingDetailScreen() {
         {/* Rating */}
         <View className="bg-bourbon-800 rounded-2xl p-4 mb-4">
           <Text className="text-bourbon-400 text-xs font-semibold uppercase tracking-wider mb-3">
-            Rating (0–100)
+            Rating
           </Text>
           {editing ? (
-            <View className="flex-row flex-wrap gap-2">
-              {RATING_STEPS.map((r) => (
-                <TouchableOpacity
-                  key={r}
-                  onPress={() => setRating(rating === r ? null : r)}
-                  className={`px-3 py-2 rounded-xl ${
-                    rating === r ? "bg-bourbon-500" : "bg-bourbon-700"
-                  }`}
-                >
-                  <Text
-                    className={`text-sm font-medium ${
-                      rating === r ? "text-white" : "text-bourbon-300"
-                    }`}
+            <>
+              <View className="flex-row gap-3 justify-center">
+                {RATING_STEPS.map((r) => (
+                  <TouchableOpacity
+                    key={r}
+                    onPress={() => setRating(rating === r ? null : r)}
+                    className="items-center"
                   >
-                    {r}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                    <Text className={`text-3xl ${rating !== null && r <= rating ? "opacity-100" : "opacity-30"}`}>
+                      ★
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              {rating !== null && (
+                <Text className="text-bourbon-300 text-sm mt-3 text-center">
+                  {rating}/5 — {STAR_LABELS[rating]}
+                </Text>
+              )}
+            </>
           ) : (
-            <Text className="text-bourbon-100 text-2xl font-bold">
-              {rating !== null ? `${rating}/100` : "—"}
-            </Text>
+            <View>
+              <Text className="text-bourbon-100 text-2xl font-bold">
+                {rating !== null ? `${rating}/5` : "—"}
+              </Text>
+              {rating !== null && (
+                <Text className="text-bourbon-400 text-sm mt-0.5">{STAR_LABELS[rating]}</Text>
+              )}
+            </View>
           )}
         </View>
 

@@ -142,6 +142,11 @@ export default function BourbonDetailScreen() {
           {bourbon.distillery && (
             <Text className="text-bourbon-400 text-base mt-1">{bourbon.distillery}</Text>
           )}
+          {(bourbon.city || bourbon.state || bourbon.country) && (
+            <Text className="text-bourbon-500 text-sm mt-0.5">
+              {[bourbon.city, bourbon.state, bourbon.country].filter(Boolean).join(", ")}
+            </Text>
+          )}
           {bourbon.type && (
             <View className="mt-2 self-start bg-bourbon-700 px-3 py-1 rounded-full">
               <Text className="text-bourbon-200 text-xs font-medium capitalize">
@@ -162,7 +167,7 @@ export default function BourbonDetailScreen() {
                 <Text className="text-bourbon-100 text-3xl font-bold">
                   {ratingStats.avg_rating}
                 </Text>
-                <Text className="text-bourbon-400 text-sm">/100</Text>
+                <Text className="text-bourbon-400 text-sm">/5</Text>
               </View>
             ) : (
               <Text className="text-bourbon-500 text-sm">No ratings yet</Text>
@@ -218,7 +223,7 @@ export default function BourbonDetailScreen() {
                       <Text className="text-bourbon-100 text-3xl font-bold">
                         {groupRating.avg_rating}
                       </Text>
-                      <Text className="text-bourbon-400 text-sm">/100</Text>
+                      <Text className="text-bourbon-400 text-sm">/5</Text>
                     </View>
                   ) : (
                     <Text className="text-bourbon-500 text-sm">No group ratings yet</Text>
@@ -289,7 +294,6 @@ export default function BourbonDetailScreen() {
                 {
                   user_id: user.id,
                   bourbon_id: bourbon.id,
-                  bottle_status: "sealed",
                 },
                 { onSuccess: () => router.back() }
               );
