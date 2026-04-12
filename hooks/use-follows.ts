@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { buildFollowPayload, buildUnfollowTarget } from "@/lib/follows";
 
 /** Number of followers a given user has */
 export function useFollowerCount(userId: string | undefined) {
@@ -105,7 +106,7 @@ export function useFollowUser() {
     }) => {
       const { error } = await supabase
         .from("user_follows")
-        .insert({ follower_id: followerId, following_id: followingId });
+        .insert(buildFollowPayload(followerId, followingId));
       if (error) throw error;
       return { followerId, followingId };
     },
@@ -129,11 +130,12 @@ export function useUnfollowUser() {
       followerId: string;
       followingId: string;
     }) => {
+      const target = buildUnfollowTarget(followerId, followingId);
       const { error } = await supabase
         .from("user_follows")
         .delete()
-        .eq("follower_id", followerId)
-        .eq("following_id", followingId);
+        .eq("follower_id", target.follower_id)
+        .eq("following_id", target.following_id);
       if (error) throw error;
       return { followerId, followingId };
     },

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { buildBourbonSearchFilter } from "@/lib/bourbons";
 
 export function useBourbons(search?: string) {
   return useQuery({
@@ -10,8 +11,9 @@ export function useBourbons(search?: string) {
         .select("*")
         .order("name");
 
-      if (search && search.trim().length > 0) {
-        query = query.ilike("name", `%${search}%`);
+      const filter = buildBourbonSearchFilter(search);
+      if (filter) {
+        query = query.ilike("name", filter);
       }
 
       const { data, error } = await query;

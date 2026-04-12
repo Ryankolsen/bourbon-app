@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/lib/toast-provider";
 import { buildAddToWishlistPayload } from "@/lib/wishlist";
 import { buildAddToCollectionPayload } from "@/lib/collection";
+import { buildCommentPayload } from "@/lib/comments";
 
 export default function BourbonDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -82,10 +83,12 @@ export default function BourbonDetailScreen() {
     const body = commentBody.trim();
     if (!user || !body) return;
 
-    const entry =
-      commentVisibility === "group" && activeGroupId
-        ? { bourbon_id: bourbon!.id, user_id: user.id, body, visibility: "group" as const, group_id: activeGroupId }
-        : { bourbon_id: bourbon!.id, user_id: user.id, body, visibility: "public" as const };
+    const entry = buildCommentPayload(
+      user.id,
+      bourbon!.id,
+      body,
+      commentVisibility === "group" ? activeGroupId : null,
+    );
 
     addComment.mutate(entry, {
       onSuccess: () => setCommentBody(""),
