@@ -52,7 +52,7 @@ export default function TastingsScreen() {
           return (
             <TouchableOpacity
               className="bg-bourbon-800 rounded-2xl p-4"
-              onPress={() => router.push(`/bourbon/${item.bourbon_id}`)}
+              onPress={() => router.push(`/tasting/${item.id}`)}
             >
               <View className="flex-row justify-between items-start mb-2">
                 <View className="flex-1 mr-3">

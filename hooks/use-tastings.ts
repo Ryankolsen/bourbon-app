@@ -4,6 +4,7 @@ import { Database } from "@/types/database";
 
 type TastingRow = Database["public"]["Tables"]["tastings"]["Row"];
 type TastingInsert = Database["public"]["Tables"]["tastings"]["Insert"];
+type TastingUpdate = Database["public"]["Tables"]["tastings"]["Update"];
 
 export function useTastings(userId: string | undefined) {
   return useQuery({
@@ -60,6 +61,50 @@ export function useLogTasting() {
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["tastings", data.user_id] });
+    },
+  });
+}
+
+export function useTasting(tastingId: string | undefined) {
+  return useQuery({
+    queryKey: ["tasting", tastingId],
+    queryFn: async () => {
+      if (!tastingId) return null;
+      const { data, error } = await supabase
+        .from("tastings")
+        .select(`*, bourbons(*)`)
+        .eq("id", tastingId)
+        .single();
+      if (error) throw error;
+      return data as TastingRow & { bourbons: Record<string, unknown> | null };
+    },
+    enabled: !!tastingId,
+  });
+}
+
+export function useUpdateTasting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      updates,
+    }: {
+      id: string;
+      updates: TastingUpdate;
+    }) => {
+      const { data, error } = await supabase
+        .from("tastings")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as TastingRow;
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["tasting", data.id] });
+      qc.invalidateQueries({ queryKey: ["tastings", data.user_id] });
+      qc.invalidateQueries({ queryKey: ["bourbon_rating_stats", data.bourbon_id] });
     },
   });
 }
