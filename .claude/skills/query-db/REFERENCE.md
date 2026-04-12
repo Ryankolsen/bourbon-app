@@ -3,45 +3,74 @@
 Project ID: `dmudeosnwcizorotxlrs`
 CLI command: `npx supabase db query --linked "<sql>"`
 
-## Tables
+## Discover the live schema
 
-| Table | Key Columns | Notes |
-|---|---|---|
-| `bourbons` | id, name, distillery, city, state, country, mashbill, age_statement, proof, type, msrp, image_url, description | Master bourbon list, readable by all authenticated users |
-| `profiles` | id, username, display_name, avatar_url | Extends auth.users; auto-created on signup via trigger |
-| `tastings` | id, user_id, bourbon_id, rating (int, 1–5), nose, palate, finish, overall_notes | Check constraint: `rating >= 1 AND rating <= 5` |
-| `user_collection` | id, user_id, bourbon_id, purchase_price, purchase_date | `bottle_status` was dropped — do not reference it |
-| `user_wishlist` | id, user_id, bourbon_id, priority (1–10) | |
-| `groups` | id, name, created_by, updated_at | |
-| `group_members` | id, group_id, user_id, role | |
-| `group_recommendations` | id, group_id, bourbon_id, recommended_by | |
-| `bourbon_comments` | id, bourbon_id, user_id, body, created_at | Named `bourbon_comments`, NOT `comments` |
-| `user_follows` | id, follower_id, following_id | Named `user_follows`, NOT `follows` |
+Always query the live schema rather than relying on hardcoded lists. Use these before writing any query against an unfamiliar table.
 
-## Views
+### All tables
+```sql
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+ORDER BY table_name;
+```
 
-| View | Definition |
-|---|---|
-| `bourbon_rating_stats` | Aggregates `avg_rating`, `rating_count`, `tasting_count` per `bourbon_id` from `tastings`. Named `bourbon_rating_stats`, NOT `bourbon_ratings`. |
+### All views
+```sql
+SELECT table_name
+FROM information_schema.views
+WHERE table_schema = 'public'
+ORDER BY table_name;
+```
 
-## RPCs (Functions)
+### All RPCs (user-defined functions)
+```sql
+SELECT routine_name, pg_get_function_arguments(p.oid) AS args
+FROM information_schema.routines r
+JOIN pg_proc p ON p.proname = r.routine_name
+WHERE r.routine_schema = 'public'
+ORDER BY routine_name;
+```
 
-| Function | Purpose |
-|---|---|
-| `find_profile_by_email(email)` | Look up a profile by email address |
-| `get_group_avg_rating(group_id)` | Returns average rating for bourbons rated within a group |
-| `get_user_public_stats(user_id)` | Returns public-facing stats for a user profile |
-| `handle_new_user()` | Trigger: auto-creates profile row on auth.users insert |
-| `handle_group_updated_at()` | Trigger: updates `groups.updated_at` on row change |
+### Columns for a specific table
+```sql
+SELECT column_name, data_type, is_nullable, column_default
+FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = '<table>'
+ORDER BY ordinal_position;
+```
 
-## RLS
+### Check constraints on a table
+```sql
+SELECT conname, pg_get_constraintdef(oid) AS definition
+FROM pg_constraint
+WHERE conrelid = 'public.<table>'::regclass AND contype = 'c';
+```
 
-All tables have RLS enabled. Users can only read/write their own rows in `tastings`, `user_collection`, `user_wishlist`, `bourbon_comments`, `user_follows`, `group_members`. `bourbons` is readable by all authenticated users.
+### Foreign keys on a table
+```sql
+SELECT
+  kcu.column_name,
+  ccu.table_name AS foreign_table,
+  ccu.column_name AS foreign_column
+FROM information_schema.table_constraints tc
+JOIN information_schema.key_column_usage kcu USING (constraint_name)
+JOIN information_schema.constraint_column_usage ccu USING (constraint_name)
+WHERE tc.constraint_type = 'FOREIGN KEY'
+  AND tc.table_schema = 'public'
+  AND tc.table_name = '<table>';
+```
 
-## Common gotchas
+### View definition
+```sql
+SELECT definition
+FROM pg_views
+WHERE schemaname = 'public' AND viewname = '<view>';
+```
 
-- Use `bourbon_comments`, not `comments`
-- Use `user_follows`, not `follows`
-- Use `bourbon_rating_stats`, not `bourbon_ratings`
-- `bottle_status` column no longer exists on `user_collection`
-- `tastings.rating` is `integer`, range 1–5 (not 0–100)
+### RLS policies on a table
+```sql
+SELECT policyname, cmd, qual, with_check
+FROM pg_policies
+WHERE schemaname = 'public' AND tablename = '<table>';
+```
