@@ -216,6 +216,41 @@ export interface Database {
           },
         ];
       };
+      bourbon_comments: {
+        Row: {
+          id: string;
+          bourbon_id: string;
+          user_id: string;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          bourbon_id: string;
+          user_id: string;
+          body: string;
+          created_at?: string;
+        };
+        Update: {
+          body?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bourbon_comments_bourbon_id_fkey";
+            columns: ["bourbon_id"];
+            isOneToOne: false;
+            referencedRelation: "bourbons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bourbon_comments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_follows: {
         Row: {
           follower_id: string;

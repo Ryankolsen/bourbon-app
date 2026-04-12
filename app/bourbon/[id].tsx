@@ -4,11 +4,15 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  TextInput,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
 import { useBourbon } from "@/hooks/use-bourbons";
 import { useAddToCollection } from "@/hooks/use-collection";
 import { useIsWishlisted, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
+import { useComments, useAddComment, useDeleteComment } from "@/hooks/use-comments";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function BourbonDetailScreen() {
@@ -20,6 +24,11 @@ export default function BourbonDetailScreen() {
   const { data: wishlistItem } = useIsWishlisted(user?.id, id);
   const addToWishlist = useAddToWishlist();
   const removeFromWishlist = useRemoveFromWishlist();
+
+  const { data: comments = [], isLoading: commentsLoading } = useComments(id);
+  const addComment = useAddComment();
+  const deleteComment = useDeleteComment();
+  const [commentBody, setCommentBody] = useState("");
 
   if (isLoading) {
     return (
@@ -40,6 +49,33 @@ export default function BourbonDetailScreen() {
         </TouchableOpacity>
       </View>
     );
+  }
+
+  function handlePostComment() {
+    const body = commentBody.trim();
+    if (!user || !body) return;
+    addComment.mutate(
+      { bourbon_id: bourbon!.id, user_id: user.id, body },
+      {
+        onSuccess: () => setCommentBody(""),
+        onError: () => Alert.alert("Error", "Failed to post comment."),
+      }
+    );
+  }
+
+  function handleDeleteComment(commentId: string) {
+    Alert.alert("Delete Comment", "Remove this comment?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () =>
+          deleteComment.mutate(
+            { id: commentId, bourbonId: bourbon!.id },
+            { onError: () => Alert.alert("Error", "Failed to delete comment.") }
+          ),
+      },
+    ]);
   }
 
   return (
@@ -152,6 +188,81 @@ export default function BourbonDetailScreen() {
               {wishlistItem ? "★ Remove from Wishlist" : "☆ Add to Wishlist"}
             </Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Comments */}
+        <View className="mt-8">
+          <Text className="text-bourbon-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            Comments
+          </Text>
+
+          {/* Post comment input */}
+          <View className="bg-bourbon-800 rounded-2xl p-3 mb-4">
+            <TextInput
+              value={commentBody}
+              onChangeText={setCommentBody}
+              placeholder="Share your thoughts…"
+              placeholderTextColor="#6b5a3f"
+              multiline
+              maxLength={1000}
+              className="text-bourbon-100 text-sm min-h-[56px]"
+            />
+            <TouchableOpacity
+              onPress={handlePostComment}
+              disabled={!commentBody.trim() || addComment.isPending}
+              className="mt-2 self-end bg-bourbon-600 px-4 py-2 rounded-xl"
+            >
+              <Text className="text-white text-sm font-medium">
+                {addComment.isPending ? "Posting…" : "Post"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Comment list */}
+          {commentsLoading ? (
+            <ActivityIndicator color="#e39e38" />
+          ) : comments.length === 0 ? (
+            <Text className="text-bourbon-500 text-sm text-center py-4">
+              No comments yet. Be the first!
+            </Text>
+          ) : (
+            comments.map((comment) => {
+              const author =
+                comment.profiles?.display_name ??
+                comment.profiles?.username ??
+                "User";
+              const isOwn = user?.id === comment.user_id;
+              const date = new Date(comment.created_at).toLocaleDateString(
+                undefined,
+                { month: "short", day: "numeric", year: "numeric" }
+              );
+              return (
+                <View
+                  key={comment.id}
+                  className="bg-bourbon-800 rounded-2xl p-4 mb-3"
+                >
+                  <View className="flex-row justify-between items-start mb-1">
+                    <Text className="text-bourbon-300 text-xs font-semibold">
+                      {author}
+                    </Text>
+                    <View className="flex-row items-center gap-2">
+                      <Text className="text-bourbon-500 text-xs">{date}</Text>
+                      {isOwn && (
+                        <TouchableOpacity
+                          onPress={() => handleDeleteComment(comment.id)}
+                        >
+                          <Text className="text-red-400 text-xs">Delete</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                  <Text className="text-bourbon-200 text-sm leading-relaxed">
+                    {comment.body}
+                  </Text>
+                </View>
+              );
+            })
+          )}
         </View>
       </ScrollView>
     </View>
