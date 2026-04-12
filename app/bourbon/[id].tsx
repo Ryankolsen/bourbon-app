@@ -17,7 +17,7 @@ import { useComments, useGroupComments, useAddComment, useDeleteComment } from "
 import { useBourbonRatingStats, useGroupRatingStats } from "@/hooks/use-ratings";
 import { useMyGroups, useRecommendBourbon } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/lib/toast";
+import { useToast } from "@/lib/toast-provider";
 import { buildAddToWishlistPayload } from "@/lib/wishlist";
 import { buildAddToCollectionPayload } from "@/lib/collection";
 

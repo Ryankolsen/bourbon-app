@@ -13,7 +13,7 @@ import { useAddToCollection } from "@/hooks/use-collection";
 import { useAllBourbonRatingStats } from "@/hooks/use-ratings";
 import { useAuth } from "@/hooks/use-auth";
 import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
-import { useToast } from "@/lib/toast";
+import { useToast } from "@/lib/toast-provider";
 import { buildAddToWishlistPayload } from "@/lib/wishlist";
 import { buildAddToCollectionPayload } from "@/lib/collection";
 

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/database";
+import { normalizeGroupRatingResponse } from "@/lib/ratings";
 
 type RatingStats = Database["public"]["Views"]["bourbon_rating_stats"]["Row"];
 
@@ -39,12 +40,7 @@ export function useGroupRatingStats(
         p_bourbon_id: bourbonId,
       });
       if (error) throw error;
-      const row = data?.[0];
-      if (!row) return { avg_rating: null, rating_count: 0 };
-      return {
-        avg_rating: row.avg_rating ?? null,
-        rating_count: Number(row.rating_count),
-      };
+      return normalizeGroupRatingResponse(data);
     },
     enabled: !!bourbonId && !!groupId,
   });

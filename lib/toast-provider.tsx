@@ -6,13 +6,8 @@ import React, {
   useState,
 } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
-
-type ToastType = "success" | "error";
-
-interface ToastState {
-  message: string;
-  type: ToastType;
-}
+import { enqueueToast, advanceQueue } from "@/lib/toast";
+import type { ToastQueue, ToastType } from "@/lib/toast";
 
 interface ToastContextValue {
   showToast: (message: string, type?: ToastType) => void;
@@ -24,16 +19,23 @@ export function useToast() {
   return useContext(ToastContext);
 }
 
+let _toastSeq = 0;
+function nextToastId(): string {
+  return `toast-${++_toastSeq}`;
+}
+
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [toast, setToast] = useState<ToastState | null>(null);
+  const [queue, setQueue] = useState<ToastQueue>([]);
   const opacity = useRef(new Animated.Value(0)).current;
   const animRef = useRef<Animated.CompositeAnimation | null>(null);
 
   const showToast = useCallback(
     (message: string, type: ToastType = "success") => {
-      // Cancel any in-flight animation
+      const id = nextToastId();
+      setQueue((prev) => enqueueToast(prev, message, type, id));
+
+      // Cancel any in-flight animation and restart for the new toast
       if (animRef.current) animRef.current.stop();
-      setToast({ message, type });
       opacity.setValue(0);
 
       animRef.current = Animated.sequence([
@@ -50,24 +52,26 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         }),
       ]);
       animRef.current.start(({ finished }) => {
-        if (finished) setToast(null);
+        if (finished) setQueue((prev) => advanceQueue(prev));
       });
     },
     [opacity]
   );
 
+  const current = queue[0] ?? null;
+
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      {toast && (
+      {current && (
         <Animated.View style={[styles.container, { opacity }]} pointerEvents="none">
           <View
             style={[
               styles.pill,
-              toast.type === "success" ? styles.success : styles.error,
+              current.type === "success" ? styles.success : styles.error,
             ]}
           >
-            <Text style={styles.text}>{toast.message}</Text>
+            <Text style={styles.text}>{current.message}</Text>
           </View>
         </Animated.View>
       )}

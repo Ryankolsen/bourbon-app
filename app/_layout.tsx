@@ -6,7 +6,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import { queryClient } from "@/lib/query-client";
 import { useAuth } from "@/hooks/use-auth";
-import { ToastProvider } from "@/lib/toast";
+import { ToastProvider } from "@/lib/toast-provider";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
