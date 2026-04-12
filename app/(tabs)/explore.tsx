@@ -12,6 +12,7 @@ import { useBourbons } from "@/hooks/use-bourbons";
 import { useAddToCollection } from "@/hooks/use-collection";
 import { useAllBourbonRatingStats } from "@/hooks/use-ratings";
 import { useAuth } from "@/hooks/use-auth";
+import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
 
 export default function ExploreScreen() {
   const [search, setSearch] = useState("");
@@ -19,9 +20,14 @@ export default function ExploreScreen() {
   const { data: bourbons, isLoading } = useBourbons(search);
   const { data: allRatingStats = [] } = useAllBourbonRatingStats();
   const addToCollection = useAddToCollection();
+  const addToWishlist = useAddToWishlist();
+  const removeFromWishlist = useRemoveFromWishlist();
+  const { data: wishlistItems = [] } = useWishlist(user?.id);
   const router = useRouter();
 
   const ratingMap = new Map(allRatingStats.map((s) => [s.bourbon_id, s]));
+  // Map bourbon_id → wishlist row id for O(1) lookup per card
+  const wishlistMap = new Map(wishlistItems.map((w) => [w.bourbon_id, w.id]));
 
   return (
     <View className="flex-1 bg-bourbon-900">
@@ -47,6 +53,8 @@ export default function ExploreScreen() {
           renderItem={({ item }) => {
             const stats = ratingMap.get(item.id);
             const hasRating = stats && stats.rating_count > 0;
+            const wishlisted = wishlistMap.has(item.id);
+            const wishlistRowId = wishlistMap.get(item.id);
             return (
             <TouchableOpacity
               className="bg-bourbon-800 rounded-2xl p-4"
@@ -59,16 +67,40 @@ export default function ExploreScreen() {
                     {item.distillery ?? "Unknown distillery"}
                   </Text>
                 </View>
-                {hasRating && (
-                  <View className="bg-bourbon-700 rounded-xl px-2 py-1 items-center min-w-[48px]">
-                    <Text className="text-bourbon-100 text-sm font-bold">
-                      {stats!.avg_rating}
-                    </Text>
-                    <Text className="text-bourbon-500 text-[10px]">
-                      {stats!.rating_count} {stats!.rating_count === 1 ? "rating" : "ratings"}
-                    </Text>
-                  </View>
-                )}
+                <View className="flex-row items-center gap-2">
+                  {/* Wishlist heart toggle */}
+                  <TouchableOpacity
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      if (!user) return;
+                      if (wishlisted && wishlistRowId) {
+                        removeFromWishlist.mutate({
+                          id: wishlistRowId,
+                          userId: user.id,
+                          bourbonId: item.id,
+                        });
+                      } else {
+                        addToWishlist.mutate({
+                          user_id: user.id,
+                          bourbon_id: item.id,
+                        });
+                      }
+                    }}
+                  >
+                    <Text className="text-xl">{wishlisted ? "★" : "☆"}</Text>
+                  </TouchableOpacity>
+                  {hasRating && (
+                    <View className="bg-bourbon-700 rounded-xl px-2 py-1 items-center min-w-[48px]">
+                      <Text className="text-bourbon-100 text-sm font-bold">
+                        {stats!.avg_rating}
+                      </Text>
+                      <Text className="text-bourbon-500 text-[10px]">
+                        {stats!.rating_count} {stats!.rating_count === 1 ? "rating" : "ratings"}
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </View>
               <View className="flex-row gap-4 mt-2">
                 {item.proof && (
