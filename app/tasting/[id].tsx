@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { useTasting, useUpdateTasting } from "@/hooks/use-tastings";
@@ -24,6 +25,7 @@ const STAR_LABELS: Record<number, string> = {
 export default function TastingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { data: tasting, isLoading, isError } = useTasting(id);
   const updateTasting = useUpdateTasting();
@@ -110,8 +112,11 @@ export default function TastingDetailScreen() {
   return (
     <View className="flex-1 bg-bourbon-900">
       {/* Header */}
-      <View className="px-4 pt-4 pb-2 flex-row items-center justify-between">
-        <TouchableOpacity onPress={() => router.back()}>
+      <View
+        className="px-4 pb-2 flex-row items-center justify-between"
+        style={{ paddingTop: insets.top + 8 }}
+      >
+        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
           <Text className="text-bourbon-400 text-base">← Back</Text>
         </TouchableOpacity>
         {isOwner && !editing && (

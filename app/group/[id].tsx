@@ -8,6 +8,7 @@ import {
   Alert,
   Image,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
@@ -23,6 +24,7 @@ import { useProfileByUsername, useProfileByEmail } from "@/hooks/use-profile";
 export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
 
   const { data: group, isLoading: groupLoading } = useGroup(id);
@@ -152,8 +154,8 @@ export default function GroupDetailScreen() {
   return (
     <View className="flex-1 bg-bourbon-900">
       {/* Header */}
-      <View className="px-4 pt-4 pb-2">
-        <TouchableOpacity onPress={() => router.back()}>
+      <View className="px-4 pb-2" style={{ paddingTop: insets.top + 8 }}>
+        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
           <Text className="text-bourbon-400 text-base">← Back</Text>
         </TouchableOpacity>
       </View>

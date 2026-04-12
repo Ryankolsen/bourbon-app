@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { useBourbon } from "@/hooks/use-bourbons";
@@ -25,6 +26,7 @@ const STAR_LABELS: Record<number, string> = {
 export default function NewTastingScreen() {
   const { bourbonId } = useLocalSearchParams<{ bourbonId: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { data: bourbon, isLoading } = useBourbon(bourbonId);
   const logTasting = useLogTasting();
@@ -70,8 +72,11 @@ export default function NewTastingScreen() {
   return (
     <View className="flex-1 bg-bourbon-900">
       {/* Header */}
-      <View className="px-4 pt-4 pb-2 flex-row items-center gap-3">
-        <TouchableOpacity onPress={() => router.back()}>
+      <View
+        className="px-4 pb-2 flex-row items-center gap-3"
+        style={{ paddingTop: insets.top + 8 }}
+      >
+        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
           <Text className="text-bourbon-400 text-base">← Back</Text>
         </TouchableOpacity>
       </View>
