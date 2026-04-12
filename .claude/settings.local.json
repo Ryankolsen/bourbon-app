@@ -1,11 +1,18 @@
 {
   "permissions": {
+    "ask": [
+      "Bash(npx supabase db query --linked \"DELETE:*)",
+      "Bash(npx supabase db query --linked \"DROP:*)",
+      "Bash(npx supabase db query --linked \"UPDATE:*)",
+      "Bash(npx supabase db query --linked \"INSERT:*)"
+    ],
     "allow": [
       "Bash(npx tsc:*)",
       "Bash(npm run:*)",
       "Bash(npm test:*)",
       "Bash(npx expo:*)",
-      "Bash(supabase:*)",
+      "Bash(npx supabase db push:*)",
+      "Bash(npx supabase db query --linked \"SELECT:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(gh issue:*)",
