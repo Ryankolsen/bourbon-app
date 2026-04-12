@@ -13,6 +13,7 @@ import { useAddToCollection } from "@/hooks/use-collection";
 import { useAllBourbonRatingStats } from "@/hooks/use-ratings";
 import { useAuth } from "@/hooks/use-auth";
 import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
+import { useToast } from "@/lib/toast";
 
 export default function ExploreScreen() {
   const [search, setSearch] = useState("");
@@ -21,6 +22,7 @@ export default function ExploreScreen() {
   const { user } = useAuth();
   const { data: bourbons, isLoading } = useBourbons(search);
   const { data: allRatingStats = [] } = useAllBourbonRatingStats();
+  const { showToast } = useToast();
   const addToCollection = useAddToCollection();
   const addToWishlist = useAddToWishlist();
   const removeFromWishlist = useRemoveFromWishlist();
@@ -123,6 +125,12 @@ export default function ExploreScreen() {
                   addToCollection.mutate(
                     { user_id: user.id, bourbon_id: item.id },
                     {
+                      onSuccess: () => {
+                        showToast(`${item.name} added to your collection`);
+                      },
+                      onError: () => {
+                        showToast("Failed to add to collection", "error");
+                      },
                       onSettled: () => {
                         setAddingIds((prev) => {
                           const next = new Set(prev);

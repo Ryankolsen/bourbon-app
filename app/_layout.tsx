@@ -6,6 +6,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "expo-status-bar";
 import { queryClient } from "@/lib/query-client";
 import { useAuth } from "@/hooks/use-auth";
+import { ToastProvider } from "@/lib/toast";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
@@ -30,10 +31,12 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthGuard>
-        <Stack screenOptions={{ headerShown: false }} />
-        <StatusBar style="auto" />
-      </AuthGuard>
+      <ToastProvider>
+        <AuthGuard>
+          <Stack screenOptions={{ headerShown: false }} />
+          <StatusBar style="auto" />
+        </AuthGuard>
+      </ToastProvider>
     </QueryClientProvider>
   );
 }

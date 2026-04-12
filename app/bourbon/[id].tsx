@@ -17,6 +17,7 @@ import { useComments, useGroupComments, useAddComment, useDeleteComment } from "
 import { useBourbonRatingStats, useGroupRatingStats } from "@/hooks/use-ratings";
 import { useMyGroups, useRecommendBourbon } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/lib/toast";
 
 export default function BourbonDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -24,6 +25,7 @@ export default function BourbonDetailScreen() {
   const insets = useSafeAreaInsets();
   const { data: bourbon, isLoading, isError } = useBourbon(id);
   const { user } = useAuth();
+  const { showToast } = useToast();
   const addToCollection = useAddToCollection();
   const { data: wishlistItem } = useIsWishlisted(user?.id, id);
   const addToWishlist = useAddToWishlist();
@@ -300,7 +302,15 @@ export default function BourbonDetailScreen() {
                   user_id: user.id,
                   bourbon_id: bourbon.id,
                 },
-                { onSuccess: () => router.back() }
+                {
+                  onSuccess: () => {
+                    showToast(`${bourbon.name} added to your collection`);
+                    router.back();
+                  },
+                  onError: () => {
+                    showToast("Failed to add to collection", "error");
+                  },
+                }
               );
             }}
             disabled={addToCollection.isPending}
