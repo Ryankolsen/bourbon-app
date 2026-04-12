@@ -18,6 +18,8 @@ alter table public.user_collection
 -- Drop the old numeric check constraint and column type, replace with
 -- an integer column constrained to 1–5.  Existing rows with values
 -- outside [1,5] are cleared to NULL so the migration is non-destructive.
+drop view if exists public.bourbon_rating_stats;
+
 alter table public.tastings
   drop column rating;
 
