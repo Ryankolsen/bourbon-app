@@ -14,6 +14,8 @@ import { useAllBourbonRatingStats } from "@/hooks/use-ratings";
 import { useAuth } from "@/hooks/use-auth";
 import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
 import { useToast } from "@/lib/toast";
+import { buildAddToWishlistPayload } from "@/lib/wishlist";
+import { buildAddToCollectionPayload } from "@/lib/collection";
 
 export default function ExploreScreen() {
   const [search, setSearch] = useState("");
@@ -86,10 +88,7 @@ export default function ExploreScreen() {
                           bourbonId: item.id,
                         });
                       } else {
-                        addToWishlist.mutate({
-                          user_id: user.id,
-                          bourbon_id: item.id,
-                        });
+                        addToWishlist.mutate(buildAddToWishlistPayload(user.id, item.id));
                       }
                     }}
                   >
@@ -123,7 +122,7 @@ export default function ExploreScreen() {
                   if (!user || isAdding) return;
                   setAddingIds((prev) => new Set(prev).add(item.id));
                   addToCollection.mutate(
-                    { user_id: user.id, bourbon_id: item.id },
+                    buildAddToCollectionPayload(user.id, item.id),
                     {
                       onSuccess: () => {
                         showToast(`${item.name} added to your collection`);

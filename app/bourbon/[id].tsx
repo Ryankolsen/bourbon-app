@@ -18,6 +18,8 @@ import { useBourbonRatingStats, useGroupRatingStats } from "@/hooks/use-ratings"
 import { useMyGroups, useRecommendBourbon } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/lib/toast";
+import { buildAddToWishlistPayload } from "@/lib/wishlist";
+import { buildAddToCollectionPayload } from "@/lib/collection";
 
 export default function BourbonDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -298,10 +300,7 @@ export default function BourbonDetailScreen() {
             onPress={() => {
               if (!user) return;
               addToCollection.mutate(
-                {
-                  user_id: user.id,
-                  bourbon_id: bourbon.id,
-                },
+                buildAddToCollectionPayload(user.id, bourbon.id),
                 {
                   onSuccess: () => {
                     showToast(`${bourbon.name} added to your collection`);
@@ -343,7 +342,7 @@ export default function BourbonDetailScreen() {
                   bourbonId: bourbon.id,
                 });
               } else {
-                addToWishlist.mutate({ user_id: user.id, bourbon_id: bourbon.id });
+                addToWishlist.mutate(buildAddToWishlistPayload(user.id, bourbon.id));
               }
             }}
             disabled={addToWishlist.isPending || removeFromWishlist.isPending}
