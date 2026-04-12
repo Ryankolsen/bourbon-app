@@ -263,6 +263,40 @@ export function useRecommendBourbon() {
   });
 }
 
+/** Whether the viewing user shares an accepted group with the target user */
+export function useSharesGroup(
+  viewerId: string | undefined,
+  targetId: string | undefined
+) {
+  return useQuery({
+    queryKey: ["shares-group", viewerId, targetId],
+    queryFn: async () => {
+      if (!viewerId || !targetId || viewerId === targetId) return false;
+      // Get groups the viewer belongs to
+      const { data: viewerGroups, error: e1 } = await supabase
+        .from("group_members")
+        .select("group_id")
+        .eq("user_id", viewerId)
+        .eq("status", "accepted");
+      if (e1) throw e1;
+      if (!viewerGroups || viewerGroups.length === 0) return false;
+
+      const groupIds = viewerGroups.map((m) => m.group_id);
+      // Check if target is an accepted member of any of those groups
+      const { data: overlap, error: e2 } = await supabase
+        .from("group_members")
+        .select("group_id")
+        .eq("user_id", targetId)
+        .eq("status", "accepted")
+        .in("group_id", groupIds)
+        .limit(1);
+      if (e2) throw e2;
+      return (overlap?.length ?? 0) > 0;
+    },
+    enabled: !!viewerId && !!targetId && viewerId !== targetId,
+  });
+}
+
 /** Leave a group (delete own membership row) */
 export function useLeaveGroup() {
   const qc = useQueryClient();
