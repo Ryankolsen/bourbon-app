@@ -127,6 +127,21 @@ export function useUploadAvatar() {
   });
 }
 
+/** Public tasting + collection counts for any user profile */
+export function useUserPublicStats(userId: string | undefined) {
+  return useQuery({
+    queryKey: ["user-public-stats", userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      const { data, error } = await supabase
+        .rpc("get_user_public_stats", { p_user_id: userId });
+      if (error) throw error;
+      return data?.[0] ?? { tasting_count: 0, collection_count: 0 };
+    },
+    enabled: !!userId,
+  });
+}
+
 /** Look up a single profile by exact username */
 export function useProfileByUsername(username: string | undefined) {
   return useQuery({

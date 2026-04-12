@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "@/hooks/use-auth";
-import { useProfile } from "@/hooks/use-profile";
+import { useProfile, useUserPublicStats } from "@/hooks/use-profile";
 import {
   useFollowerCount,
   useFollowingCount,
@@ -26,6 +26,7 @@ export default function PublicProfileScreen() {
   const { data: followerCount } = useFollowerCount(id);
   const { data: followingCount } = useFollowingCount(id);
   const { data: isFollowing } = useIsFollowing(user?.id, id);
+  const { data: publicStats } = useUserPublicStats(id);
   const followUser = useFollowUser();
   const unfollowUser = useUnfollowUser();
 
@@ -113,6 +114,23 @@ export default function PublicProfileScreen() {
               {followingCount ?? 0}
             </Text>
             <Text className="text-bourbon-400 text-xs mt-0.5">Following</Text>
+          </View>
+        </View>
+
+        {/* Tasting / collection counts */}
+        <View className="flex-row bg-bourbon-800 rounded-2xl p-4 mb-4 justify-around">
+          <View className="items-center">
+            <Text className="text-bourbon-100 text-xl font-bold">
+              {publicStats?.tasting_count ?? 0}
+            </Text>
+            <Text className="text-bourbon-400 text-xs mt-0.5">Tastings</Text>
+          </View>
+          <View className="w-px bg-bourbon-700" />
+          <View className="items-center">
+            <Text className="text-bourbon-100 text-xl font-bold">
+              {publicStats?.collection_count ?? 0}
+            </Text>
+            <Text className="text-bourbon-400 text-xs mt-0.5">Collection</Text>
           </View>
         </View>
 

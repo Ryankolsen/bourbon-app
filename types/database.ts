@@ -430,6 +430,10 @@ export interface Database {
         Args: { p_group_id: string; p_bourbon_id: string };
         Returns: { avg_rating: number | null; rating_count: number }[];
       };
+      get_user_public_stats: {
+        Args: { p_user_id: string };
+        Returns: { tasting_count: number; collection_count: number }[];
+      };
     };
     Enums: Record<string, never>;
   };
