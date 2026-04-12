@@ -260,6 +260,12 @@ export default function BourbonDetailScreen() {
             Specs
           </Text>
           <View className="flex-row flex-wrap gap-y-4">
+            {bourbon.type && (
+              <StatItem
+                label="Type"
+                value={bourbon.type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+              />
+            )}
             {bourbon.proof != null && (
               <StatItem label="Proof" value={`${bourbon.proof}`} />
             )}
@@ -273,7 +279,7 @@ export default function BourbonDetailScreen() {
               <StatItem label="Mashbill" value={bourbon.mashbill} wide />
             )}
           </View>
-          {!bourbon.proof && !bourbon.age_statement && !bourbon.msrp && !bourbon.mashbill && (
+          {!bourbon.type && !bourbon.proof && !bourbon.age_statement && !bourbon.msrp && !bourbon.mashbill && (
             <Text className="text-bourbon-500 text-sm">No spec data available yet.</Text>
           )}
         </View>
