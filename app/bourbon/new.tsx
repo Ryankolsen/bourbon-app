@@ -16,10 +16,12 @@ import { useState, useEffect } from "react";
 import { Dropdown } from "react-native-element-dropdown";
 import { useAuth } from "@/hooks/use-auth";
 import { useAddBourbon, useSearchSimilarBourbons } from "@/hooks/use-bourbons";
+import { useDistilleries } from "@/hooks/use-distilleries";
 import { useToast } from "@/lib/toast-provider";
 import { buildBourbonInsertPayload } from "@/lib/bourbons";
 import { Database } from "@/types/database";
 import { WHISKEY_COUNTRIES, getProvincesForCountry } from "@/lib/location-data";
+import { SearchablePicker } from "@/components/SearchablePicker";
 
 type BourbonRow = Database["public"]["Tables"]["bourbons"]["Row"];
 
@@ -91,9 +93,11 @@ export default function NewBourbonScreen() {
   });
 
   const nameValue = watch("name");
+  const distilleryValue = watch("distillery");
   const countryValue = watch("country");
   const provinces = getProvincesForCountry(countryValue ?? "");
   const { data: similarBourbons = [] } = useSearchSimilarBourbons(nameValue);
+  const { distilleries, isLoading: distilleriesLoading } = useDistilleries(distilleryValue ?? "");
 
   useEffect(() => {
     setValue("state", "");
@@ -162,14 +166,14 @@ export default function NewBourbonScreen() {
           <Controller
             control={control}
             name="distillery"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor="#7a3c19"
+            render={({ field: { onChange, value } }) => (
+              <SearchablePicker
+                testID="distillery-picker"
+                data={distilleries}
+                value={value ?? ""}
+                onChange={onChange}
                 placeholder="e.g. Buffalo Trace"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
+                isLoading={distilleriesLoading}
               />
             )}
           />

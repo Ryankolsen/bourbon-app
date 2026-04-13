@@ -26,6 +26,10 @@ jest.mock('@/hooks/use-bourbons', () => ({
   useSearchSimilarBourbons: () => ({ data: [] }),
 }));
 
+jest.mock('@/hooks/use-distilleries', () => ({
+  useDistilleries: () => ({ distilleries: [], isLoading: false }),
+}));
+
 jest.mock('@/lib/toast-provider', () => ({
   useToast: () => ({ showToast: jest.fn() }),
 }));
