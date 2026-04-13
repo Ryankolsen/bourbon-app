@@ -38,7 +38,16 @@ export function useAddBourbon() {
         .insert(payload)
         .select()
         .single();
-      if (error) throw error;
+      if (error) {
+        console.error("[useAddBourbon] Supabase error:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          payload,
+        });
+        throw error;
+      }
       return data as BourbonRow;
     },
     onSuccess: () => {

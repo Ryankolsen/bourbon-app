@@ -91,15 +91,20 @@ export default function NewBourbonScreen() {
   const { data: similarBourbons = [] } = useSearchSimilarBourbons(nameValue);
 
   const onSubmit = handleSubmit((values) => {
-    if (!user) return;
+    if (!user) {
+      showToast("You must be signed in to add a bourbon", "error");
+      return;
+    }
     const payload = buildBourbonInsertPayload(user.id, values);
     addBourbon.mutate(payload, {
       onSuccess: (bourbon) => {
         showToast(`${bourbon.name} added to the database`);
         router.replace(`/bourbon/${bourbon.id}`);
       },
-      onError: () => {
-        showToast("Failed to add bourbon", "error");
+      onError: (error) => {
+        const msg = error instanceof Error ? error.message : String(error);
+        console.error("[AddBourbon] submit failed:", error);
+        showToast(`Failed to add bourbon: ${msg}`, "error");
       },
     });
   });
