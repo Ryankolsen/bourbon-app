@@ -15,6 +15,12 @@ export const DEV_PASSWORD = "BourbonDev2024!";
 
 export const DEV_USERS: DevUser[] = [
   {
+    id: "00000000-0000-0000-0000-000000000099",
+    name: "Ryan Kolsen",
+    email: "ryankolsen@gmail.com",
+    role: "Admin",
+  },
+  {
     id: "10000000-0000-0000-0000-000000000001",
     name: "Marcus Webb",
     email: "marcus.webb@bourbonvault.dev",

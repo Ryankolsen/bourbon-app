@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Platform, ActivityIndicator, TextInput } from "react-native";
+import { View, Text, TouchableOpacity, Platform, ActivityIndicator, ScrollView } from "react-native";
 import { useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri } from "expo-auth-session";
@@ -9,19 +9,19 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
+  const [loadingEmail, setLoadingEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [devEmail, setDevEmail] = useState(DEV_USERS[0].email);
 
-  async function signInWithEmail() {
+  async function signInWithEmail(email: string) {
     try {
-      setLoading(true);
+      setLoadingEmail(email);
       setError(null);
-      const { error } = await supabase.auth.signInWithPassword({ email: devEmail, password: DEV_PASSWORD });
+      const { error } = await supabase.auth.signInWithPassword({ email, password: DEV_PASSWORD });
       if (error) throw error;
     } catch (e: any) {
       setError(e.message ?? "Sign in failed");
     } finally {
-      setLoading(false);
+      setLoadingEmail(null);
     }
   }
 
@@ -104,7 +104,11 @@ export default function LoginScreen() {
   }
 
   return (
-    <View className="flex-1 bg-bourbon-900 items-center justify-center px-8">
+    <ScrollView
+      className="flex-1 bg-bourbon-900"
+      contentContainerClassName="items-center justify-center px-8 py-16"
+      keyboardShouldPersistTaps="handled"
+    >
       <View className="mb-12 items-center">
         <Text className="text-5xl mb-2">🥃</Text>
         <Text className="text-4xl font-bold text-bourbon-100 tracking-tight">
@@ -134,19 +138,27 @@ export default function LoginScreen() {
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity
-          onPress={signInWithGoogle}
-          disabled={loading}
-          className="bg-bourbon-600 rounded-xl py-4 flex-row items-center justify-center gap-2"
-        >
-          {loading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text className="text-white font-semibold text-base">
-              Continue with Google
+        {__DEV__ ? (
+          <View className="bg-bourbon-800 rounded-xl py-4 flex-row items-center justify-center gap-2 opacity-40">
+            <Text className="text-bourbon-400 font-semibold text-base">
+              Google (disabled in local dev)
             </Text>
-          )}
-        </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            onPress={signInWithGoogle}
+            disabled={loading}
+            className="bg-bourbon-600 rounded-xl py-4 flex-row items-center justify-center gap-2"
+          >
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-white font-semibold text-base">
+                Continue with Google
+              </Text>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
 
       <Text className="text-bourbon-500 text-xs mt-8 text-center">
@@ -155,29 +167,27 @@ export default function LoginScreen() {
 
       {__DEV__ && (
         <View className="mt-8 w-full border-t border-bourbon-700 pt-6">
-          <Text className="text-bourbon-500 text-xs text-center mb-3">DEV — email login</Text>
-          <TextInput
-            value={devEmail}
-            onChangeText={setDevEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            placeholder="test user email"
-            placeholderTextColor="#6b5a4e"
-            className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 mb-2 text-sm"
-          />
-          <TouchableOpacity
-            onPress={signInWithEmail}
-            disabled={loading}
-            className="bg-bourbon-700 rounded-xl py-3 items-center"
-          >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-bourbon-200 font-semibold text-sm">Sign in</Text>
-            )}
-          </TouchableOpacity>
+          <Text className="text-bourbon-500 text-xs text-center mb-3">DEV — sign in as</Text>
+          {DEV_USERS.map((u) => (
+            <TouchableOpacity
+              key={u.id}
+              onPress={() => signInWithEmail(u.email)}
+              disabled={loadingEmail !== null}
+              className="bg-bourbon-800 rounded-xl px-4 py-3 mb-2 flex-row items-center justify-between"
+            >
+              <View>
+                <Text className="text-bourbon-100 font-semibold text-sm">{u.name}</Text>
+                <Text className="text-bourbon-500 text-xs">{u.role}</Text>
+              </View>
+              {loadingEmail === u.email ? (
+                <ActivityIndicator color="white" size="small" />
+              ) : (
+                <Text className="text-bourbon-500 text-xs">{u.email}</Text>
+              )}
+            </TouchableOpacity>
+          ))}
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
