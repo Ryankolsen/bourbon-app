@@ -1,5 +1,7 @@
 import { Tabs } from "expo-router";
 import { Text } from "react-native";
+import { useAuth } from "@/hooks/use-auth";
+import { isAdmin } from "@/lib/admin";
 
 function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
   return (
@@ -10,6 +12,9 @@ function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
 }
 
 export default function TabsLayout() {
+  const { user } = useAuth();
+  const adminUser = !!(user?.email && isAdmin(user.email));
+
   return (
     <Tabs
       screenOptions={{
@@ -63,6 +68,14 @@ export default function TabsLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ focused }) => <TabIcon emoji="👤" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="admin"
+        options={{
+          title: "Admin",
+          href: adminUser ? undefined : null,
+          tabBarIcon: ({ focused }) => <TabIcon emoji="🔧" focused={focused} />,
         }}
       />
     </Tabs>
