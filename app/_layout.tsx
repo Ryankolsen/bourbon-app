@@ -7,6 +7,7 @@ import { StatusBar } from "expo-status-bar";
 import { queryClient } from "@/lib/query-client";
 import { useAuth } from "@/hooks/use-auth";
 import { ToastProvider } from "@/lib/toast-provider";
+import { DevUserSwitcher } from "@/components/DevUserSwitcher";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
@@ -35,6 +36,7 @@ export default function RootLayout() {
         <AuthGuard>
           <Stack screenOptions={{ headerShown: false }} />
           <StatusBar style="auto" />
+          {__DEV__ && <DevUserSwitcher />}
         </AuthGuard>
       </ToastProvider>
     </QueryClientProvider>
