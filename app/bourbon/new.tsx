@@ -9,15 +9,17 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useForm, Controller, useWatch } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Dropdown } from "react-native-element-dropdown";
 import { useAuth } from "@/hooks/use-auth";
 import { useAddBourbon, useSearchSimilarBourbons } from "@/hooks/use-bourbons";
 import { useToast } from "@/lib/toast-provider";
 import { buildBourbonInsertPayload } from "@/lib/bourbons";
 import { Database } from "@/types/database";
+import { WHISKEY_COUNTRIES, getProvincesForCountry } from "@/lib/location-data";
 
 type BourbonRow = Database["public"]["Tables"]["bourbons"]["Row"];
 
@@ -70,6 +72,7 @@ export default function NewBourbonScreen() {
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -88,7 +91,13 @@ export default function NewBourbonScreen() {
   });
 
   const nameValue = watch("name");
+  const countryValue = watch("country");
+  const provinces = getProvincesForCountry(countryValue ?? "");
   const { data: similarBourbons = [] } = useSearchSimilarBourbons(nameValue);
+
+  useEffect(() => {
+    setValue("state", "");
+  }, [countryValue, setValue]);
 
   const onSubmit = handleSubmit((values) => {
     if (!user) {
@@ -291,6 +300,54 @@ export default function NewBourbonScreen() {
           />
         </Field>
 
+        <Field label="Country" error={errors.country?.message}>
+          <Controller
+            control={control}
+            name="country"
+            render={({ field: { onChange, value } }) => (
+              <Dropdown
+                testID="country-dropdown"
+                data={WHISKEY_COUNTRIES}
+                labelField="label"
+                valueField="value"
+                value={value ?? null}
+                onChange={(item) => onChange(item.value)}
+                placeholder="Select country"
+                style={dropdownStyle}
+                placeholderStyle={dropdownPlaceholderStyle}
+                selectedTextStyle={dropdownSelectedTextStyle}
+                containerStyle={dropdownContainerStyle}
+                itemTextStyle={dropdownItemTextStyle}
+              />
+            )}
+          />
+        </Field>
+
+        {provinces && (
+          <Field label="State / Province" error={errors.state?.message}>
+            <Controller
+              control={control}
+              name="state"
+              render={({ field: { onChange, value } }) => (
+                <Dropdown
+                  testID="state-dropdown"
+                  data={provinces}
+                  labelField="label"
+                  valueField="value"
+                  value={value || null}
+                  onChange={(item) => onChange(item.value)}
+                  placeholder="Select state / province"
+                  style={dropdownStyle}
+                  placeholderStyle={dropdownPlaceholderStyle}
+                  selectedTextStyle={dropdownSelectedTextStyle}
+                  containerStyle={dropdownContainerStyle}
+                  itemTextStyle={dropdownItemTextStyle}
+                />
+              )}
+            />
+          </Field>
+        )}
+
         <Field label="City" error={errors.city?.message}>
           <Controller
             control={control}
@@ -300,40 +357,6 @@ export default function NewBourbonScreen() {
                 className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
                 placeholderTextColor="#7a3c19"
                 placeholder="e.g. Frankfort"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
-
-        <Field label="State" error={errors.state?.message}>
-          <Controller
-            control={control}
-            name="state"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor="#7a3c19"
-                placeholder="e.g. Kentucky"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
-
-        <Field label="Country" error={errors.country?.message}>
-          <Controller
-            control={control}
-            name="country"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor="#7a3c19"
-                placeholder="e.g. USA"
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
@@ -364,6 +387,34 @@ export default function NewBourbonScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+const dropdownStyle = {
+  backgroundColor: "#1a1860",
+  borderRadius: 12,
+  paddingHorizontal: 16,
+  paddingVertical: 4,
+};
+
+const dropdownPlaceholderStyle = {
+  color: "#7a3c19",
+  fontSize: 16,
+};
+
+const dropdownSelectedTextStyle = {
+  color: "#e0e0ff",
+  fontSize: 16,
+};
+
+const dropdownContainerStyle = {
+  backgroundColor: "#1a1860",
+  borderRadius: 12,
+  borderColor: "#2d2b8a",
+};
+
+const dropdownItemTextStyle = {
+  color: "#e0e0ff",
+  fontSize: 14,
+};
 
 function Field({
   label,
