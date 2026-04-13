@@ -1,5 +1,5 @@
-import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
 interface SearchablePickerProps {
@@ -39,6 +39,14 @@ const dropdownItemTextStyle = {
   fontSize: 14,
 };
 
+const dropdownInputSearchStyle = {
+  backgroundColor: '#0f0e4a',
+  color: '#e0e0ff',
+  borderRadius: 8,
+  borderColor: '#2d2b8a',
+  fontSize: 14,
+};
+
 /**
  * A searchable dropdown picker backed by react-native-element-dropdown.
  * Accepts a list of plain strings as `data`. Supports free-text fallback:
@@ -53,28 +61,34 @@ export function SearchablePicker({
   isLoading = false,
   testID,
 }: SearchablePickerProps) {
+  // Separate local state for the Dropdown's selected value so that free-text
+  // typed by the user (propagated to the parent via onChange) doesn't feed
+  // back into the Dropdown's value prop and reset the internal search input.
+  const [dropdownValue, setDropdownValue] = useState<string | null>(value || null);
+  const isOpenRef = useRef(false);
+
+  // Sync external value changes (e.g. form reset) only when dropdown is closed.
+  useEffect(() => {
+    if (!isOpenRef.current) {
+      setDropdownValue(value || null);
+    }
+  }, [value]);
+
   // Map strings to the { label, value } shape react-native-element-dropdown expects.
   const items = data.map((d) => ({ label: d, value: d }));
 
   const handleChange = (item: { label: string; value: string }) => {
+    setDropdownValue(item.value);
     onChange(item.value);
   };
 
   const handleSearchChange = (text: string) => {
-    // Free-text fallback: propagate the typed value immediately so that
-    // submitting without selecting a suggestion still saves the typed string.
+    // Free-text fallback: propagate the typed value so that submitting without
+    // selecting a suggestion still saves the typed string. Do NOT update
+    // dropdownValue here — that would re-enter the search text as a selected
+    // value and glitch the Dropdown's internal search input.
     onChange(text);
   };
-
-  if (isLoading) {
-    return (
-      <View
-        style={[dropdownStyle, { justifyContent: 'center', alignItems: 'center', height: 48 }]}
-      >
-        <ActivityIndicator color="#e0e0ff" size="small" />
-      </View>
-    );
-  }
 
   return (
     <Dropdown
@@ -82,8 +96,10 @@ export function SearchablePicker({
       data={items}
       labelField="label"
       valueField="value"
-      value={value || null}
+      value={dropdownValue}
       onChange={handleChange}
+      onFocus={() => { isOpenRef.current = true; }}
+      onBlur={() => { isOpenRef.current = false; }}
       placeholder={placeholder}
       search
       searchPlaceholder="Type to search..."
@@ -93,6 +109,13 @@ export function SearchablePicker({
       selectedTextStyle={dropdownSelectedTextStyle}
       containerStyle={dropdownContainerStyle}
       itemTextStyle={dropdownItemTextStyle}
+      inputSearchStyle={dropdownInputSearchStyle}
+      searchPlaceholderTextColor="#5a5a9a"
+      renderRightIcon={() =>
+        isLoading ? (
+          <ActivityIndicator color="#e0e0ff" size="small" style={{ marginRight: 4 }} />
+        ) : null
+      }
     />
   );
 }
