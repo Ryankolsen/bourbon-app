@@ -139,7 +139,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
         )}
 
-        {!Device.isDevice ? (
+        {!Device.isDevice && Platform.OS !== "ios" ? (
           <View className="bg-bourbon-800 rounded-xl py-4 flex-row items-center justify-center gap-2 opacity-40">
             <Text className="text-bourbon-400 font-semibold text-base">
               Google (disabled in local dev)
@@ -166,7 +166,7 @@ export default function LoginScreen() {
         By continuing, you agree to our Terms of Service and Privacy Policy
       </Text>
 
-      {!Device.isDevice && (
+      {!Device.isDevice && Platform.OS !== "ios" && (
         <View className="mt-8 w-full border-t border-bourbon-700 pt-6">
           <Text className="text-bourbon-500 text-xs text-center mb-3">DEV — sign in as</Text>
           {DEV_USERS.map((u) => (
