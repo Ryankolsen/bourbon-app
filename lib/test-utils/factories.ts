@@ -47,6 +47,7 @@ export function bourbonFactory(overrides: Partial<Bourbon> = {}): Bourbon {
     city: null,
     state: 'Kentucky',
     country: 'USA',
+    submitted_by: null,
     created_at: now(),
     updated_at: now(),
     ...overrides,

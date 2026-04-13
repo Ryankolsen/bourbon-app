@@ -1,6 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { buildBourbonSearchFilter } from "@/lib/bourbons";
+import { Database } from "@/types/database";
+
+type BourbonInsert = Database["public"]["Tables"]["bourbons"]["Insert"];
+type BourbonRow = Database["public"]["Tables"]["bourbons"]["Row"];
 
 export function useBourbons(search?: string) {
   return useQuery({
@@ -19,6 +23,24 @@ export function useBourbons(search?: string) {
       const { data, error } = await query;
       if (error) throw error;
       return data;
+    },
+  });
+}
+
+export function useAddBourbon() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: BourbonInsert) => {
+      const { data, error } = await supabase
+        .from("bourbons")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as BourbonRow;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["bourbons"] });
     },
   });
 }

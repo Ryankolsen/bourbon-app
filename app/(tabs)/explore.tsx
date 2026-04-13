@@ -37,7 +37,7 @@ export default function ExploreScreen() {
 
   return (
     <View className="flex-1 bg-bourbon-900">
-      <View className="px-4 pt-4 pb-2">
+      <View className="px-4 pt-4 pb-2 gap-2">
         <TextInput
           value={search}
           onChangeText={setSearch}
@@ -45,6 +45,12 @@ export default function ExploreScreen() {
           placeholderTextColor="#7a3c19"
           className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
         />
+        <TouchableOpacity
+          onPress={() => router.push("/bourbon/new")}
+          className="bg-bourbon-600 rounded-xl py-2.5 items-center"
+        >
+          <Text className="text-white font-medium text-sm">+ Add a Bourbon</Text>
+        </TouchableOpacity>
       </View>
 
       {isLoading ? (

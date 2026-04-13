@@ -49,6 +49,7 @@ export interface Database {
           city: string | null;
           state: string | null;
           country: string | null;
+          submitted_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -66,6 +67,7 @@ export interface Database {
           city?: string | null;
           state?: string | null;
           country?: string | null;
+          submitted_by?: string | null;
         };
         Update: {
           name?: string;
@@ -80,6 +82,7 @@ export interface Database {
           city?: string | null;
           state?: string | null;
           country?: string | null;
+          submitted_by?: string | null;
           updated_at?: string;
         };
         Relationships: [];
