@@ -16,6 +16,8 @@ export interface MockQueryBuilder {
   neq: jest.Mock;
   in: jest.Mock;
   is: jest.Mock;
+  ilike: jest.Mock;
+  or: jest.Mock;
   order: jest.Mock;
   limit: jest.Mock;
   single: jest.Mock;
@@ -59,6 +61,8 @@ function createQueryBuilder(): MockQueryBuilder {
     neq: jest.fn().mockReturnThis(),
     in: jest.fn().mockReturnThis(),
     is: jest.fn().mockReturnThis(),
+    ilike: jest.fn().mockReturnThis(),
+    or: jest.fn().mockReturnThis(),
     order: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     single: jest.fn().mockResolvedValue(defaultResolution),

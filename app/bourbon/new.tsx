@@ -9,13 +9,17 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useAddBourbon } from "@/hooks/use-bourbons";
+import { useAddBourbon, useSearchSimilarBourbons } from "@/hooks/use-bourbons";
 import { useToast } from "@/lib/toast-provider";
 import { buildBourbonInsertPayload } from "@/lib/bourbons";
+import { Database } from "@/types/database";
+
+type BourbonRow = Database["public"]["Tables"]["bourbons"]["Row"];
 
 const BOURBON_TYPES = [
   "traditional",
@@ -65,6 +69,7 @@ export default function NewBourbonScreen() {
     control,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -81,6 +86,9 @@ export default function NewBourbonScreen() {
       country: "",
     },
   });
+
+  const nameValue = watch("name");
+  const { data: similarBourbons = [] } = useSearchSimilarBourbons(nameValue);
 
   const onSubmit = handleSubmit((values) => {
     if (!user) return;
@@ -124,6 +132,17 @@ export default function NewBourbonScreen() {
             )}
           />
         </Field>
+
+        {similarBourbons.length > 0 && (
+          <View className="gap-2">
+            <Text className="text-amber-400 text-xs font-semibold uppercase tracking-widest">
+              Similar bourbons already in the database
+            </Text>
+            {similarBourbons.map((bourbon) => (
+              <DuplicateCard key={bourbon.id} bourbon={bourbon} />
+            ))}
+          </View>
+        )}
 
         <Field label="Distillery *" error={errors.distillery?.message}>
           <Controller
@@ -355,6 +374,56 @@ function Field({
       <Text className="text-bourbon-300 text-sm font-medium">{label}</Text>
       {children}
       {error ? <Text className="text-red-400 text-xs">{error}</Text> : null}
+    </View>
+  );
+}
+
+function DuplicateCard({ bourbon }: { bourbon: BourbonRow }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const formatType = (type: string | null) =>
+    type ? type.replace(/_/g, " ") : null;
+
+  return (
+    <View className="bg-bourbon-800 border border-amber-700 rounded-xl px-4 py-3 gap-1">
+      <Text className="text-bourbon-100 font-semibold text-sm">{bourbon.name}</Text>
+      <View className="flex-row flex-wrap gap-x-3 gap-y-0.5">
+        {bourbon.distillery ? (
+          <Text className="text-bourbon-400 text-xs">{bourbon.distillery}</Text>
+        ) : null}
+        {bourbon.proof != null ? (
+          <Text className="text-bourbon-400 text-xs">{bourbon.proof} proof</Text>
+        ) : null}
+        {bourbon.type ? (
+          <Text className="text-bourbon-400 text-xs">{formatType(bourbon.type)}</Text>
+        ) : null}
+      </View>
+
+      {expanded && (
+        <View className="mt-1 gap-0.5">
+          {bourbon.age_statement != null ? (
+            <Text className="text-bourbon-400 text-xs">Age: {bourbon.age_statement} years</Text>
+          ) : null}
+          {bourbon.mashbill ? (
+            <Text className="text-bourbon-400 text-xs">Mashbill: {bourbon.mashbill}</Text>
+          ) : null}
+          {bourbon.msrp != null ? (
+            <Text className="text-bourbon-400 text-xs">MSRP: ${bourbon.msrp}</Text>
+          ) : null}
+          {bourbon.city || bourbon.state || bourbon.country ? (
+            <Text className="text-bourbon-400 text-xs">
+              {[bourbon.city, bourbon.state, bourbon.country].filter(Boolean).join(", ")}
+            </Text>
+          ) : null}
+          {bourbon.description ? (
+            <Text className="text-bourbon-400 text-xs">{bourbon.description}</Text>
+          ) : null}
+        </View>
+      )}
+
+      <TouchableOpacity onPress={() => setExpanded((v) => !v)} className="mt-1">
+        <Text className="text-amber-500 text-xs">{expanded ? "See less" : "See more"}</Text>
+      </TouchableOpacity>
     </View>
   );
 }

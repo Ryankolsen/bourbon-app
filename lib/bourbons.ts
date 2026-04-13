@@ -8,6 +8,16 @@ import { Database } from '@/types/database';
 type BourbonInsert = Database['public']['Tables']['bourbons']['Insert'];
 
 /**
+ * Split a bourbon name into normalized search tokens.
+ * Splits on whitespace, lowercases each token, and filters empty strings.
+ * Apostrophes and other punctuation are preserved in the token so callers
+ * can decide how to use them (e.g., pass directly to ILIKE patterns).
+ */
+export function tokenizeName(name: string): string[] {
+  return name.trim().toLowerCase().split(/\s+/).filter(Boolean);
+}
+
+/**
  * Build the ilike filter string for a bourbon name search.
  * Returns null when the search term is empty or whitespace-only,
  * indicating no filter should be applied.

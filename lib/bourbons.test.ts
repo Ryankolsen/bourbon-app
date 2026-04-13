@@ -1,4 +1,34 @@
-import { buildBourbonSearchFilter, buildBourbonInsertPayload } from './bourbons';
+import { buildBourbonSearchFilter, buildBourbonInsertPayload, tokenizeName } from './bourbons';
+
+// ---------------------------------------------------------------------------
+// tokenizeName
+// ---------------------------------------------------------------------------
+
+describe('tokenizeName', () => {
+  it('splits a name into lowercase tokens', () => {
+    expect(tokenizeName('Pappy Van Winkle')).toEqual(['pappy', 'van', 'winkle']);
+  });
+
+  it('returns a single token for a single word', () => {
+    expect(tokenizeName('Buffalo')).toEqual(['buffalo']);
+  });
+
+  it('trims leading and trailing whitespace before splitting', () => {
+    expect(tokenizeName('  Blanton\'s Original  ')).toEqual(['blanton\'s', 'original']);
+  });
+
+  it('collapses multiple spaces between words', () => {
+    expect(tokenizeName('Maker\'s  Mark')).toEqual(['maker\'s', 'mark']);
+  });
+
+  it('returns an empty array for a whitespace-only string', () => {
+    expect(tokenizeName('   ')).toEqual([]);
+  });
+
+  it('returns an empty array for an empty string', () => {
+    expect(tokenizeName('')).toEqual([]);
+  });
+});
 
 // ---------------------------------------------------------------------------
 // buildBourbonSearchFilter
