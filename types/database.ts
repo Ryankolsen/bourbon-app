@@ -444,6 +444,10 @@ export interface Database {
         Args: { p_email: string };
         Returns: Database["public"]["Tables"]["profiles"]["Row"][];
       };
+      search_profiles: {
+        Args: { p_query: string };
+        Returns: Database["public"]["Tables"]["profiles"]["Row"][];
+      };
     };
     Enums: Record<string, never>;
   };

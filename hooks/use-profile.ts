@@ -158,6 +158,21 @@ export function useProfileByEmail(email: string | undefined) {
   });
 }
 
+/** Search profiles by partial username, display name, or exact email */
+export function useSearchProfiles(query: string | undefined) {
+  return useQuery({
+    queryKey: ["search-profiles", query],
+    queryFn: async () => {
+      if (!query || query.trim().length < 2) return [];
+      const { data, error } = await supabase
+        .rpc("search_profiles", { p_query: query.trim() });
+      if (error) throw error;
+      return (data as ProfileRow[]) ?? [];
+    },
+    enabled: !!query && query.trim().length >= 2,
+  });
+}
+
 /** Look up a single profile by exact username */
 export function useProfileByUsername(username: string | undefined) {
   return useQuery({
