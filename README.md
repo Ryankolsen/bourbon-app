@@ -158,7 +158,7 @@ Browse your local database at **http://127.0.0.1:54323** while `supabase start` 
 
 ### Test personas
 
-`supabase db reset` seeds 10 named test personas for development. All share the same password:
+`supabase db reset` seeds 11 users for development — a local admin account and 10 named test personas. All share the same password:
 
 ```
 BourbonDev2024!
@@ -166,6 +166,7 @@ BourbonDev2024!
 
 | Name | Email | Group | Role |
 |------|-------|-------|------|
+| Ryan Kolsen | ryankolsen@gmail.com | — | Admin (local only) |
 | Marcus Webb | marcus.webb@bourbonvault.dev | The Barrel Room | Owner |
 | Diana Chen | diana.chen@bourbonvault.dev | The Barrel Room | Member |
 | Tobias Grant | tobias.grant@bourbonvault.dev | The Barrel Room | Member |
@@ -177,7 +178,9 @@ BourbonDev2024!
 | Jonah Rivera | jonah.rivera@bourbonvault.dev | _(solo)_ | — |
 | Sadie Okafor | sadie.okafor@bourbonvault.dev | _(solo)_ | — |
 
-The dev user switcher panel (visible only in `__DEV__` builds) lets you sign in as any of these personas in one tap.
+The **dev login screen** (visible only in `__DEV__` builds) lists all users — tap any row to sign in instantly. Google OAuth is disabled locally; use the email list instead.
+
+The **dev user switcher** (floating button, `__DEV__` only) lets you switch personas without returning to the login screen. It is guarded inside the component itself so it renders nothing in production builds even if accidentally left in the layout.
 
 ### Local environment variables
 
@@ -189,8 +192,39 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon key from `npx supabase status`>
 EXPO_PUBLIC_ADMIN_EMAILS=your-real-email@example.com
 ```
 
+## Production Database
+
+The production project is `dmudeosnwcizorotxlrs`.
+
+### Apply schema migrations
+
+```bash
+npx supabase db push --linked
+```
+
+### Seed the bourbon catalog (no test users)
+
+The seed file at `supabase/seeds/catalog.sql` contains only the 1,860 bourbon rows — no fake accounts or dev passwords. Run it against prod after a fresh reset:
+
+```bash
+npx supabase db query --linked --file supabase/seeds/catalog.sql
+```
+
+### Full prod reset (pre-launch only)
+
+Wipes all data and re-applies migrations from scratch. Only use before launch when no real users exist.
+
+```bash
+npx supabase db reset --linked --no-seed
+npx supabase db query --linked --file supabase/seeds/catalog.sql
+```
+
+> **Never run `supabase db reset` (without `--linked`) against prod** — that targets your local database. Never run `seed.sql` against prod — it contains fake test accounts with a shared dev password.
+
 ## Auth Setup (Supabase Dashboard)
 
 In your Supabase project go to **Authentication → Providers** and enable:
 - **Google** — requires a Google Cloud OAuth client ID + secret
 - **Apple** — required for iOS App Store apps that offer social login
+
+Google OAuth is intentionally disabled in local dev builds. The login screen shows a greyed-out button in `__DEV__` mode — use the email list instead.
