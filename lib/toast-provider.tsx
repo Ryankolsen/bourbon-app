@@ -5,12 +5,12 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { enqueueToast, advanceQueue } from "@/lib/toast";
 import type { ToastQueue, ToastType } from "@/lib/toast";
 
 interface ToastContextValue {
-  showToast: (message: string, type?: ToastType) => void;
+  showToast: (message: string, type?: ToastType, onPress?: () => void) => void;
 }
 
 const ToastContext = createContext<ToastContextValue>({ showToast: () => {} });
@@ -30,9 +30,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const animRef = useRef<Animated.CompositeAnimation | null>(null);
 
   const showToast = useCallback(
-    (message: string, type: ToastType = "success") => {
+    (message: string, type: ToastType = "success", onPress?: () => void) => {
       const id = nextToastId();
-      setQueue((prev) => enqueueToast(prev, message, type, id));
+      setQueue((prev) => enqueueToast(prev, message, type, id, onPress));
 
       // Cancel any in-flight animation and restart for the new toast
       if (animRef.current) animRef.current.stop();
@@ -64,15 +64,32 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={{ showToast }}>
       {children}
       {current && (
-        <Animated.View style={[styles.container, { opacity }]} pointerEvents="none">
-          <View
-            style={[
-              styles.pill,
-              current.type === "success" ? styles.success : styles.error,
-            ]}
-          >
-            <Text style={styles.text}>{current.message}</Text>
-          </View>
+        <Animated.View
+          style={[styles.container, { opacity }]}
+          pointerEvents={current.onPress ? "auto" : "none"}
+        >
+          {current.onPress ? (
+            <TouchableOpacity
+              onPress={current.onPress}
+              activeOpacity={0.85}
+              style={[
+                styles.pill,
+                current.type === "success" ? styles.success : styles.error,
+              ]}
+            >
+              <Text style={styles.text}>{current.message}</Text>
+              <Text style={styles.actionText}>Manage →</Text>
+            </TouchableOpacity>
+          ) : (
+            <View
+              style={[
+                styles.pill,
+                current.type === "success" ? styles.success : styles.error,
+              ]}
+            >
+              <Text style={styles.text}>{current.message}</Text>
+            </View>
+          )}
         </Animated.View>
       )}
     </ToastContext.Provider>
@@ -105,5 +122,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     textAlign: "center",
+  },
+  actionText: {
+    color: "#c8c8e8",
+    fontSize: 12,
+    fontWeight: "500",
+    textAlign: "center",
+    marginTop: 2,
   },
 });

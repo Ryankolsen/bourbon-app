@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -81,4 +82,53 @@ export function useDismissGroupNotification(ownerId: string | undefined) {
       qc.invalidateQueries({ queryKey });
     },
   });
+}
+
+// ── Realtime ──────────────────────────────────────────────────────────────────
+
+export interface RealtimeNotificationPayload {
+  id: string;
+  owner_id: string;
+  group_id: string;
+  joiner_id: string;
+  created_at: string;
+  dismissed_at: string | null;
+}
+
+/**
+ * Subscribe to Supabase Realtime INSERT events on group_notifications for the
+ * given owner. Calls `onInsert` with the new row whenever one arrives.
+ * No-ops when ownerId is undefined. Cleans up the channel on unmount.
+ */
+export function useGroupNotificationsRealtime(
+  ownerId: string | undefined,
+  onInsert: (payload: RealtimeNotificationPayload) => void
+) {
+  // Keep a stable ref to the callback so the effect doesn't re-run when it changes.
+  const onInsertRef = useRef(onInsert);
+  onInsertRef.current = onInsert;
+
+  useEffect(() => {
+    if (!ownerId) return;
+
+    const channel = supabase
+      .channel(`group-notifications:${ownerId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "group_notifications",
+          filter: `owner_id=eq.${ownerId}`,
+        },
+        (payload: { new: RealtimeNotificationPayload }) => {
+          onInsertRef.current(payload.new);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [ownerId]);
 }

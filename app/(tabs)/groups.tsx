@@ -21,8 +21,12 @@ import {
 import {
   useGroupNotifications,
   useDismissGroupNotification,
+  useGroupNotificationsRealtime,
 } from "@/hooks/use-group-notifications";
 import type { GroupNotificationRow } from "@/hooks/use-group-notifications";
+import { useToast } from "@/lib/toast-provider";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 
 export default function GroupsScreen() {
   const { user } = useAuth();
@@ -34,6 +38,37 @@ export default function GroupsScreen() {
   );
   const { data: notifications } = useGroupNotifications(user?.id);
   const dismissNotification = useDismissGroupNotification(user?.id);
+  const { showToast } = useToast();
+  const qc = useQueryClient();
+
+  useGroupNotificationsRealtime(user?.id, async (payload) => {
+    // Invalidate so the notification card appears immediately
+    qc.invalidateQueries({ queryKey: ["group-notifications", user?.id] });
+
+    // Fetch joiner name and group name to show in the toast
+    const [profileRes, groupRes] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("display_name, username")
+        .eq("id", payload.joiner_id)
+        .maybeSingle(),
+      supabase
+        .from("groups")
+        .select("name")
+        .eq("id", payload.group_id)
+        .maybeSingle(),
+    ]);
+
+    const joinerName =
+      profileRes.data?.display_name ?? profileRes.data?.username ?? "Someone";
+    const groupName = groupRes.data?.name ?? "your group";
+
+    showToast(
+      `${joinerName} joined ${groupName}!`,
+      "success",
+      () => router.push(`/group/${payload.group_id}`)
+    );
+  });
 
   const createGroup = useCreateGroup();
   const acceptInvite = useAcceptGroupInvite();

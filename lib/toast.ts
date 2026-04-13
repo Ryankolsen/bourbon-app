@@ -9,6 +9,7 @@ export interface ToastItem {
   id: string;
   message: string;
   type: ToastType;
+  onPress?: () => void;
 }
 
 export type ToastQueue = ToastItem[];
@@ -21,8 +22,9 @@ export function enqueueToast(
   message: string,
   type: ToastType,
   id: string,
+  onPress?: () => void,
 ): ToastQueue {
-  return [...queue, { id, message, type }];
+  return [...queue, { id, message, type, onPress }];
 }
 
 /**

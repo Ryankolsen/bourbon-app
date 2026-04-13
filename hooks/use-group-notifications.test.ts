@@ -11,6 +11,7 @@ import React from "react";
 import {
   useGroupNotifications,
   useDismissGroupNotification,
+  useGroupNotificationsRealtime,
 } from "./use-group-notifications";
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -46,10 +47,21 @@ const mockQueryBuilder = {
 
 const mockFrom = jest.fn((_table: string) => mockQueryBuilder);
 
+// Realtime mocks
+const mockSubscribe = jest.fn().mockReturnThis();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockOn = jest.fn((_event: string, _filter: unknown, _callback: unknown): typeof mockChannel => mockChannel);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockChannel: { on: typeof mockOn; subscribe: typeof mockSubscribe } = { on: mockOn, subscribe: mockSubscribe };
+const mockChannelFn = jest.fn((_name: string) => mockChannel);
+const mockRemoveChannel = jest.fn().mockResolvedValue(undefined);
+
 jest.mock("@/lib/supabase", () => ({
   supabase: {
     from: (table: string) => mockFrom(table),
     auth: { getUser: jest.fn() },
+    channel: (name: string) => mockChannelFn(name),
+    removeChannel: (ch: unknown) => mockRemoveChannel(ch),
   },
 }));
 
@@ -281,5 +293,80 @@ describe("useDismissGroupNotification", () => {
     );
     expect(cached?.find((n) => n.id === "notif-1")).toBeUndefined();
     expect(cached?.find((n) => n.id === "notif-2")).toBeDefined();
+  });
+});
+
+// ── useGroupNotificationsRealtime ─────────────────────────────────────────────
+
+describe("useGroupNotificationsRealtime", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockOn.mockImplementation((_event: string, _filter: unknown, _cb: unknown) => mockChannel);
+    mockSubscribe.mockReturnThis();
+  });
+
+  // Slice 1 — no channel created when ownerId is undefined
+  it("does not create a realtime channel when ownerId is undefined", () => {
+    const { Wrapper } = createWrapper();
+    renderHook(
+      () => useGroupNotificationsRealtime(undefined, jest.fn()),
+      { wrapper: Wrapper }
+    );
+    expect(mockChannelFn).not.toHaveBeenCalled();
+  });
+
+  // Slice 2 — subscribes to the correct channel for the given ownerId
+  it("creates a channel and subscribes when ownerId is defined", () => {
+    const { Wrapper } = createWrapper();
+    renderHook(
+      () => useGroupNotificationsRealtime("owner-1", jest.fn()),
+      { wrapper: Wrapper }
+    );
+    expect(mockChannelFn).toHaveBeenCalledWith(expect.stringContaining("owner-1"));
+    expect(mockOn).toHaveBeenCalledWith(
+      "postgres_changes",
+      expect.objectContaining({ event: "INSERT", table: "group_notifications" }),
+      expect.any(Function)
+    );
+    expect(mockSubscribe).toHaveBeenCalled();
+  });
+
+  // Slice 3 — calls onInsert callback when INSERT event fires
+  it("calls the onInsert callback with the event payload on INSERT", () => {
+    const { Wrapper } = createWrapper();
+    const onInsert = jest.fn();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let capturedCallback: ((payload: any) => void) | null = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockOn.mockImplementation((_event: string, _filter: unknown, cb: any) => {
+      capturedCallback = cb;
+      return mockChannel;
+    });
+
+    renderHook(
+      () => useGroupNotificationsRealtime("owner-1", onInsert),
+      { wrapper: Wrapper }
+    );
+
+    expect(capturedCallback).not.toBeNull();
+    const fakePayload = {
+      new: { id: "notif-1", owner_id: "owner-1", group_id: "group-1", joiner_id: "joiner-1" },
+    };
+    act(() => {
+      capturedCallback!(fakePayload);
+    });
+
+    expect(onInsert).toHaveBeenCalledWith(fakePayload.new);
+  });
+
+  // Slice 4 — removes the channel on unmount
+  it("removes the realtime channel when the hook unmounts", () => {
+    const { Wrapper } = createWrapper();
+    const { unmount } = renderHook(
+      () => useGroupNotificationsRealtime("owner-1", jest.fn()),
+      { wrapper: Wrapper }
+    );
+    unmount();
+    expect(mockRemoveChannel).toHaveBeenCalledWith(mockChannel);
   });
 });
