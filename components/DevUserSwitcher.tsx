@@ -19,7 +19,16 @@ import { supabase } from "@/lib/supabase";
 import { DEV_USERS, DEV_PASSWORD } from "@/lib/dev-users";
 import { useQueryClient } from "@tanstack/react-query";
 
+/**
+ * Defense-in-depth wrapper: never renders outside a dev build, even if the
+ * caller forgets the {__DEV__ && ...} guard in the layout.
+ */
 export function DevUserSwitcher() {
+  if (!__DEV__) return null;
+  return <DevUserSwitcherPanel />;
+}
+
+function DevUserSwitcherPanel() {
   const [open, setOpen] = useState(false);
   const [switching, setSwitching] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

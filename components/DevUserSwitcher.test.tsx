@@ -156,6 +156,27 @@ describe("DevUserSwitcher — switching user", () => {
   });
 });
 
+describe("DevUserSwitcher — production guard", () => {
+  const originalDev = __DEV__;
+
+  afterEach(() => {
+    // Restore the global after each test in this suite.
+    (global as any).__DEV__ = originalDev;
+  });
+
+  it("renders nothing when __DEV__ is false", () => {
+    (global as any).__DEV__ = false;
+    renderSwitcher();
+    expect(screen.queryByLabelText("Open dev user switcher")).toBeNull();
+  });
+
+  it("renders the toggle button when __DEV__ is true", () => {
+    (global as any).__DEV__ = true;
+    renderSwitcher();
+    expect(screen.getByLabelText("Open dev user switcher")).toBeTruthy();
+  });
+});
+
 describe("DevUserSwitcher — sign out", () => {
   it("calls supabase.auth.signOut", async () => {
     renderSwitcher();
