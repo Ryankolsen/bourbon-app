@@ -1,11 +1,5 @@
 {
   "permissions": {
-    "ask": [
-      "Bash(npx supabase db query --linked \"DELETE:*)",
-      "Bash(npx supabase db query --linked \"DROP:*)",
-      "Bash(npx supabase db query --linked \"UPDATE:*)",
-      "Bash(npx supabase db query --linked \"INSERT:*)"
-    ],
     "allow": [
       "Bash(npx tsc:*)",
       "Bash(npm run:*)",
@@ -23,7 +17,15 @@
       "Bash(head:*)",
       "Bash(eas build:configure:*)",
       "Bash(eas build:*)",
-      "Bash(echo \"EXIT: $?\")"
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(npx jest:*)",
+      "Bash(npm install:*)"
+    ],
+    "ask": [
+      "Bash(npx supabase db query --linked \"DELETE:*)",
+      "Bash(npx supabase db query --linked \"DROP:*)",
+      "Bash(npx supabase db query --linked \"UPDATE:*)",
+      "Bash(npx supabase db query --linked \"INSERT:*)"
     ]
   }
 }
