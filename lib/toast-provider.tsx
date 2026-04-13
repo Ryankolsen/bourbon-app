@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     maxWidth: 340,
   },
   success: {
-    backgroundColor: "#b86316", // bourbon-600
+    backgroundColor: "#4848c0", // bourbon-600
   },
   error: {
     backgroundColor: "#b91c1c", // red-700
