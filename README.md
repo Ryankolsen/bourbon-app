@@ -107,6 +107,53 @@ supabase migration new your_migration_name
 supabase db push
 ```
 
+## Local Development
+
+### Running with local Supabase
+
+Requires [Docker](https://www.docker.com/) to be running.
+
+```bash
+# Start local Supabase stack
+npx supabase start
+
+# Apply migrations + seed data (run this on first setup and after schema changes)
+npx supabase db reset
+```
+
+### Test personas
+
+`supabase db reset` seeds 10 named test personas for development. All share the same password:
+
+```
+BourbonDev2024!
+```
+
+| Name | Email | Group | Role |
+|------|-------|-------|------|
+| Marcus Webb | marcus.webb@bourbonvault.dev | The Barrel Room | Owner |
+| Diana Chen | diana.chen@bourbonvault.dev | The Barrel Room | Member |
+| Tobias Grant | tobias.grant@bourbonvault.dev | The Barrel Room | Member |
+| Priya Nair | priya.nair@bourbonvault.dev | The Barrel Room | Member |
+| Logan Steele | logan.steele@bourbonvault.dev | The Barrel Room | Member |
+| Celeste Morrow | celeste.morrow@bourbonvault.dev | Whiskey Underground | Owner |
+| Finn Callahan | finn.callahan@bourbonvault.dev | Whiskey Underground | Member |
+| Ava Drummond | ava.drummond@bourbonvault.dev | Whiskey Underground | Member |
+| Jonah Rivera | jonah.rivera@bourbonvault.dev | _(solo)_ | — |
+| Sadie Okafor | sadie.okafor@bourbonvault.dev | _(solo)_ | — |
+
+The dev user switcher panel (visible only in `__DEV__` builds) lets you sign in as any of these personas in one tap.
+
+### Local environment variables
+
+For local Supabase development, use these values in `.env.local`:
+
+```env
+EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon key from `npx supabase status`>
+EXPO_PUBLIC_ADMIN_EMAILS=your-real-email@example.com
+```
+
 ## Auth Setup (Supabase Dashboard)
 
 In your Supabase project go to **Authentication → Providers** and enable:
