@@ -1,14 +1,29 @@
-import { View, Text, TouchableOpacity, Platform, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, Platform, ActivityIndicator, TextInput } from "react-native";
 import { useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri } from "expo-auth-session";
 import { supabase } from "@/lib/supabase";
+import { DEV_USERS, DEV_PASSWORD } from "@/lib/dev-users";
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [devEmail, setDevEmail] = useState(DEV_USERS[0].email);
+
+  async function signInWithEmail() {
+    try {
+      setLoading(true);
+      setError(null);
+      const { error } = await supabase.auth.signInWithPassword({ email: devEmail, password: DEV_PASSWORD });
+      if (error) throw error;
+    } catch (e: any) {
+      setError(e.message ?? "Sign in failed");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const redirectTo = makeRedirectUri({ scheme: "bourbonvault", path: "auth/callback" });
 
@@ -137,6 +152,32 @@ export default function LoginScreen() {
       <Text className="text-bourbon-500 text-xs mt-8 text-center">
         By continuing, you agree to our Terms of Service and Privacy Policy
       </Text>
+
+      {__DEV__ && (
+        <View className="mt-8 w-full border-t border-bourbon-700 pt-6">
+          <Text className="text-bourbon-500 text-xs text-center mb-3">DEV — email login</Text>
+          <TextInput
+            value={devEmail}
+            onChangeText={setDevEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            placeholder="test user email"
+            placeholderTextColor="#6b5a4e"
+            className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 mb-2 text-sm"
+          />
+          <TouchableOpacity
+            onPress={signInWithEmail}
+            disabled={loading}
+            className="bg-bourbon-700 rounded-xl py-3 items-center"
+          >
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-bourbon-200 font-semibold text-sm">Sign in</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }

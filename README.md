@@ -107,19 +107,54 @@ supabase migration new your_migration_name
 supabase db push
 ```
 
-## Local Development
+## Local Development on macOS
 
-### Running with local Supabase
+### Prerequisites
 
-Requires [Docker](https://www.docker.com/) to be running.
+Install [OrbStack](https://orbstack.dev/) as your container runtime (faster and lighter than Docker Desktop). Make sure it is running before proceeding.
+
+### 1. Start local Supabase
 
 ```bash
-# Start local Supabase stack
 npx supabase start
+```
 
-# Apply migrations + seed data (run this on first setup and after schema changes)
+This pulls and starts all Supabase containers (Postgres, Auth, Storage, Studio). The first run takes a few minutes while images download.
+
+### 2. Apply migrations and seed data
+
+```bash
 npx supabase db reset
 ```
+
+Run this on first setup and any time the schema changes. It applies all migrations and seeds the 10 test personas.
+
+### 3. Configure environment variables
+
+Update `.env.local` to point at your local stack. Get the publishable key from the `supabase start` output (or run `npx supabase status`):
+
+**iOS simulator** (`127.0.0.1` works because the simulator shares the host network):
+```env
+EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<Publishable key from supabase start output>
+```
+
+**Android emulator** (`127.0.0.1` is the emulator's own loopback — use `10.0.2.2` to reach the host):
+```env
+EXPO_PUBLIC_SUPABASE_URL=http://10.0.2.2:54321
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<Publishable key from supabase start output>
+```
+
+### 4. Start the app
+
+```bash
+npx expo start
+# press 'i' for iOS simulator, 'a' for Android emulator
+```
+
+### Supabase Studio
+
+Browse your local database at **http://127.0.0.1:54323** while `supabase start` is running.
 
 ### Test personas
 

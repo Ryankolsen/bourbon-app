@@ -1884,9 +1884,20 @@ INSERT INTO auth.users (
   email, encrypted_password, email_confirmed_at,
   raw_app_meta_data, raw_user_meta_data,
   created_at, updated_at,
-  confirmation_token, recovery_token, email_change_token_new
+  confirmation_token, recovery_token, email_change_token_new, email_change
 )
 VALUES
+  -- Dev admin (local only — use email login on the login screen)
+  ('00000000-0000-0000-0000-000000000099',
+   '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated',
+   'ryankolsen@gmail.com',
+   crypt('BourbonDev2024!', gen_salt('bf')),
+   now(),
+   '{"provider":"email","providers":["email"]}',
+   '{"full_name":"Ryan Kolsen"}',
+   now(), now(), '', '', '', ''),
+
   ('10000000-0000-0000-0000-000000000001',
    '00000000-0000-0000-0000-000000000000',
    'authenticated', 'authenticated',
@@ -1895,7 +1906,7 @@ VALUES
    now(),
    '{"provider":"email","providers":["email"]}',
    '{"full_name":"Marcus Webb"}',
-   now(), now(), '', '', ''),
+   now(), now(), '', '', '', ''),
 
   ('10000000-0000-0000-0000-000000000002',
    '00000000-0000-0000-0000-000000000000',
@@ -1905,7 +1916,7 @@ VALUES
    now(),
    '{"provider":"email","providers":["email"]}',
    '{"full_name":"Diana Chen"}',
-   now(), now(), '', '', ''),
+   now(), now(), '', '', '', ''),
 
   ('10000000-0000-0000-0000-000000000003',
    '00000000-0000-0000-0000-000000000000',
@@ -1915,7 +1926,7 @@ VALUES
    now(),
    '{"provider":"email","providers":["email"]}',
    '{"full_name":"Tobias Grant"}',
-   now(), now(), '', '', ''),
+   now(), now(), '', '', '', ''),
 
   ('10000000-0000-0000-0000-000000000004',
    '00000000-0000-0000-0000-000000000000',
@@ -1925,7 +1936,7 @@ VALUES
    now(),
    '{"provider":"email","providers":["email"]}',
    '{"full_name":"Priya Nair"}',
-   now(), now(), '', '', ''),
+   now(), now(), '', '', '', ''),
 
   ('10000000-0000-0000-0000-000000000005',
    '00000000-0000-0000-0000-000000000000',
@@ -1935,7 +1946,7 @@ VALUES
    now(),
    '{"provider":"email","providers":["email"]}',
    '{"full_name":"Logan Steele"}',
-   now(), now(), '', '', ''),
+   now(), now(), '', '', '', ''),
 
   ('10000000-0000-0000-0000-000000000006',
    '00000000-0000-0000-0000-000000000000',
@@ -1945,7 +1956,7 @@ VALUES
    now(),
    '{"provider":"email","providers":["email"]}',
    '{"full_name":"Celeste Morrow"}',
-   now(), now(), '', '', ''),
+   now(), now(), '', '', '', ''),
 
   ('10000000-0000-0000-0000-000000000007',
    '00000000-0000-0000-0000-000000000000',
@@ -1955,7 +1966,7 @@ VALUES
    now(),
    '{"provider":"email","providers":["email"]}',
    '{"full_name":"Finn Callahan"}',
-   now(), now(), '', '', ''),
+   now(), now(), '', '', '', ''),
 
   ('10000000-0000-0000-0000-000000000008',
    '00000000-0000-0000-0000-000000000000',
@@ -1965,7 +1976,7 @@ VALUES
    now(),
    '{"provider":"email","providers":["email"]}',
    '{"full_name":"Ava Drummond"}',
-   now(), now(), '', '', ''),
+   now(), now(), '', '', '', ''),
 
   ('10000000-0000-0000-0000-000000000009',
    '00000000-0000-0000-0000-000000000000',
@@ -1975,7 +1986,7 @@ VALUES
    now(),
    '{"provider":"email","providers":["email"]}',
    '{"full_name":"Jonah Rivera"}',
-   now(), now(), '', '', ''),
+   now(), now(), '', '', '', ''),
 
   ('10000000-0000-0000-0000-000000000010',
    '00000000-0000-0000-0000-000000000000',
@@ -1985,7 +1996,7 @@ VALUES
    now(),
    '{"provider":"email","providers":["email"]}',
    '{"full_name":"Sadie Okafor"}',
-   now(), now(), '', '', '');
+   now(), now(), '', '', '', '');
 
 -- ── 2. Auth identities (required for signInWithPassword) ──────────────────────
 INSERT INTO auth.identities (
@@ -1993,6 +2004,11 @@ INSERT INTO auth.identities (
   last_sign_in_at, created_at, updated_at
 )
 VALUES
+  ('00000000-0000-0000-0000-000000000099',
+   '00000000-0000-0000-0000-000000000099',
+   '{"sub":"00000000-0000-0000-0000-000000000099","email":"ryankolsen@gmail.com","email_verified":true,"phone_verified":false}',
+   'email', now(), now(), now()),
+
   ('10000000-0000-0000-0000-000000000001',
    '10000000-0000-0000-0000-000000000001',
    '{"sub":"10000000-0000-0000-0000-000000000001","email":"marcus.webb@bourbonvault.dev","email_verified":true,"phone_verified":false}',
