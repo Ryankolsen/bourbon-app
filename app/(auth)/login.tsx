@@ -26,7 +26,6 @@ export default function LoginScreen() {
       if (error) throw error;
       if (data.url) {
         const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-        console.log("WebBrowser result:", JSON.stringify(result));
         if (result.type === "success") {
           const hash = result.url.split("#")[1] ?? "";
           const params = new URLSearchParams(hash);
