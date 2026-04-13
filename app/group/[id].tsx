@@ -7,6 +7,7 @@ import {
   ScrollView,
   Alert,
   Image,
+  Modal,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -18,24 +19,35 @@ import {
   useGroupRecommendations,
   useInviteToGroup,
   useLeaveGroup,
+  useUpdateGroup,
+  useRemoveGroupMember,
 } from "@/hooks/use-groups";
 import { useSearchProfiles } from "@/hooks/use-profile";
+import { useToast } from "@/lib/toast-provider";
 
 export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const { showToast } = useToast();
 
   const { data: group, isLoading: groupLoading } = useGroup(id);
   const { data: members, isLoading: membersLoading } = useGroupMembers(id);
   const { data: recommendations = [] } = useGroupRecommendations(id);
   const inviteToGroup = useInviteToGroup();
   const leaveGroup = useLeaveGroup();
+  const updateGroup = useUpdateGroup();
+  const removeGroupMember = useRemoveGroupMember();
 
   const [inviteInput, setInviteInput] = useState("");
   // The value we actually fire the lookup for (only set when user presses Find)
   const [lookupQuery, setLookupQuery] = useState<string | undefined>(undefined);
+
+  // Edit group modal state
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
 
   const { data: searchResults, isFetching: profileFetching } =
     useSearchProfiles(lookupQuery);
@@ -84,6 +96,62 @@ export default function GroupDetailScreen() {
           );
         },
       }
+    );
+  }
+
+  function handleOpenEdit() {
+    setEditName(group?.name ?? "");
+    setEditDescription(group?.description ?? "");
+    setEditModalVisible(true);
+  }
+
+  function handleSaveEdit() {
+    if (!id) return;
+    updateGroup.mutate(
+      { groupId: id, name: editName, description: editDescription },
+      {
+        onSuccess: () => {
+          setEditModalVisible(false);
+          showToast("Group updated.", "success");
+        },
+        onError: (err) => {
+          Alert.alert(
+            "Error",
+            err instanceof Error ? err.message : "Failed to update group."
+          );
+        },
+      }
+    );
+  }
+
+  function handleRemoveMember(targetUserId: string, memberName: string) {
+    if (!id) return;
+    Alert.alert(
+      "Remove Member",
+      `Remove ${memberName} from this group?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: () => {
+            removeGroupMember.mutate(
+              { groupId: id, userId: targetUserId },
+              {
+                onSuccess: () => {
+                  showToast(`${memberName} was removed.`, "success");
+                },
+                onError: (err) => {
+                  Alert.alert(
+                    "Error",
+                    err instanceof Error ? err.message : "Failed to remove member."
+                  );
+                },
+              }
+            );
+          },
+        },
+      ]
     );
   }
 
@@ -151,9 +219,20 @@ export default function GroupDetailScreen() {
       <ScrollView contentContainerClassName="px-4 pb-8">
         {/* Group name + description */}
         <View className="mt-4 mb-6">
-          <Text className="text-bourbon-100 text-2xl font-bold">
-            {group.name}
-          </Text>
+          <View className="flex-row items-start justify-between">
+            <Text className="text-bourbon-100 text-2xl font-bold flex-1 mr-2">
+              {group.name}
+            </Text>
+            {isOwner && (
+              <TouchableOpacity
+                onPress={handleOpenEdit}
+                className="bg-bourbon-700 rounded-xl px-3 py-1.5 mt-1"
+                accessibilityLabel="Edit group"
+              >
+                <Text className="text-bourbon-200 text-xs font-semibold">Edit</Text>
+              </TouchableOpacity>
+            )}
+          </View>
           {group.description ? (
             <Text className="text-bourbon-400 text-sm mt-1">
               {group.description}
@@ -187,40 +266,54 @@ export default function GroupDetailScreen() {
             const initials = name[0]?.toUpperCase() ?? "?";
             const isMe = m.user_id === user?.id;
             return (
-              <TouchableOpacity
+              <View
                 key={m.user_id}
-                onPress={() => router.push(`/user/${m.user_id}` as never)}
                 className="flex-row items-center bg-bourbon-800 rounded-2xl p-3 mb-2"
               >
-                {profile?.avatar_url ? (
-                  <Image
-                    source={{ uri: profile.avatar_url }}
-                    className="w-10 h-10 rounded-full"
-                  />
-                ) : (
-                  <View className="w-10 h-10 rounded-full bg-bourbon-700 items-center justify-center">
-                    <Text className="text-bourbon-300 font-bold">
-                      {initials}
+                <TouchableOpacity
+                  onPress={() => router.push(`/user/${m.user_id}` as never)}
+                  className="flex-row items-center flex-1"
+                >
+                  {profile?.avatar_url ? (
+                    <Image
+                      source={{ uri: profile.avatar_url }}
+                      className="w-10 h-10 rounded-full"
+                    />
+                  ) : (
+                    <View className="w-10 h-10 rounded-full bg-bourbon-700 items-center justify-center">
+                      <Text className="text-bourbon-300 font-bold">
+                        {initials}
+                      </Text>
+                    </View>
+                  )}
+                  <View className="ml-3 flex-1">
+                    <Text className="text-bourbon-100 text-sm font-semibold">
+                      {name}
+                      {isMe ? " (you)" : ""}
                     </Text>
+                    {profile?.username ? (
+                      <Text className="text-bourbon-400 text-xs">
+                        @{profile.username}
+                      </Text>
+                    ) : null}
                   </View>
+                  {m.role === "owner" && (
+                    <View className="bg-bourbon-600 rounded-full px-2 py-0.5">
+                      <Text className="text-bourbon-100 text-xs">Owner</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+                {isOwner && !isMe && m.role !== "owner" && (
+                  <TouchableOpacity
+                    onPress={() => handleRemoveMember(m.user_id, name)}
+                    disabled={removeGroupMember.isPending}
+                    className="ml-2 bg-red-900/40 rounded-lg px-2 py-1"
+                    accessibilityLabel={`Remove ${name}`}
+                  >
+                    <Text className="text-red-400 text-xs font-semibold">Remove</Text>
+                  </TouchableOpacity>
                 )}
-                <View className="ml-3 flex-1">
-                  <Text className="text-bourbon-100 text-sm font-semibold">
-                    {name}
-                    {isMe ? " (you)" : ""}
-                  </Text>
-                  {profile?.username ? (
-                    <Text className="text-bourbon-400 text-xs">
-                      @{profile.username}
-                    </Text>
-                  ) : null}
-                </View>
-                {m.role === "owner" && (
-                  <View className="bg-bourbon-600 rounded-full px-2 py-0.5">
-                    <Text className="text-bourbon-100 text-xs">Owner</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
+              </View>
             );
           })}
         </View>
@@ -436,6 +529,90 @@ export default function GroupDetailScreen() {
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      {/* Edit Group modal */}
+      <Modal
+        visible={editModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View className="flex-1 justify-end bg-black/60">
+          <View className="bg-gray-950 rounded-t-2xl px-4 pt-4 pb-8">
+            {/* Header */}
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-white font-bold text-base">Edit Group</Text>
+              <TouchableOpacity
+                onPress={() => setEditModalVisible(false)}
+                className="p-1"
+                accessibilityLabel="Close edit modal"
+              >
+                <Text className="text-gray-400 text-xl leading-none">✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Name field */}
+            <Text className="text-bourbon-300 text-sm font-semibold mb-1">
+              Group Name *
+            </Text>
+            <TextInput
+              value={editName}
+              onChangeText={setEditName}
+              placeholder="Group name"
+              placeholderTextColor="#7c6a50"
+              maxLength={100}
+              className="bg-bourbon-800 rounded-xl px-4 py-3 text-bourbon-100 text-sm mb-4"
+            />
+
+            {/* Description field */}
+            <Text className="text-bourbon-300 text-sm font-semibold mb-1">
+              Description
+            </Text>
+            <TextInput
+              value={editDescription}
+              onChangeText={setEditDescription}
+              placeholder="Optional description"
+              placeholderTextColor="#7c6a50"
+              maxLength={500}
+              multiline
+              numberOfLines={3}
+              className="bg-bourbon-800 rounded-xl px-4 py-3 text-bourbon-100 text-sm mb-6"
+              style={{ textAlignVertical: "top" }}
+            />
+
+            {/* Buttons */}
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                onPress={() => setEditModalVisible(false)}
+                className="flex-1 border border-bourbon-700 rounded-xl py-3 items-center"
+              >
+                <Text className="text-bourbon-300 font-semibold text-sm">Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSaveEdit}
+                disabled={!editName.trim() || updateGroup.isPending}
+                className={`flex-1 rounded-xl py-3 items-center ${
+                  editName.trim() && !updateGroup.isPending
+                    ? "bg-bourbon-600"
+                    : "bg-bourbon-800"
+                }`}
+              >
+                {updateGroup.isPending ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text
+                    className={`font-semibold text-sm ${
+                      editName.trim() ? "text-white" : "text-bourbon-600"
+                    }`}
+                  >
+                    Save
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

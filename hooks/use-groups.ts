@@ -295,6 +295,58 @@ export function useSharesGroup(
   });
 }
 
+/** Update a group's name and description (owner only — enforced by RLS) */
+export function useUpdateGroup() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      groupId,
+      name,
+      description,
+    }: {
+      groupId: string;
+      name: string;
+      description: string | null;
+    }) => {
+      const { error } = await supabase
+        .from("groups")
+        .update({
+          name: name.trim(),
+          description: description === "" ? null : description,
+        })
+        .eq("id", groupId);
+      if (error) throw error;
+    },
+    onSuccess: (_data, { groupId }) => {
+      qc.invalidateQueries({ queryKey: ["group", groupId] });
+    },
+  });
+}
+
+/** Remove an accepted member from a group (owner only — enforced by RLS) */
+export function useRemoveGroupMember() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      groupId,
+      userId,
+    }: {
+      groupId: string;
+      userId: string;
+    }) => {
+      const { error } = await supabase
+        .from("group_members")
+        .delete()
+        .eq("group_id", groupId)
+        .eq("user_id", userId);
+      if (error) throw error;
+    },
+    onSuccess: (_data, { groupId }) => {
+      qc.invalidateQueries({ queryKey: ["group-members", groupId] });
+    },
+  });
+}
+
 /** Leave a group (delete own membership row) */
 export function useLeaveGroup() {
   const qc = useQueryClient();
