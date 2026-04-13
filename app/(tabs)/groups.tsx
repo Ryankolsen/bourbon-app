@@ -1,7 +1,6 @@
 import {
   View,
   Text,
-  FlatList,
   TouchableOpacity,
   ActivityIndicator,
   TextInput,
@@ -19,6 +18,11 @@ import {
   useAcceptGroupInvite,
   useDeclineGroupInvite,
 } from "@/hooks/use-groups";
+import {
+  useGroupNotifications,
+  useDismissGroupNotification,
+} from "@/hooks/use-group-notifications";
+import type { GroupNotificationRow } from "@/hooks/use-group-notifications";
 
 export default function GroupsScreen() {
   const { user } = useAuth();
@@ -28,6 +32,9 @@ export default function GroupsScreen() {
   const { data: invites, isLoading: invitesLoading } = useGroupInvites(
     user?.id
   );
+  const { data: notifications } = useGroupNotifications(user?.id);
+  const dismissNotification = useDismissGroupNotification(user?.id);
+
   const createGroup = useCreateGroup();
   const acceptInvite = useAcceptGroupInvite();
   const declineInvite = useDeclineGroupInvite();
@@ -89,6 +96,10 @@ export default function GroupsScreen() {
     );
   }
 
+  function handleDismissNotification(notificationId: string) {
+    dismissNotification.mutate({ notificationId });
+  }
+
   if (isLoading) {
     return (
       <View className="flex-1 bg-bourbon-900 items-center justify-center">
@@ -99,10 +110,57 @@ export default function GroupsScreen() {
 
   const pendingInvites = invites ?? [];
   const groups = myGroups ?? [];
+  const unreadNotifications: GroupNotificationRow[] = notifications ?? [];
 
   return (
     <View className="flex-1 bg-bourbon-900">
       <ScrollView contentContainerClassName="p-4 pb-8">
+
+        {/* Join Notifications */}
+        {unreadNotifications.length > 0 && (
+          <View className="mb-6">
+            <Text className="text-bourbon-400 text-xs font-semibold uppercase mb-3">
+              New Members
+            </Text>
+            {unreadNotifications.map((notif) => {
+              const joinerName =
+                notif.profiles?.display_name ??
+                notif.profiles?.username ??
+                "Someone";
+              const groupName = notif.groups?.name ?? "your group";
+              const groupId = notif.groups?.id ?? notif.group_id;
+              return (
+                <View
+                  key={notif.id}
+                  className="bg-bourbon-800 rounded-2xl p-4 mb-3 flex-row items-start"
+                >
+                  <View className="flex-1">
+                    <Text className="text-bourbon-100 text-sm font-semibold">
+                      {joinerName} joined{" "}
+                      <Text className="text-bourbon-300">{groupName}</Text>
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => router.push(`/group/${groupId}`)}
+                      className="mt-1"
+                    >
+                      <Text className="text-bourbon-500 text-xs font-semibold">
+                        Manage Group →
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleDismissNotification(notif.id)}
+                    className="ml-3 p-1"
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Text className="text-bourbon-500 text-base">✕</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
         {/* Pending invites */}
         {pendingInvites.length > 0 && (
           <View className="mb-6">

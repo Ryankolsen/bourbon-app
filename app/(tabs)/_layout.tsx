@@ -1,13 +1,39 @@
 import { Tabs } from "expo-router";
-import { Text } from "react-native";
+import { Text, View } from "react-native";
 import { useAuth } from "@/hooks/use-auth";
 import { isAdmin } from "@/lib/admin";
+import { useGroupNotifications } from "@/hooks/use-group-notifications";
 
 function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
   return (
     <Text className={focused ? "text-2xl" : "text-2xl opacity-50"}>
       {emoji}
     </Text>
+  );
+}
+
+function GroupsTabIcon({ focused }: { focused: boolean }) {
+  const { user } = useAuth();
+  const { data: notifications } = useGroupNotifications(user?.id);
+  const unreadCount = notifications?.length ?? 0;
+
+  return (
+    <View>
+      <Text className={focused ? "text-2xl" : "text-2xl opacity-50"}>🥃</Text>
+      {unreadCount > 0 && (
+        <View
+          style={{
+            position: "absolute",
+            top: -2,
+            right: -4,
+            width: 10,
+            height: 10,
+            borderRadius: 5,
+            backgroundColor: "#dc2626",
+          }}
+        />
+      )}
+    </View>
   );
 }
 
@@ -60,7 +86,7 @@ export default function TabsLayout() {
         name="groups"
         options={{
           title: "Groups",
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🥃" focused={focused} />,
+          tabBarIcon: ({ focused }) => <GroupsTabIcon focused={focused} />,
         }}
       />
       <Tabs.Screen

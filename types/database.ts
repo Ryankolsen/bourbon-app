@@ -422,6 +422,50 @@ export interface Database {
           },
         ];
       };
+      group_notifications: {
+        Row: {
+          id: string;
+          owner_id: string;
+          joiner_id: string;
+          group_id: string;
+          created_at: string;
+          dismissed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          owner_id: string;
+          joiner_id: string;
+          group_id: string;
+          created_at?: string;
+          dismissed_at?: string | null;
+        };
+        Update: {
+          dismissed_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "group_notifications_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_notifications_joiner_id_fkey";
+            columns: ["joiner_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_notifications_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       bourbon_rating_stats: {
