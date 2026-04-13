@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
+import * as Device from "expo-device";
 import { Database } from "@/types/database";
 
 // SecureStore has a 2048-byte limit per key. Supabase sessions (with provider tokens)
@@ -47,9 +48,17 @@ const ExpoSecureStoreAdapter = {
   removeItem: (key: string) => removeChunked(key),
 };
 
+const url = Device.isDevice
+  ? process.env.EXPO_PUBLIC_SUPABASE_URL_PROD!
+  : process.env.EXPO_PUBLIC_SUPABASE_URL!;
+
+const anonKey = Device.isDevice
+  ? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY_PROD!
+  : process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
+
 export const supabase = createClient<Database>(
-  process.env.EXPO_PUBLIC_SUPABASE_URL!,
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
+  url,
+  anonKey,
   {
     auth: {
       storage: ExpoSecureStoreAdapter,
