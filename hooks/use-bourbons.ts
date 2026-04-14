@@ -1,25 +1,38 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { buildBourbonSearchFilter, tokenizeName } from "@/lib/bourbons";
+import {
+  buildBourbonSearchFilter,
+  buildBourbonFilterQuery,
+  tokenizeName,
+  BourbonFilterState,
+  DEFAULT_BOURBON_FILTERS,
+} from "@/lib/bourbons";
 import { Database } from "@/types/database";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 type BourbonInsert = Database["public"]["Tables"]["bourbons"]["Insert"];
 type BourbonRow = Database["public"]["Tables"]["bourbons"]["Row"];
 
-export function useBourbons(search?: string) {
+export function useBourbons(search?: string, filters: BourbonFilterState = DEFAULT_BOURBON_FILTERS) {
   return useQuery({
-    queryKey: ["bourbons", search],
+    queryKey: ["bourbons", search, filters],
     queryFn: async () => {
-      let query = supabase
-        .from("bourbons")
-        .select("*")
-        .order("name");
+      // Start with select — defer .order() until after filters so sortField wins
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let query: any = supabase.from("bourbons").select("*");
 
       const filter = buildBourbonSearchFilter(search);
       if (filter) {
         query = query.ilike("name", filter);
+      }
+
+      // Apply filter/sort state; buildBourbonFilterQuery adds .order(sortField)
+      // only when sortField is non-null, so we fall back to .order("name") below.
+      query = buildBourbonFilterQuery(query, filters);
+
+      if (!filters.sortField) {
+        query = query.order("name");
       }
 
       const { data, error } = await query;

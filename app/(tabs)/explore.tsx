@@ -9,6 +9,7 @@ import {
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { useBourbons } from "@/hooks/use-bourbons";
+import { useBourbonFilters } from "@/hooks/use-bourbon-filters";
 import { useAddToCollection } from "@/hooks/use-collection";
 import { useAllBourbonRatingStats } from "@/hooks/use-ratings";
 import { useAuth } from "@/hooks/use-auth";
@@ -16,13 +17,32 @@ import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/us
 import { useToast } from "@/lib/toast-provider";
 import { buildAddToWishlistPayload } from "@/lib/wishlist";
 import { buildAddToCollectionPayload } from "@/lib/collection";
+import { FilterSheet } from "@/components/FilterSheet";
+import { BourbonFilterState } from "@/lib/bourbons";
 
 export default function ExploreScreen() {
   const [search, setSearch] = useState("");
+  const [filterSheetVisible, setFilterSheetVisible] = useState(false);
   // Track which bourbon IDs have an in-flight add-to-collection request
   const [addingIds, setAddingIds] = useState<Set<string>>(new Set());
+
   const { user } = useAuth();
-  const { data: bourbons, isLoading } = useBourbons(search);
+  const {
+    filters,
+    hasActiveFilters,
+    setTypes,
+    setProofMin,
+    setProofMax,
+    setAgeMin,
+    setAgeMax,
+    setNasOnly,
+    setDistillery,
+    setSortField,
+    setSortAscending,
+    clearFilters,
+  } = useBourbonFilters();
+
+  const { data: bourbons, isLoading } = useBourbons(search, filters);
   const { data: allRatingStats = [] } = useAllBourbonRatingStats();
   const { showToast } = useToast();
   const addToCollection = useAddToCollection();
@@ -35,16 +55,43 @@ export default function ExploreScreen() {
   // Map bourbon_id → wishlist row id for O(1) lookup per card
   const wishlistMap = new Map(wishlistItems.map((w) => [w.bourbon_id, w.id]));
 
+  function handleApplyFilters(newFilters: BourbonFilterState) {
+    setTypes(newFilters.types);
+    setProofMin(newFilters.proofMin);
+    setProofMax(newFilters.proofMax);
+    setAgeMin(newFilters.ageMin);
+    setAgeMax(newFilters.ageMax);
+    setNasOnly(newFilters.nasOnly);
+    setDistillery(newFilters.distillery);
+    setSortField(newFilters.sortField);
+    setSortAscending(newFilters.sortAscending);
+  }
+
   return (
     <View className="flex-1 bg-bourbon-900">
       <View className="px-4 pt-4 pb-2 gap-2">
-        <TextInput
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Search bourbons..."
-          placeholderTextColor="#7a3c19"
-          className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
-        />
+        {/* Search bar + filter icon row */}
+        <View className="flex-row gap-2">
+          <TextInput
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search bourbons..."
+            placeholderTextColor="#7a3c19"
+            className="flex-1 bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
+          />
+          <TouchableOpacity
+            onPress={() => setFilterSheetVisible(true)}
+            className={`rounded-xl px-3 items-center justify-center ${
+              hasActiveFilters ? "bg-bourbon-600" : "bg-bourbon-800"
+            }`}
+          >
+            {/* Funnel icon — unicode approximation */}
+            <Text className="text-xl">⚙️</Text>
+            {hasActiveFilters && (
+              <View className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full" />
+            )}
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity
           onPress={() => router.push("/bourbon/new")}
           className="bg-bourbon-600 rounded-xl py-2.5 items-center"
@@ -62,6 +109,14 @@ export default function ExploreScreen() {
           data={bourbons}
           keyExtractor={(item) => item.id}
           contentContainerClassName="px-4 pb-4 gap-3"
+          ListHeaderComponent={
+            bourbons && bourbons.length > 0 ? (
+              <Text className="text-bourbon-500 text-xs pt-1">
+                {bourbons.length} {bourbons.length === 1 ? "bourbon" : "bourbons"}
+                {hasActiveFilters ? " (filtered)" : ""}
+              </Text>
+            ) : null
+          }
           renderItem={({ item }) => {
             const stats = ratingMap.get(item.id);
             const hasRating = stats && stats.rating_count > 0;
@@ -164,12 +219,26 @@ export default function ExploreScreen() {
           ListEmptyComponent={
             <View className="items-center py-12">
               <Text className="text-bourbon-500 text-sm">
-                {search ? "No bourbons found." : "No bourbons in the database yet."}
+                {search || hasActiveFilters
+                  ? "No bourbons match your search or filters."
+                  : "No bourbons in the database yet."}
               </Text>
+              {hasActiveFilters && (
+                <TouchableOpacity onPress={clearFilters} className="mt-2">
+                  <Text className="text-bourbon-400 text-sm underline">Clear filters</Text>
+                </TouchableOpacity>
+              )}
             </View>
           }
         />
       )}
+
+      <FilterSheet
+        visible={filterSheetVisible}
+        filters={filters}
+        onApply={handleApplyFilters}
+        onClose={() => setFilterSheetVisible(false)}
+      />
     </View>
   );
 }
