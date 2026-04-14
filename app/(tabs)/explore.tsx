@@ -18,6 +18,7 @@ import { useToast } from "@/lib/toast-provider";
 import { buildAddToWishlistPayload } from "@/lib/wishlist";
 import { buildAddToCollectionPayload } from "@/lib/collection";
 import { FilterSheet } from "@/components/FilterSheet";
+import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { BourbonFilterState } from "@/lib/bourbons";
 
 export default function ExploreScreen() {
@@ -92,6 +93,17 @@ export default function ExploreScreen() {
             )}
           </TouchableOpacity>
         </View>
+
+        {/* Active filter chips — only visible when filters are non-default */}
+        <ActiveFilterChips
+          filters={filters}
+          onClearType={(type) => setTypes(filters.types.filter((t) => t !== type))}
+          onClearProof={() => { setProofMin(null); setProofMax(null); }}
+          onClearAge={() => { setAgeMin(null); setAgeMax(null); setNasOnly(false); }}
+          onClearDistillery={() => setDistillery(null)}
+          onClearSort={() => setSortField(null)}
+        />
+
         <TouchableOpacity
           onPress={() => router.push("/bourbon/new")}
           className="bg-bourbon-600 rounded-xl py-2.5 items-center"
