@@ -3,6 +3,7 @@ import { useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import * as Device from "expo-device";
 import { makeRedirectUri } from "expo-auth-session";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { supabase } from "@/lib/supabase";
 import { DEV_USERS, DEV_PASSWORD } from "@/lib/dev-users";
 
@@ -71,34 +72,21 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       setError(null);
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      const { error } = await supabase.auth.signInWithIdToken({
         provider: "apple",
-        options: {
-          redirectTo,
-          skipBrowserRedirect: true,
-        },
+        token: credential.identityToken!,
       });
       if (error) throw error;
-      if (data.url) {
-        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-        if (result.type === "success") {
-          const hash = result.url.split("#")[1] ?? "";
-          const params = new URLSearchParams(hash);
-          const access_token = params.get("access_token");
-          const refresh_token = params.get("refresh_token");
-          const code = new URL(result.url).searchParams.get("code");
-
-          if (access_token && refresh_token) {
-            const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
-            if (sessionError) setError(sessionError.message);
-          } else if (code) {
-            const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
-            if (sessionError) setError(sessionError.message);
-          }
-        }
-      }
     } catch (e: any) {
-      setError(e.message ?? "Sign in failed");
+      if (e.code !== "ERR_REQUEST_CANCELED") {
+        setError(e.message ?? "Sign in failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -128,15 +116,13 @@ export default function LoginScreen() {
 
       <View className="w-full gap-3">
         {Platform.OS === "ios" && (
-          <TouchableOpacity
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+            cornerRadius={12}
+            style={{ width: "100%", height: 50 }}
             onPress={signInWithApple}
-            disabled={loading}
-            className="bg-white rounded-xl py-4 flex-row items-center justify-center gap-2"
-          >
-            <Text className="text-black font-semibold text-base">
-              {loading ? "Signing in..." : "Continue with Apple"}
-            </Text>
-          </TouchableOpacity>
+          />
         )}
 
         {!Device.isDevice && Platform.OS !== "ios" ? (

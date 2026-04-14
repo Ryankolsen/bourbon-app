@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
 import * as Device from "expo-device";
+import { Platform } from "react-native";
 import { Database } from "@/types/database";
 
 // SecureStore has a 2048-byte limit per key. Supabase sessions (with provider tokens)
@@ -48,9 +49,16 @@ const ExpoSecureStoreAdapter = {
   removeItem: (key: string) => removeChunked(key),
 };
 
+// Android emulator reaches the host Mac via 10.0.2.2; iOS Simulator uses 127.0.0.1.
+// Replace the Android-specific host with the correct one when running on iOS.
+function localUrl(base: string) {
+  if (Platform.OS === "ios") return base.replace("10.0.2.2", "127.0.0.1");
+  return base;
+}
+
 const url = Device.isDevice
   ? process.env.EXPO_PUBLIC_SUPABASE_URL_PROD!
-  : process.env.EXPO_PUBLIC_SUPABASE_URL!;
+  : localUrl(process.env.EXPO_PUBLIC_SUPABASE_URL!);
 
 const anonKey = Device.isDevice
   ? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY_PROD!
