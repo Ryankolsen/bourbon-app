@@ -107,7 +107,7 @@ export function buildBourbonFilterQuery(
     query = query.ilike('distillery', `%${filters.distillery}%`);
   }
 
-  if (filters.sortField !== null) {
+  if (filters.sortField !== null && filters.sortField !== 'social') {
     query = query.order(filters.sortField, { ascending: filters.sortAscending });
   }
 

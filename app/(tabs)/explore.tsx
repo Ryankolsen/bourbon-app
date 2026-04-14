@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "expo-router";
 import { useBourbons } from "@/hooks/use-bourbons";
 import { useBourbonFilters } from "@/hooks/use-bourbon-filters";
@@ -20,6 +20,7 @@ import { buildAddToCollectionPayload } from "@/lib/collection";
 import { FilterSheet } from "@/components/FilterSheet";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { BourbonFilterState } from "@/lib/bourbons";
+import { useFriendTastedBourbonIds } from "@/hooks/use-friend-tasted-bourbon-ids";
 
 export default function ExploreScreen() {
   const [search, setSearch] = useState("");
@@ -43,7 +44,20 @@ export default function ExploreScreen() {
     clearFilters,
   } = useBourbonFilters();
 
-  const { data: bourbons, isLoading } = useBourbons(search, filters);
+  const { data: bourbonsRaw, isLoading } = useBourbons(search, filters);
+  const { data: friendTastedIds = new Set<string>() } = useFriendTastedBourbonIds(user?.id);
+
+  // Apply social sort client-side when selected: friend-tasted bourbons first.
+  const bourbons = useMemo(() => {
+    if (!bourbonsRaw || filters.sortField !== "social") return bourbonsRaw;
+    const tasted: typeof bourbonsRaw = [];
+    const rest: typeof bourbonsRaw = [];
+    for (const b of bourbonsRaw) {
+      if (friendTastedIds.has(b.id)) tasted.push(b);
+      else rest.push(b);
+    }
+    return [...tasted, ...rest];
+  }, [bourbonsRaw, filters.sortField, friendTastedIds]);
   const { data: allRatingStats = [] } = useAllBourbonRatingStats();
   const { showToast } = useToast();
   const addToCollection = useAddToCollection();
@@ -250,6 +264,7 @@ export default function ExploreScreen() {
         filters={filters}
         onApply={handleApplyFilters}
         onClose={() => setFilterSheetVisible(false)}
+        showSocialSort
       />
     </View>
   );

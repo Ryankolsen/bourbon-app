@@ -96,11 +96,15 @@ export function ActiveFilterChips({
 
   // Sort chip
   if (filters.sortField !== null) {
+    const isSocial = filters.sortField === "social";
     const direction = filters.sortAscending ? "↑" : "↓";
+    const label = isSocial
+      ? "Sort: Social activity"
+      : `Sort: ${filters.sortField} ${direction}`;
     chips.push(
       <Chip
         key="sort"
-        label={`Sort: ${filters.sortField} ${direction}`}
+        label={label}
         clearTestId="clear-sort"
         onClear={onClearSort}
       />

@@ -26,18 +26,22 @@ interface FilterSheetProps {
   filters: BourbonFilterState;
   onApply: (filters: BourbonFilterState) => void;
   onClose: () => void;
+  /** When true, renders the "Social activity" sort option (Explore only). */
+  showSocialSort?: boolean;
 }
 
 // ---------------------------------------------------------------------------
 // Sort options
 // ---------------------------------------------------------------------------
 
-const SORT_FIELDS: { label: string; value: string }[] = [
+const BASE_SORT_FIELDS: { label: string; value: string }[] = [
   { label: "Name", value: "name" },
   { label: "Proof", value: "proof" },
   { label: "Age", value: "age_statement" },
   { label: "Avg Rating", value: "avg_rating" },
 ];
+
+const SOCIAL_SORT_FIELD = { label: "Social activity", value: "social" };
 
 // ---------------------------------------------------------------------------
 // Constants for slider bounds
@@ -57,7 +61,7 @@ const AGE_MAX = 30;
  * Operates on a local copy of filter state; changes are applied only when the
  * user taps Apply.
  */
-export function FilterSheet({ visible, filters, onApply, onClose }: FilterSheetProps) {
+export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort = false }: FilterSheetProps) {
   const insets = useSafeAreaInsets();
 
   // ---- Local draft state (committed to parent only on Apply) ----
@@ -117,6 +121,10 @@ export function FilterSheet({ visible, filters, onApply, onClose }: FilterSheetP
     setDistillerySearch(value);
     setDraft((d) => ({ ...d, distillery: value || null }));
   }
+
+  const sortFields = showSocialSort
+    ? [...BASE_SORT_FIELDS, SOCIAL_SORT_FIELD]
+    : BASE_SORT_FIELDS;
 
   // ---- Sort ----
   function selectSortField(field: string) {
@@ -264,7 +272,7 @@ export function FilterSheet({ visible, filters, onApply, onClose }: FilterSheetP
             {/* ---- Sort ---- */}
             <Section label="Sort by">
               <View className="flex-row flex-wrap gap-2 mb-3">
-                {SORT_FIELDS.map((sf) => {
+                {sortFields.map((sf) => {
                   const selected = draft.sortField === sf.value;
                   return (
                     <TouchableOpacity
@@ -287,7 +295,7 @@ export function FilterSheet({ visible, filters, onApply, onClose }: FilterSheetP
                   );
                 })}
               </View>
-              {draft.sortField && (
+              {draft.sortField && draft.sortField !== "social" && (
                 <TouchableOpacity
                   onPress={toggleSortDirection}
                   className="flex-row items-center gap-2"
