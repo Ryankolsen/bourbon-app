@@ -12,7 +12,7 @@ A mobile app for tracking your bourbon collection, tasting notes, and wishlist.
 | Server state | TanStack Query v5 |
 | Form state | React Hook Form + Zod |
 | Styling | NativeWind v4 + Tailwind CSS v3 |
-| Auth providers | Google OAuth, Apple OAuth |
+| Auth providers | Google OAuth, native Sign In with Apple (`expo-apple-authentication`) |
 
 ## Project Structure
 
@@ -81,10 +81,38 @@ supabase db push
 
 ### 4. Run the app
 
+> **Note:** The app uses `expo-apple-authentication`, a native module that requires a custom dev build. **Expo Go is not supported.**
+
+**iOS Simulator** — `npm run ios` (`expo run:ios`) is broken under Xcode 26 due to a devicectl detection bug. Build and install manually:
+
 ```bash
-npm run ios      # iOS simulator
-npm run android  # Android emulator
-npm start        # Expo Go (scan QR code)
+# One-time native build (re-run only when native code changes)
+xcodebuild \
+  -workspace ios/bourbonapp.xcworkspace \
+  -scheme bourbonapp \
+  -configuration Debug \
+  -destination "platform=iOS Simulator,id=01DF1BA4-0491-44C5-980C-5479D7D04C25" \
+  build 2>&1 | grep -E "error:|BUILD"
+
+xcrun simctl install booted \
+  ~/Library/Developer/Xcode/DerivedData/bourbonapp-fjaxpkiknmklivghbnzbagithrcv/Build/Products/Debug-iphonesimulator/bourbonapp.app
+
+xcrun simctl launch booted com.ryankolsen.bourbonvault
+
+# Start Metro (handles all JS changes without a rebuild)
+npx expo start --port 8081
+```
+
+**Android emulator**
+
+```bash
+npm run android  # expo run:android
+```
+
+**Finding your Simulator UDID** (if the above ID doesn't match your machine):
+
+```bash
+xcrun simctl list devices available | grep -i iphone
 ```
 
 ## Database Schema
@@ -147,9 +175,38 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=<Publishable key from supabase start output>
 
 ### 4. Start the app
 
+> **Note:** Expo Go is not supported — the app requires a custom native build due to `expo-apple-authentication`.
+
+**iOS Simulator** — `npx expo run:ios` is broken under Xcode 26 (devicectl detection bug). Use xcodebuild instead:
+
 ```bash
-npx expo start
-# press 'i' for iOS simulator, 'a' for Android emulator
+# One-time native build (re-run only when native code changes)
+xcodebuild \
+  -workspace ios/bourbonapp.xcworkspace \
+  -scheme bourbonapp \
+  -configuration Debug \
+  -destination "platform=iOS Simulator,id=01DF1BA4-0491-44C5-980C-5479D7D04C25" \
+  build 2>&1 | grep -E "error:|BUILD"
+
+xcrun simctl install booted \
+  ~/Library/Developer/Xcode/DerivedData/bourbonapp-fjaxpkiknmklivghbnzbagithrcv/Build/Products/Debug-iphonesimulator/bourbonapp.app
+
+xcrun simctl launch booted com.ryankolsen.bourbonvault
+
+# Then start Metro for JS hot-reload
+npx expo start --port 8081
+```
+
+**Android emulator**
+
+```bash
+npx expo run:android
+```
+
+**Finding your Simulator UDID** (if the above ID doesn't match your machine):
+
+```bash
+xcrun simctl list devices available | grep -i iphone
 ```
 
 ### Supabase Studio
@@ -225,6 +282,8 @@ npx supabase db query --linked --file supabase/seeds/catalog.sql
 
 In your Supabase project go to **Authentication → Providers** and enable:
 - **Google** — requires a Google Cloud OAuth client ID + secret
-- **Apple** — required for iOS App Store apps that offer social login
+- **Apple** — set **Client ID** to `com.ryankolsen.bourbonvault` and **Secret Key** to the JWT generated from the Apple private key (Team ID: `T6DGD6WGY`, Key ID: `6AB877VMLT`). The JWT expires every 6 months and must be regenerated.
 
-Google OAuth is intentionally disabled in local dev builds. The login screen shows a greyed-out button in `__DEV__` mode — use the email list instead.
+Sign In with Apple uses the native iOS sheet (`expo-apple-authentication` + `signInWithIdToken`) — not a web OAuth redirect. No Services ID or redirect URL is required.
+
+Google OAuth is intentionally disabled in local dev builds. The login screen shows a greyed-out button when not on a real device — use the email list instead.
