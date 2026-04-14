@@ -36,6 +36,10 @@ jest.mock('@/lib/toast-provider', () => ({
 
 jest.mock('@/lib/bourbons', () => ({
   buildBourbonInsertPayload: jest.fn(() => ({ name: 'test' })),
+  BOURBON_TYPES: [
+    { label: 'Traditional', value: 'traditional' },
+    { label: 'Small Batch', value: 'small_batch' },
+  ],
 }));
 
 // Testable Dropdown mock: renders all options as pressable items

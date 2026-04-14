@@ -12,21 +12,28 @@ type BourbonInsert = Database['public']['Tables']['bourbons']['Insert'];
 // ---------------------------------------------------------------------------
 
 export const BOURBON_TYPES = [
-  'Traditional',
-  'Small Batch',
-  'Single Barrel',
-  'Wheated',
-  'Cask Strength',
-  'High Rye',
-  'Rye',
-  'Bottled-in-Bond',
-  'Straight',
-  'Blended',
-] as const;
+  { label: 'Traditional', value: 'traditional' },
+  { label: 'Small Batch', value: 'small_batch' },
+  { label: 'Single Barrel', value: 'single_barrel' },
+  { label: 'Wheated', value: 'wheated' },
+  { label: 'Cask Strength', value: 'cask_strength' },
+  { label: 'High Rye', value: 'high_rye' },
+  { label: 'Rye', value: 'rye' },
+  { label: 'Bottled-in-Bond', value: 'bottled_in_bond' },
+  { label: 'Straight', value: 'straight' },
+  { label: 'Blended', value: 'blended' },
+] as const satisfies readonly { label: string; value: string }[];
+
+export type BourbonTypeValue = (typeof BOURBON_TYPES)[number]['value'];
+
+/** Resolve a snake_case DB value to its human-readable display label. */
+export function getBourbonTypeLabel(value: BourbonTypeValue): string {
+  return BOURBON_TYPES.find((t) => t.value === value)?.label ?? value;
+}
 
 export interface BourbonFilterState {
   /** Selected bourbon types. Empty array = no type filter. */
-  types: string[];
+  types: BourbonTypeValue[];
   /** Minimum proof inclusive. null = no lower bound. */
   proofMin: number | null;
   /** Maximum proof inclusive. null = no upper bound. */

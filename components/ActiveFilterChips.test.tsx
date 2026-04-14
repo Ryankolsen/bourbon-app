@@ -38,18 +38,18 @@ describe("ActiveFilterChips", () => {
     expect(screen.queryByTestId("active-filter-chips")).toBeNull();
   });
 
-  // Slice 2 — type chip label
-  it("renders one chip per active type", () => {
-    renderChips(makeFilters({ types: ["Wheated"] }));
+  // Slice 2 — type chip label: stored as snake_case, displayed as human-readable
+  it("renders one chip per active type with a human-readable label", () => {
+    renderChips(makeFilters({ types: ["wheated"] }));
     expect(screen.getByText("Wheated")).toBeTruthy();
   });
 
-  // Slice 3 — dismiss type chip
-  it("calls onClearType with the type value when × is tapped", () => {
+  // Slice 3 — dismiss type chip: callback receives the snake_case value
+  it("calls onClearType with the snake_case value when × is tapped", () => {
     const onClearType = jest.fn();
-    renderChips(makeFilters({ types: ["Wheated"] }), { onClearType });
-    fireEvent.press(screen.getByTestId("clear-type-Wheated"));
-    expect(onClearType).toHaveBeenCalledWith("Wheated");
+    renderChips(makeFilters({ types: ["wheated"] }), { onClearType });
+    fireEvent.press(screen.getByTestId("clear-type-wheated"));
+    expect(onClearType).toHaveBeenCalledWith("wheated");
   });
 
   // Slice 4 — proof chip

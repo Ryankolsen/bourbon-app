@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/database";
-import { BourbonFilterState } from "@/lib/bourbons";
+import { BourbonFilterState, BourbonTypeValue } from "@/lib/bourbons";
 
 type CollectionInsert = Database["public"]["Tables"]["user_collection"]["Insert"];
 
@@ -32,7 +32,7 @@ export function filterCollectionItems<T extends { bourbons: unknown }>(
     if (!b) return false;
 
     if (types.length > 0) {
-      const itemType = getBourbonField(b, "type") as string | null;
+      const itemType = getBourbonField(b, "type") as BourbonTypeValue | null;
       if (!itemType || !types.includes(itemType)) return false;
     }
 

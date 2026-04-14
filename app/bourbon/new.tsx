@@ -18,25 +18,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAddBourbon, useSearchSimilarBourbons } from "@/hooks/use-bourbons";
 import { useDistilleries } from "@/hooks/use-distilleries";
 import { useToast } from "@/lib/toast-provider";
-import { buildBourbonInsertPayload } from "@/lib/bourbons";
+import { buildBourbonInsertPayload, BOURBON_TYPES } from "@/lib/bourbons";
 import { Database } from "@/types/database";
 import { WHISKEY_COUNTRIES, getProvincesForCountry } from "@/lib/location-data";
 import { SearchablePicker } from "@/components/SearchablePicker";
 
 type BourbonRow = Database["public"]["Tables"]["bourbons"]["Row"];
 
-const BOURBON_TYPES = [
-  "traditional",
-  "small_batch",
-  "single_barrel",
-  "wheated",
-  "cask_strength",
-  "high_rye",
-  "rye",
-  "bottled_in_bond",
-  "straight",
-  "blended",
-] as const;
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -208,22 +196,22 @@ export default function NewBourbonScreen() {
             name="type"
             render={({ field: { onChange, value } }) => (
               <View className="flex-row flex-wrap gap-2">
-                {BOURBON_TYPES.map((t) => (
+                {BOURBON_TYPES.map(({ label, value: typeValue }) => (
                   <TouchableOpacity
-                    key={t}
-                    onPress={() => onChange(value === t ? "" : t)}
+                    key={typeValue}
+                    onPress={() => onChange(value === typeValue ? "" : typeValue)}
                     className={`px-3 py-1.5 rounded-lg border ${
-                      value === t
+                      value === typeValue
                         ? "bg-bourbon-600 border-bourbon-500"
                         : "bg-bourbon-800 border-bourbon-700"
                     }`}
                   >
                     <Text
                       className={`text-xs ${
-                        value === t ? "text-white" : "text-bourbon-400"
+                        value === typeValue ? "text-white" : "text-bourbon-400"
                       }`}
                     >
-                      {t.replace(/_/g, " ")}
+                      {label}
                     </Text>
                   </TouchableOpacity>
                 ))}

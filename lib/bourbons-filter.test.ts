@@ -9,6 +9,8 @@ import {
   buildBourbonFilterQuery,
   DEFAULT_BOURBON_FILTERS,
   BourbonFilterState,
+  BourbonTypeValue,
+  BOURBON_TYPES,
   FilterableQuery,
 } from './bourbons';
 
@@ -69,18 +71,34 @@ describe('buildBourbonFilterQuery', () => {
   // 2. Single type selected
   it('applies .in("type", [...]) for a single selected type', () => {
     const { builder, calls } = makeMockQuery();
-    buildBourbonFilterQuery(builder, withFilters({ types: ['Wheated'] }));
-    expect(calls).toContainEqual({ method: 'in', args: ['type', ['Wheated']] });
+    buildBourbonFilterQuery(builder, withFilters({ types: ['wheated'] }));
+    expect(calls).toContainEqual({ method: 'in', args: ['type', ['wheated']] });
   });
 
   // 3. Multiple types selected
   it('passes all selected types to .in("type", [...])', () => {
     const { builder, calls } = makeMockQuery();
-    buildBourbonFilterQuery(builder, withFilters({ types: ['Rye', 'High Rye'] }));
-    expect(calls).toContainEqual({ method: 'in', args: ['type', ['Rye', 'High Rye']] });
+    buildBourbonFilterQuery(builder, withFilters({ types: ['rye', 'high_rye'] }));
+    expect(calls).toContainEqual({ method: 'in', args: ['type', ['rye', 'high_rye']] });
   });
 
-  // 4. Proof min
+  // 4. Type + proof composition
+  it('applies both .in("type") and .gte(".proof") when type and proofMin are set', () => {
+    const { builder, calls } = makeMockQuery();
+    buildBourbonFilterQuery(builder, withFilters({ types: ['small_batch'], proofMin: 90 }));
+    expect(calls).toContainEqual({ method: 'in', args: ['type', ['small_batch']] });
+    expect(calls).toContainEqual({ method: 'gte', args: ['proof', 90] });
+  });
+
+  // 5. All 10 type values
+  it('passes all 10 BourbonTypeValue entries to .in("type") when all are selected', () => {
+    const { builder, calls } = makeMockQuery();
+    const allValues = BOURBON_TYPES.map((t) => t.value) as BourbonTypeValue[];
+    buildBourbonFilterQuery(builder, withFilters({ types: allValues }));
+    expect(calls).toContainEqual({ method: 'in', args: ['type', allValues] });
+  });
+
+  // 6. Proof min
   it('applies .gte("proof", min) when proofMin is set', () => {
     const { builder, calls } = makeMockQuery();
     buildBourbonFilterQuery(builder, withFilters({ proofMin: 90 }));
@@ -150,7 +168,7 @@ describe('buildBourbonFilterQuery', () => {
   it('composes all constraints when every filter is active', () => {
     const { builder, calls } = makeMockQuery();
     buildBourbonFilterQuery(builder, {
-      types: ['Wheated', 'Rye'],
+      types: ['wheated', 'rye'],
       proofMin: 90,
       proofMax: 120,
       ageMin: 8,
@@ -161,7 +179,7 @@ describe('buildBourbonFilterQuery', () => {
       sortAscending: true,
     });
 
-    expect(calls).toContainEqual({ method: 'in', args: ['type', ['Wheated', 'Rye']] });
+    expect(calls).toContainEqual({ method: 'in', args: ['type', ['wheated', 'rye']] });
     expect(calls).toContainEqual({ method: 'gte', args: ['proof', 90] });
     expect(calls).toContainEqual({ method: 'lte', args: ['proof', 120] });
     expect(calls).toContainEqual({ method: 'gte', args: ['age_statement', 8] });

@@ -1,12 +1,13 @@
 import { useState, useCallback } from 'react';
 import {
   BourbonFilterState,
+  BourbonTypeValue,
   DEFAULT_BOURBON_FILTERS,
 } from '@/lib/bourbons';
 
 export interface UseBourbonFiltersResult {
   filters: BourbonFilterState;
-  setTypes: (types: string[]) => void;
+  setTypes: (types: BourbonTypeValue[]) => void;
   setProofMin: (min: number | null) => void;
   setProofMax: (max: number | null) => void;
   setAgeMin: (min: number | null) => void;
@@ -41,7 +42,7 @@ export function useBourbonFilters(): UseBourbonFiltersResult {
   const clearFilters = useCallback(() => setFilters(DEFAULT_BOURBON_FILTERS), []);
 
   const setTypes = useCallback(
-    (types: string[]) => setFilters((f) => ({ ...f, types })),
+    (types: BourbonTypeValue[]) => setFilters((f) => ({ ...f, types })),
     [],
   );
   const setProofMin = useCallback(

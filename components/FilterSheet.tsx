@@ -14,6 +14,7 @@ import { useDistilleries } from "@/hooks/use-distilleries";
 import {
   BOURBON_TYPES,
   BourbonFilterState,
+  BourbonTypeValue,
   DEFAULT_BOURBON_FILTERS,
 } from "@/lib/bourbons";
 
@@ -79,11 +80,11 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
   }
 
   // ---- Type chips ----
-  function toggleType(type: string) {
+  function toggleType(value: BourbonTypeValue) {
     setDraft((d) => {
-      const next = d.types.includes(type)
-        ? d.types.filter((t) => t !== type)
-        : [...d.types, type];
+      const next = d.types.includes(value)
+        ? d.types.filter((t) => t !== value)
+        : [...d.types, value];
       return { ...d, types: next };
     });
   }
@@ -185,12 +186,12 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
             {/* ---- Type ---- */}
             <Section label="Type">
               <View className="flex-row flex-wrap gap-2">
-                {BOURBON_TYPES.map((type) => {
-                  const selected = draft.types.includes(type);
+                {BOURBON_TYPES.map(({ label, value }) => {
+                  const selected = draft.types.includes(value);
                   return (
                     <TouchableOpacity
-                      key={type}
-                      onPress={() => toggleType(type)}
+                      key={value}
+                      onPress={() => toggleType(value)}
                       className={`px-3 py-1.5 rounded-full border ${
                         selected
                           ? "bg-bourbon-600 border-bourbon-600"
@@ -202,7 +203,7 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
                           selected ? "text-white" : "text-bourbon-300"
                         }`}
                       >
-                        {type}
+                        {label}
                       </Text>
                     </TouchableOpacity>
                   );

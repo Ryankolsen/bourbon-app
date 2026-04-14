@@ -1,9 +1,9 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import { BourbonFilterState, DEFAULT_BOURBON_FILTERS } from "@/lib/bourbons";
+import { BourbonFilterState, BourbonTypeValue, DEFAULT_BOURBON_FILTERS, getBourbonTypeLabel } from "@/lib/bourbons";
 
 export interface ActiveFilterChipsProps {
   filters: BourbonFilterState;
-  onClearType: (type: string) => void;
+  onClearType: (type: BourbonTypeValue) => void;
   onClearProof: () => void;
   onClearAge: () => void;
   onClearDistillery: () => void;
@@ -29,7 +29,7 @@ export function ActiveFilterChips({
     chips.push(
       <Chip
         key={`type-${type}`}
-        label={type}
+        label={getBourbonTypeLabel(type)}
         clearTestId={`clear-type-${type}`}
         onClear={() => onClearType(type)}
       />

@@ -25,10 +25,10 @@ describe('useBourbonFilters', () => {
   it('sets hasActiveFilters to true when a type is selected', () => {
     const { result } = renderHook(() => useBourbonFilters());
     act(() => {
-      result.current.setTypes(['Wheated']);
+      result.current.setTypes(['wheated']);
     });
     expect(result.current.hasActiveFilters).toBe(true);
-    expect(result.current.filters.types).toEqual(['Wheated']);
+    expect(result.current.filters.types).toEqual(['wheated']);
   });
 
   // 14. clearFilters resets everything
@@ -36,7 +36,7 @@ describe('useBourbonFilters', () => {
     const { result } = renderHook(() => useBourbonFilters());
 
     act(() => {
-      result.current.setTypes(['Rye']);
+      result.current.setTypes(['rye']);
       result.current.setProofMin(90);
       result.current.setDistillery('Buffalo Trace');
       result.current.setNasOnly(true);
