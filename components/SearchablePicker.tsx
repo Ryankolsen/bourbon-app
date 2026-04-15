@@ -6,6 +6,7 @@ interface SearchablePickerProps {
   data: string[];
   value: string;
   onChange: (value: string) => void;
+  onSearchChange?: (text: string) => void;
   placeholder?: string;
   isLoading?: boolean;
   testID?: string;
@@ -57,6 +58,7 @@ export function SearchablePicker({
   data,
   value,
   onChange,
+  onSearchChange,
   placeholder = 'Search...',
   isLoading = false,
   testID,
@@ -66,6 +68,7 @@ export function SearchablePicker({
   // back into the Dropdown's value prop and reset the internal search input.
   const [dropdownValue, setDropdownValue] = useState<string | null>(value || null);
   const isOpenRef = useRef(false);
+  const justSelectedRef = useRef(false);
 
   // Sync external value changes (e.g. form reset) only when dropdown is closed.
   useEffect(() => {
@@ -78,16 +81,28 @@ export function SearchablePicker({
   const items = data.map((d) => ({ label: d, value: d }));
 
   const handleChange = (item: { label: string; value: string }) => {
+    justSelectedRef.current = true;
     setDropdownValue(item.value);
     onChange(item.value);
   };
 
   const handleSearchChange = (text: string) => {
+    // react-native-element-dropdown fires onChangeText("") immediately after a
+    // selection to clear its internal search box. Ignore that event so it
+    // doesn't wipe the value we just set via handleChange.
+    if (justSelectedRef.current && text === '') {
+      justSelectedRef.current = false;
+      return;
+    }
+    justSelectedRef.current = false;
     // Free-text fallback: propagate the typed value so that submitting without
     // selecting a suggestion still saves the typed string. Do NOT update
     // dropdownValue here — that would re-enter the search text as a selected
     // value and glitch the Dropdown's internal search input.
     onChange(text);
+    // Notify the parent of the current search text separately so it can drive
+    // its suggestions query without coupling to the form value.
+    onSearchChange?.(text);
   };
 
   return (

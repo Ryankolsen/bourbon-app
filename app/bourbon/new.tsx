@@ -81,11 +81,11 @@ export default function NewBourbonScreen() {
   });
 
   const nameValue = watch("name");
-  const distilleryValue = watch("distillery");
   const countryValue = watch("country");
   const provinces = getProvincesForCountry(countryValue ?? "");
   const { data: similarBourbons = [] } = useSearchSimilarBourbons(nameValue);
-  const { distilleries, isLoading: distilleriesLoading } = useDistilleries(distilleryValue ?? "");
+  const [distillerySearch, setDistillerySearch] = useState("");
+  const { distilleries, isLoading: distilleriesLoading } = useDistilleries(distillerySearch);
 
   useEffect(() => {
     setValue("state", "");
@@ -160,6 +160,7 @@ export default function NewBourbonScreen() {
                 data={distilleries}
                 value={value ?? ""}
                 onChange={onChange}
+                onSearchChange={setDistillerySearch}
                 placeholder="e.g. Buffalo Trace"
                 isLoading={distilleriesLoading}
               />
