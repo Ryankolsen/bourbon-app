@@ -121,6 +121,7 @@ export function ActiveFilterChips({
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerClassName="px-4 py-1 gap-2"
+      style={{ flexGrow: 0 }}
     >
       {chips}
     </ScrollView>
