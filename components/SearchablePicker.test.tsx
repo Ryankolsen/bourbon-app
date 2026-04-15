@@ -79,6 +79,21 @@ function renderPicker(onChange = jest.fn(), onSearchChange?: jest.Mock) {
   };
 }
 
+function renderPickerWithCreate(onChange = jest.fn()) {
+  return {
+    onChange,
+    ...render(
+      <SearchablePicker
+        testID="picker"
+        data={DISTILLERIES}
+        value=""
+        onChange={onChange}
+        allowCreate
+      />
+    ),
+  };
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('SearchablePicker', () => {
@@ -116,6 +131,7 @@ describe('SearchablePicker', () => {
   });
 
   it('calls onSearchChange with typed text but not with the post-selection clear', () => {
+
     const onChange = jest.fn();
     const onSearchChange = jest.fn();
     renderPicker(onChange, onSearchChange);
@@ -130,5 +146,57 @@ describe('SearchablePicker', () => {
     // Select an option — post-selection onChangeText("") must not reach onSearchChange
     fireEvent.press(screen.getByTestId('picker-option-Buffalo Trace'));
     expect(onSearchChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('SearchablePicker — allowCreate', () => {
+  it('shows an Add option when search text has no exact match', () => {
+    renderPickerWithCreate();
+
+    fireEvent(screen.getByTestId('picker-search'), 'focus');
+    fireEvent.changeText(screen.getByTestId('picker-search'), 'New Distillery');
+
+    expect(screen.getByTestId('picker-option-New Distillery')).toBeTruthy();
+  });
+
+  it('does not show an Add option when search text exactly matches an existing item', () => {
+    renderPickerWithCreate();
+
+    fireEvent(screen.getByTestId('picker-search'), 'focus');
+    fireEvent.changeText(screen.getByTestId('picker-search'), 'Buffalo Trace');
+
+    // The existing option is present; no duplicate create option
+    expect(screen.getAllByTestId('picker-option-Buffalo Trace')).toHaveLength(1);
+  });
+
+  it('calls onChange with the typed text when the Add option is selected', () => {
+    const onChange = jest.fn();
+    renderPickerWithCreate(onChange);
+
+    fireEvent(screen.getByTestId('picker-search'), 'focus');
+    fireEvent.changeText(screen.getByTestId('picker-search'), 'New Distillery');
+    onChange.mockClear();
+
+    fireEvent.press(screen.getByTestId('picker-option-New Distillery'));
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith('New Distillery');
+  });
+
+  it('does not show an Add option when allowCreate is false', () => {
+    const onChange = jest.fn();
+    render(
+      <SearchablePicker
+        testID="picker"
+        data={DISTILLERIES}
+        value=""
+        onChange={onChange}
+      />
+    );
+
+    fireEvent(screen.getByTestId('picker-search'), 'focus');
+    fireEvent.changeText(screen.getByTestId('picker-search'), 'New Distillery');
+
+    expect(screen.queryByTestId('picker-option-New Distillery')).toBeNull();
   });
 });

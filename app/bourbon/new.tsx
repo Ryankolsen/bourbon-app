@@ -161,6 +161,7 @@ export default function NewBourbonScreen() {
                 value={value ?? ""}
                 onChange={onChange}
                 onSearchChange={setDistillerySearch}
+                allowCreate
                 placeholder="e.g. Buffalo Trace"
                 isLoading={distilleriesLoading}
               />

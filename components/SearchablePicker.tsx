@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, View, Text } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
 interface SearchablePickerProps {
@@ -7,10 +7,14 @@ interface SearchablePickerProps {
   value: string;
   onChange: (value: string) => void;
   onSearchChange?: (text: string) => void;
+  /** When true, shows an "Add '[text]'" option for unmatched search text. */
+  allowCreate?: boolean;
   placeholder?: string;
   isLoading?: boolean;
   testID?: string;
 }
+
+type PickerItem = { label: string; value: string; _isNew?: boolean };
 
 const dropdownStyle = {
   backgroundColor: '#1a1860',
@@ -53,12 +57,17 @@ const dropdownInputSearchStyle = {
  * Accepts a list of plain strings as `data`. Supports free-text fallback:
  * if the user types a value that isn't in the list and does not select a
  * suggestion, the typed value is passed directly to `onChange`.
+ *
+ * When `allowCreate` is true, an "Add '[text]'" option is appended to the
+ * suggestions list whenever the search text has no exact match, giving the
+ * user an explicit way to confirm a new entry.
  */
 export function SearchablePicker({
   data,
   value,
   onChange,
   onSearchChange,
+  allowCreate = false,
   placeholder = 'Search...',
   isLoading = false,
   testID,
@@ -67,6 +76,8 @@ export function SearchablePicker({
   // typed by the user (propagated to the parent via onChange) doesn't feed
   // back into the Dropdown's value prop and reset the internal search input.
   const [dropdownValue, setDropdownValue] = useState<string | null>(value || null);
+  // Tracks the current search text so we can append an "Add" option.
+  const [searchText, setSearchText] = useState('');
   const isOpenRef = useRef(false);
   const justSelectedRef = useRef(false);
 
@@ -77,10 +88,20 @@ export function SearchablePicker({
     }
   }, [value]);
 
-  // Map strings to the { label, value } shape react-native-element-dropdown expects.
-  const items = data.map((d) => ({ label: d, value: d }));
+  // Build item list, appending a create option when there is no exact match.
+  const baseItems: PickerItem[] = data.map((d) => ({ label: d, value: d }));
+  const hasExactMatch = data.some(
+    (d) => d.toLowerCase() === searchText.toLowerCase()
+  );
+  const createItem: PickerItem | null =
+    allowCreate && searchText.trim().length > 0 && !hasExactMatch
+      ? { label: searchText, value: searchText, _isNew: true }
+      : null;
+  const items: PickerItem[] = createItem
+    ? [...baseItems, createItem]
+    : baseItems;
 
-  const handleChange = (item: { label: string; value: string }) => {
+  const handleChange = (item: PickerItem) => {
     justSelectedRef.current = true;
     setDropdownValue(item.value);
     onChange(item.value);
@@ -95,6 +116,7 @@ export function SearchablePicker({
       return;
     }
     justSelectedRef.current = false;
+    setSearchText(text);
     // Free-text fallback: propagate the typed value so that submitting without
     // selecting a suggestion still saves the typed string. Do NOT update
     // dropdownValue here — that would re-enter the search text as a selected
@@ -103,6 +125,23 @@ export function SearchablePicker({
     // Notify the parent of the current search text separately so it can drive
     // its suggestions query without coupling to the form value.
     onSearchChange?.(text);
+  };
+
+  const renderItem = (item: PickerItem) => {
+    if (item._isNew) {
+      return (
+        <View style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+          <Text style={{ color: '#f59e0b', fontSize: 14 }}>
+            + Add "{item.label}"
+          </Text>
+        </View>
+      );
+    }
+    return (
+      <View style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+        <Text style={{ color: '#e0e0ff', fontSize: 14 }}>{item.label}</Text>
+      </View>
+    );
   };
 
   return (
@@ -126,6 +165,7 @@ export function SearchablePicker({
       itemTextStyle={dropdownItemTextStyle}
       inputSearchStyle={dropdownInputSearchStyle}
       searchPlaceholderTextColor="#5a5a9a"
+      renderItem={renderItem}
       renderRightIcon={() =>
         isLoading ? (
           <ActivityIndicator color="#e0e0ff" size="small" style={{ marginRight: 4 }} />
