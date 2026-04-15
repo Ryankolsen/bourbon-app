@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useCollection } from "@/hooks/use-collection";
@@ -14,7 +14,6 @@ import { useUserRatings, useAllBourbonRatingStats } from "@/hooks/use-ratings";
 import { FilterSheet } from "@/components/FilterSheet";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { BourbonCard } from "@/components/BourbonCard";
-import { BourbonFilterState } from "@/lib/bourbons";
 
 export default function CollectionScreen() {
   const { user } = useAuth();
@@ -24,36 +23,22 @@ export default function CollectionScreen() {
   const {
     filters,
     hasActiveFilters,
-    setTypes,
-    setProofMin,
-    setProofMax,
-    setAgeMin,
-    setAgeMax,
-    setNasOnly,
-    setDistillery,
-    setSortField,
-    setSortAscending,
-    clearFilters,
+    applyFilters,
+    patchFilters,
+    resetFilters,
+    filterItems,
   } = useBourbonFilters();
 
-  const { data: collection, isLoading, isError } = useCollection(user?.id, filters);
+  const { data: collectionRaw, isLoading, isError } = useCollection(user?.id);
+  const collection = useMemo(
+    () => filterItems(collectionRaw ?? []),
+    [collectionRaw, filterItems],
+  );
   const { data: userRatings } = useUserRatings(user?.id);
   const { data: allRatingStats } = useAllBourbonRatingStats();
   const communityRatingsMap = new Map(
     (allRatingStats ?? []).map((s) => [s.bourbon_id, s.avg_rating])
   );
-
-  function handleApplyFilters(newFilters: BourbonFilterState) {
-    setTypes(newFilters.types);
-    setProofMin(newFilters.proofMin);
-    setProofMax(newFilters.proofMax);
-    setAgeMin(newFilters.ageMin);
-    setAgeMax(newFilters.ageMax);
-    setNasOnly(newFilters.nasOnly);
-    setDistillery(newFilters.distillery);
-    setSortField(newFilters.sortField);
-    setSortAscending(newFilters.sortAscending);
-  }
 
   if (isLoading) {
     return (
@@ -71,7 +56,7 @@ export default function CollectionScreen() {
     );
   }
 
-  const isEmpty = !collection || collection.length === 0;
+  const isEmpty = collection.length === 0;
 
   return (
     <View className="flex-1 bg-bourbon-900">
@@ -93,11 +78,11 @@ export default function CollectionScreen() {
       {/* Active filter chips */}
       <ActiveFilterChips
         filters={filters}
-        onClearType={(type) => setTypes(filters.types.filter((t) => t !== type))}
-        onClearProof={() => { setProofMin(null); setProofMax(null); }}
-        onClearAge={() => { setAgeMin(null); setAgeMax(null); setNasOnly(false); }}
-        onClearDistillery={() => setDistillery(null)}
-        onClearSort={() => setSortField(null)}
+        onClearType={(type) => patchFilters({ types: filters.types.filter((t) => t !== type) })}
+        onClearProof={() => patchFilters({ proofMin: null, proofMax: null })}
+        onClearAge={() => patchFilters({ ageMin: null, ageMax: null, nasOnly: false })}
+        onClearDistillery={() => patchFilters({ distillery: null })}
+        onClearSort={() => patchFilters({ sortField: null })}
       />
 
       {isEmpty ? (
@@ -107,7 +92,7 @@ export default function CollectionScreen() {
               <Text className="text-bourbon-500 text-sm text-center">
                 No bourbons in your collection match the active filters.
               </Text>
-              <TouchableOpacity onPress={clearFilters} className="mt-2">
+              <TouchableOpacity onPress={resetFilters} className="mt-2">
                 <Text className="text-bourbon-400 text-sm underline">Clear filters</Text>
               </TouchableOpacity>
             </>
@@ -155,7 +140,7 @@ export default function CollectionScreen() {
       <FilterSheet
         visible={filterSheetVisible}
         filters={filters}
-        onApply={handleApplyFilters}
+        onApply={applyFilters}
         onClose={() => setFilterSheetVisible(false)}
       />
     </View>

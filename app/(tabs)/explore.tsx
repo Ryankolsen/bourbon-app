@@ -20,7 +20,6 @@ import { buildAddToCollectionPayload } from "@/lib/collection";
 import { FilterSheet } from "@/components/FilterSheet";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { BourbonCard } from "@/components/BourbonCard";
-import { BourbonFilterState } from "@/lib/bourbons";
 import { useFriendTastedBourbonIds } from "@/hooks/use-friend-tasted-bourbon-ids";
 
 export default function ExploreScreen() {
@@ -33,16 +32,9 @@ export default function ExploreScreen() {
   const {
     filters,
     hasActiveFilters,
-    setTypes,
-    setProofMin,
-    setProofMax,
-    setAgeMin,
-    setAgeMax,
-    setNasOnly,
-    setDistillery,
-    setSortField,
-    setSortAscending,
-    clearFilters,
+    applyFilters,
+    patchFilters,
+    resetFilters,
   } = useBourbonFilters();
 
   const { data: bourbonsRaw, isLoading } = useBourbons(search, filters);
@@ -90,17 +82,6 @@ export default function ExploreScreen() {
   // Map bourbon_id → wishlist row id for O(1) lookup per card
   const wishlistMap = new Map(wishlistItems.map((w) => [w.bourbon_id, w.id]));
 
-  function handleApplyFilters(newFilters: BourbonFilterState) {
-    setTypes(newFilters.types);
-    setProofMin(newFilters.proofMin);
-    setProofMax(newFilters.proofMax);
-    setAgeMin(newFilters.ageMin);
-    setAgeMax(newFilters.ageMax);
-    setNasOnly(newFilters.nasOnly);
-    setDistillery(newFilters.distillery);
-    setSortField(newFilters.sortField);
-    setSortAscending(newFilters.sortAscending);
-  }
 
   return (
     <View className="flex-1 bg-bourbon-900">
@@ -131,11 +112,11 @@ export default function ExploreScreen() {
         {/* Active filter chips — only visible when filters are non-default */}
         <ActiveFilterChips
           filters={filters}
-          onClearType={(type) => setTypes(filters.types.filter((t) => t !== type))}
-          onClearProof={() => { setProofMin(null); setProofMax(null); }}
-          onClearAge={() => { setAgeMin(null); setAgeMax(null); setNasOnly(false); }}
-          onClearDistillery={() => setDistillery(null)}
-          onClearSort={() => setSortField(null)}
+          onClearType={(type) => patchFilters({ types: filters.types.filter((t) => t !== type) })}
+          onClearProof={() => patchFilters({ proofMin: null, proofMax: null })}
+          onClearAge={() => patchFilters({ ageMin: null, ageMax: null, nasOnly: false })}
+          onClearDistillery={() => patchFilters({ distillery: null })}
+          onClearSort={() => patchFilters({ sortField: null })}
         />
 
         <TouchableOpacity
@@ -246,7 +227,7 @@ export default function ExploreScreen() {
                   : "No bourbons in the database yet."}
               </Text>
               {hasActiveFilters && (
-                <TouchableOpacity onPress={clearFilters} className="mt-2">
+                <TouchableOpacity onPress={resetFilters} className="mt-2">
                   <Text className="text-bourbon-400 text-sm underline">Clear filters</Text>
                 </TouchableOpacity>
               )}
@@ -258,7 +239,7 @@ export default function ExploreScreen() {
       <FilterSheet
         visible={filterSheetVisible}
         filters={filters}
-        onApply={handleApplyFilters}
+        onApply={applyFilters}
         onClose={() => setFilterSheetVisible(false)}
         showSocialSort
       />
