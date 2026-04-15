@@ -37,12 +37,12 @@ Present the proposed breakdown as a numbered list. For each slice, show:
 - **Blocked by**: which other slices (if any) must complete first
 - **User stories covered**: which user stories from the PRD this addresses
 
-Ask the user:
+Ask the user one question at a time. Wait for their answer before asking the next question. Suggested questions (in order):
 
-- Does the granularity feel right? (too coarse / too fine)
-- Are the dependency relationships correct?
-- Should any slices be merged or split further?
-- Are the correct slices marked as HITL and AFK?
+1. Does the granularity feel right? (too coarse / too fine)
+2. Are the dependency relationships correct?
+3. Should any slices be merged or split further?
+4. Are the correct slices marked as HITL and AFK?
 
 Iterate until the user approves the breakdown.
 
