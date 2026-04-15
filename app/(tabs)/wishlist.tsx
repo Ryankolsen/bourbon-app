@@ -2,12 +2,19 @@ import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react
 import { useRouter } from "expo-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
+import { useUserRatings, useAllBourbonRatingStats } from "@/hooks/use-ratings";
+import { BourbonCard } from "@/components/BourbonCard";
 
 export default function WishlistScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const { data: wishlist, isLoading, isError } = useWishlist(user?.id);
   const removeFromWishlist = useRemoveFromWishlist();
+  const { data: userRatings } = useUserRatings(user?.id);
+  const { data: allRatingStats } = useAllBourbonRatingStats();
+  const communityRatingsMap = new Map(
+    (allRatingStats ?? []).map((s) => [s.bourbon_id, s.avg_rating])
+  );
 
   if (isLoading) {
     return (
@@ -46,54 +53,31 @@ export default function WishlistScreen() {
         renderItem={({ item }) => {
           const bourbon = (item as any).bourbons;
           return (
-            <TouchableOpacity
-              className="bg-bourbon-800 rounded-2xl p-4"
+            <BourbonCard
+              name={bourbon?.name ?? "Unknown"}
+              distillery={bourbon?.distillery ?? null}
+              type={bourbon?.type ?? null}
+              proof={bourbon?.proof ?? null}
+              age={bourbon?.age_statement ?? null}
+              personalRating={userRatings?.get(item.bourbon_id) ?? null}
+              communityRating={communityRatingsMap.get(item.bourbon_id) ?? null}
               onPress={() => router.push(`/bourbon/${item.bourbon_id}`)}
             >
-              <View className="flex-row justify-between items-start">
-                <View className="flex-1 mr-3">
-                  <Text className="text-bourbon-100 font-bold text-lg">
-                    {bourbon?.name ?? "Unknown"}
-                  </Text>
-                  <Text className="text-bourbon-400 text-sm mt-0.5">
-                    {bourbon?.distillery ?? "Unknown distillery"}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => {
-                    if (!user) return;
-                    removeFromWishlist.mutate({
-                      id: item.id,
-                      userId: user.id,
-                      bourbonId: item.bourbon_id,
-                    });
-                  }}
-                  className="px-3 py-1 rounded-full bg-bourbon-700"
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Text className="text-bourbon-300 text-xs">Remove</Text>
-                </TouchableOpacity>
-              </View>
-
-              <View className="flex-row gap-4 mt-3">
-                {bourbon?.proof && (
-                  <Text className="text-bourbon-400 text-xs">{bourbon.proof} proof</Text>
-                )}
-                {bourbon?.age_statement && (
-                  <Text className="text-bourbon-400 text-xs">{bourbon.age_statement} yr</Text>
-                )}
-                {bourbon?.msrp && (
-                  <Text className="text-bourbon-400 text-xs">${bourbon.msrp}</Text>
-                )}
-                {bourbon?.type && (
-                  <Text className="text-bourbon-400 text-xs capitalize">{bourbon.type}</Text>
-                )}
-              </View>
-
-              {item.notes && (
-                <Text className="text-bourbon-500 text-xs mt-2 italic">{item.notes}</Text>
-              )}
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  if (!user) return;
+                  removeFromWishlist.mutate({
+                    id: item.id,
+                    userId: user.id,
+                    bourbonId: item.bourbon_id,
+                  });
+                }}
+                className="mt-3 px-3 py-1.5 rounded-xl bg-bourbon-700 items-center"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text className="text-bourbon-300 text-xs">Remove from Wishlist</Text>
+              </TouchableOpacity>
+            </BourbonCard>
           );
         }}
       />
