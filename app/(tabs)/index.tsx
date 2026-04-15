@@ -10,8 +10,10 @@ import { useRouter } from "expo-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useCollection } from "@/hooks/use-collection";
 import { useBourbonFilters } from "@/hooks/use-bourbon-filters";
+import { useUserRatings, useAllBourbonRatingStats } from "@/hooks/use-ratings";
 import { FilterSheet } from "@/components/FilterSheet";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
+import { BourbonCard } from "@/components/BourbonCard";
 import { BourbonFilterState } from "@/lib/bourbons";
 
 export default function CollectionScreen() {
@@ -35,6 +37,11 @@ export default function CollectionScreen() {
   } = useBourbonFilters();
 
   const { data: collection, isLoading, isError } = useCollection(user?.id, filters);
+  const { data: userRatings } = useUserRatings(user?.id);
+  const { data: allRatingStats } = useAllBourbonRatingStats();
+  const communityRatingsMap = new Map(
+    (allRatingStats ?? []).map((s) => [s.bourbon_id, s.avg_rating])
+  );
 
   function handleApplyFilters(newFilters: BourbonFilterState) {
     setTypes(newFilters.types);
@@ -130,38 +137,16 @@ export default function CollectionScreen() {
           renderItem={({ item }) => {
             const bourbon = (item as any).bourbons;
             return (
-              <TouchableOpacity
-                className="bg-bourbon-800 rounded-2xl p-4"
+              <BourbonCard
+                name={bourbon?.name ?? "Unknown"}
+                distillery={bourbon?.distillery ?? null}
+                type={bourbon?.type ?? null}
+                proof={bourbon?.proof ?? null}
+                age={bourbon?.age_statement ?? null}
+                personalRating={userRatings?.get(item.bourbon_id) ?? null}
+                communityRating={communityRatingsMap.get(item.bourbon_id) ?? null}
                 onPress={() => router.push(`/bourbon/${item.bourbon_id}`)}
-              >
-                <View className="flex-row justify-between items-start">
-                  <View className="flex-1">
-                    <Text className="text-bourbon-100 font-bold text-lg">
-                      {bourbon?.name ?? "Unknown"}
-                    </Text>
-                    <Text className="text-bourbon-400 text-sm mt-0.5">
-                      {bourbon?.distillery ?? "Unknown distillery"}
-                    </Text>
-                  </View>
-                </View>
-                <View className="flex-row gap-4 mt-3">
-                  {bourbon?.proof && (
-                    <Text className="text-bourbon-400 text-xs">
-                      {bourbon.proof} proof
-                    </Text>
-                  )}
-                  {bourbon?.age_statement && (
-                    <Text className="text-bourbon-400 text-xs">
-                      {bourbon.age_statement} yr
-                    </Text>
-                  )}
-                  {item.purchase_price && (
-                    <Text className="text-bourbon-400 text-xs">
-                      ${item.purchase_price}
-                    </Text>
-                  )}
-                </View>
-              </TouchableOpacity>
+              />
             );
           }}
         />
