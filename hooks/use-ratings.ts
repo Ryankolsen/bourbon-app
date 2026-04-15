@@ -46,6 +46,32 @@ export function useGroupRatingStats(
   });
 }
 
+/**
+ * Batch-fetch the current user's personal tasting ratings.
+ * Returns a Map<bourbonId, rating> for O(1) per-card lookup.
+ * Tastings where rating is null are excluded.
+ */
+export function useUserRatings(userId: string | undefined) {
+  return useQuery({
+    queryKey: ["user_ratings", userId],
+    queryFn: async (): Promise<Map<string, number>> => {
+      if (!userId) return new Map();
+      const { data, error } = await supabase
+        .from("tastings")
+        .select("bourbon_id, rating")
+        .eq("user_id", userId)
+        .not("rating", "is", null);
+      if (error) throw error;
+      const map = new Map<string, number>();
+      for (const row of data ?? []) {
+        if (row.rating !== null) map.set(row.bourbon_id, row.rating);
+      }
+      return map;
+    },
+    enabled: !!userId,
+  });
+}
+
 /** Aggregate rating stats for all bourbons — used to annotate list views. */
 export function useAllBourbonRatingStats() {
   return useQuery({
