@@ -2,8 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc:*)",
-      "Bash(npm run:*)",
-      "Bash(npm test:*)",
+      "Bash(pnpm run test:*)",
       "Bash(npx expo:*)",
       "Bash(npx supabase db push:*)",
       "Bash(npx supabase db query --linked \"SELECT:*)",
@@ -22,7 +21,8 @@
       "Bash(npm install:*)",
       "Bash(cat)",
       "Read(//tmp/**)",
-      "Bash(gh repo:*)"
+      "Bash(gh repo:*)",
+      "Bash(pnpm run typecheck:*)"
     ],
     "ask": [
       "Bash(npx supabase db query --linked \"DELETE:*)",
