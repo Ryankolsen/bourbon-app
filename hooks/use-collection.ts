@@ -46,3 +46,20 @@ export function useAddToCollection() {
   });
 }
 
+export function useRemoveFromCollection() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, userId }: { id: string; userId: string }) => {
+      const { error } = await supabase
+        .from("user_collection")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      return { userId };
+    },
+    onSuccess: ({ userId }) => {
+      qc.invalidateQueries({ queryKey: ["collection", userId] });
+    },
+  });
+}
+
