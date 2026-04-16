@@ -46,12 +46,15 @@ type ThemeContextValue = {
   setThemeMode: (mode: ThemeMode) => void;
   /** The resolved Theme object currently applied to the UI */
   activeTheme: Theme;
+  /** Dev-only: apply a specific theme by ID without changing the persisted mode */
+  setDevThemeId: (id: string | null) => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue>({
   themeMode: "system",
   setThemeMode: () => {},
   activeTheme: getThemeById(DEFAULT_DARK_THEME_ID),
+  setDevThemeId: () => {},
 });
 
 // ---------------------------------------------------------------------------
@@ -61,6 +64,7 @@ const ThemeContext = createContext<ThemeContextValue>({
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useRNColorScheme(); // "light" | "dark" | null
   const [themeMode, setThemeModeState] = useState<ThemeMode>("system");
+  const [devThemeId, setDevThemeId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   // Load persisted preference on mount
@@ -80,8 +84,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const activeTheme = useMemo(
-    () => resolveTheme(themeMode, systemScheme ?? "dark"),
-    [themeMode, systemScheme]
+    () => devThemeId ? getThemeById(devThemeId) : resolveTheme(themeMode, systemScheme ?? "dark"),
+    [themeMode, systemScheme, devThemeId]
   );
 
   const cssVars = useMemo(
@@ -90,8 +94,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 
   const contextValue = useMemo(
-    () => ({ themeMode, setThemeMode, activeTheme }),
-    [themeMode, setThemeMode, activeTheme]
+    () => ({ themeMode, setThemeMode, activeTheme, setDevThemeId }),
+    [themeMode, setThemeMode, activeTheme, setDevThemeId]
   );
 
   // Don't render until the stored preference is loaded to avoid a flash

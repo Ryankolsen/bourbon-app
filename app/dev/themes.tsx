@@ -13,23 +13,21 @@ import { useRouter } from "expo-router";
 import { useTheme } from "@/lib/theme-provider";
 import { THEMES, type Theme } from "@/lib/themes";
 
+/** Returns black or white depending on which has better contrast against the given hex bg.
+ *  Uses gamma-corrected relative luminance (WCAG formula). */
+function textOnBg(hex: string): string {
+  const toLinear = (v: number) =>
+    v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  const r = toLinear(parseInt(hex.slice(1, 3), 16) / 255);
+  const g = toLinear(parseInt(hex.slice(3, 5), 16) / 255);
+  const b = toLinear(parseInt(hex.slice(5, 7), 16) / 255);
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 0.35 ? "#000000" : "#ffffff";
+}
+
 export default function DevThemePickerScreen() {
   const router = useRouter();
-  const { activeTheme, setThemeMode } = useTheme();
-
-  function applyTheme(theme: Theme) {
-    // Map theme id to the nearest ThemeMode so the provider picks it up.
-    // For dev preview we store the exact theme id by temporarily overriding
-    // via the accessible slot (high-contrast) or by switching the mode that
-    // matches the theme's variant. Full per-theme selection is dev-only.
-    if (theme.id === "high-contrast") {
-      setThemeMode("accessible");
-    } else if (theme.variant === "light") {
-      setThemeMode("light");
-    } else {
-      setThemeMode("dark");
-    }
-  }
+  const { activeTheme, setDevThemeId } = useTheme();
 
   return (
     <View className="flex-1 bg-brand-900">
@@ -59,7 +57,7 @@ export default function DevThemePickerScreen() {
             key={theme.id}
             theme={theme}
             isActive={activeTheme.id === theme.id}
-            onApply={() => applyTheme(theme)}
+            onApply={() => setDevThemeId(theme.id)}
           />
         ))}
 
@@ -179,7 +177,7 @@ function ThemeCard({
             paddingVertical: 4,
           }}
         >
-          <Text style={{ color: c.black, fontSize: 11, fontWeight: "600" }}>
+          <Text style={{ color: textOnBg(c.sliderThumb), fontSize: 11, fontWeight: "600" }}>
             Accent
           </Text>
         </View>
@@ -197,7 +195,7 @@ function ThemeCard({
           alignItems: "center",
         }}
       >
-        <Text style={{ color: isActive ? c.white : c.brand300, fontWeight: "600" }}>
+        <Text style={{ color: theme.id === "high-contrast" ? c.black : c.white, fontWeight: "600" }}>
           {isActive ? "✓ Active" : "Apply"}
         </Text>
       </TouchableOpacity>

@@ -162,10 +162,10 @@ export default function CollectionScreen() {
                       ]
                     );
                   }}
-                  className="mt-3 px-3 py-1.5 rounded-xl bg-brand-700 items-center"
+                  className="mt-3 px-3 py-1.5 rounded-xl bg-brand-600 items-center"
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Text className="text-brand-300 text-xs">Remove from Vault</Text>
+                  <Text className="text-white text-xs font-medium">Remove from Vault</Text>
                 </TouchableOpacity>
               </BourbonCard>
             );

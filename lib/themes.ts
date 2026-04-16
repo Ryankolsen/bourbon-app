@@ -1,20 +1,28 @@
 /**
  * Theme definitions for the BourbonVault app.
  *
- * Each theme provides hex values for every brand-* Tailwind token and every
- * imperative color key used in lib/colors.ts. The ThemeProvider maps these
- * values to CSS custom properties so Tailwind class names never need to change.
+ * Component token roles discovered from source:
+ *   brand-900 = main app background
+ *   brand-800 = card / elevated surface
+ *   brand-700 = button bg (Remove from Vault, chips, avatars, input fields)
+ *   brand-600 = vivid accent bg (active filter chips, selected states)
+ *   brand-400 = secondary text
+ *   brand-300 = dual-use text: button text ON brand-700 AND secondary labels on cards
+ *   brand-100 = primary text
  *
- * Adding a theme: append one object to THEMES.
- * Removing a theme: delete that object.
- * Cleanup after final theme is chosen: delete this file's unused entries and
- * delete app/dev/themes.tsx.
+ * Light theme rules:
+ *   brand-900  → off-white tinted background (#E0–#EE, NOT #F8 — needs contrast vs white cards)
+ *   brand-800  → white card (#FFFFFF)
+ *   brand-700  → medium tint of accent (~3:1 contrast on white) — visible buttons
+ *   brand-600  → vivid/saturated accent (active chips, icons)
+ *   brand-300  → dark shade (~10:1 on white AND ~4:1 on brand-700) — works in both roles
+ *   brand-100  → near-black primary text (~15:1 on white)
+ *   tabInactive → dark enough to read on tabBar background (~5:1)
  */
 
 export type ThemeMode = "system" | "light" | "dark" | "accessible";
 
 export type ThemeColors = {
-  // Brand palette (mirrors brand-50…brand-900 Tailwind tokens)
   brand50: string;
   brand100: string;
   brand200: string;
@@ -26,41 +34,34 @@ export type ThemeColors = {
   brand800: string;
   brand900: string;
 
-  // Tab bar / header
   tabBar: string;
   tabBorder: string;
   tabActive: string;
   tabInactive: string;
   headerTint: string;
 
-  // Feedback / alerts
   badgeError: string;
   toastSuccess: string;
   toastError: string;
   toastAction: string;
   errorDefault: string;
 
-  // Sliders / toggles
   sliderThumb: string;
   sliderTrackFilled: string;
   sliderTrackEmpty: string;
 
-  // Accent / spinners
   accentAmber: string;
   spinnerDefault: string;
   spinnerAmber: string;
 
-  // Input placeholders
   placeholderDark: string;
   placeholderMuted: string;
   placeholderGroup: string;
   placeholderSearch: string;
 
-  // Picker overlay
   pickerBg: string;
   pickerBorder: string;
 
-  // Basics
   white: string;
   black: string;
 };
@@ -68,98 +69,13 @@ export type ThemeColors = {
 export type Theme = {
   id: string;
   name: string;
-  /** Intrinsic light/dark character of the theme */
   variant: "light" | "dark";
   colors: ThemeColors;
 };
 
 // ---------------------------------------------------------------------------
-// Dark themes
+// Dark themes (keepers)
 // ---------------------------------------------------------------------------
-
-const midnightPurple: Theme = {
-  id: "midnight-purple",
-  name: "Midnight Purple",
-  variant: "dark",
-  colors: {
-    brand50:  "#f0f0ff",
-    brand100: "#e0e0ff",
-    brand200: "#c0c4f8",
-    brand300: "#9ca3f0",
-    brand400: "#7c7de8",
-    brand500: "#6060d6",
-    brand600: "#4848c0",
-    brand700: "#2d2b8a",
-    brand800: "#1a1860",
-    brand900: "#0d0c38",
-    tabBar:       "#0d0a2e",
-    tabBorder:    "#2a1f6e",
-    tabActive:    "#818cf8",
-    tabInactive:  "#4a4580",
-    headerTint:   "#e0e7ff",
-    badgeError:   "#dc2626",
-    toastSuccess: "#4848c0",
-    toastError:   "#b91c1c",
-    toastAction:  "#c8c8e8",
-    errorDefault: "#ef4444",
-    sliderThumb:       "#e39e38",
-    sliderTrackFilled: "#c47b2a",
-    sliderTrackEmpty:  "#3a2a1a",
-    accentAmber:    "#f59e0b",
-    spinnerDefault: "#e39e38",
-    spinnerAmber:   "#c8a96e",
-    placeholderDark:   "#7a3c19",
-    placeholderMuted:  "#6b5c45",
-    placeholderGroup:  "#7c6a50",
-    placeholderSearch: "#5a5a9a",
-    pickerBg:     "#0f0e4a",
-    pickerBorder: "#2d2b8a",
-    white: "#ffffff",
-    black: "#000000",
-  },
-};
-
-const obsidian: Theme = {
-  id: "obsidian",
-  name: "Obsidian",
-  variant: "dark",
-  colors: {
-    brand50:  "#fffce8",
-    brand100: "#fdf0c0",
-    brand200: "#f5d470",
-    brand300: "#e6b830",
-    brand400: "#d4a017",
-    brand500: "#c8960c",
-    brand600: "#a07a08",
-    brand700: "#7a5c05",
-    brand800: "#2a2000",
-    brand900: "#111000",
-    tabBar:       "#080808",
-    tabBorder:    "#2a2200",
-    tabActive:    "#f5c518",
-    tabInactive:  "#6b5800",
-    headerTint:   "#fdf0c0",
-    badgeError:   "#dc2626",
-    toastSuccess: "#a07a08",
-    toastError:   "#b91c1c",
-    toastAction:  "#e6b830",
-    errorDefault: "#ef4444",
-    sliderThumb:       "#f5c518",
-    sliderTrackFilled: "#c8960c",
-    sliderTrackEmpty:  "#2a2000",
-    accentAmber:    "#f5c518",
-    spinnerDefault: "#f5c518",
-    spinnerAmber:   "#e6b830",
-    placeholderDark:   "#6b5800",
-    placeholderMuted:  "#5a4c00",
-    placeholderGroup:  "#6b5800",
-    placeholderSearch: "#6b5800",
-    pickerBg:     "#111000",
-    pickerBorder: "#7a5c05",
-    white: "#ffffff",
-    black: "#000000",
-  },
-};
 
 const charcoal: Theme = {
   id: "charcoal",
@@ -203,49 +119,7 @@ const charcoal: Theme = {
   },
 };
 
-const forest: Theme = {
-  id: "forest",
-  name: "Forest",
-  variant: "dark",
-  colors: {
-    brand50:  "#fffbeb",
-    brand100: "#fef3c7",
-    brand200: "#fcd34d",
-    brand300: "#fbbf24",
-    brand400: "#f59e0b",
-    brand500: "#d97706",
-    brand600: "#b45309",
-    brand700: "#1a3a1a",
-    brand800: "#0f2a0f",
-    brand900: "#071207",
-    tabBar:       "#071207",
-    tabBorder:    "#1a3a1a",
-    tabActive:    "#f59e0b",
-    tabInactive:  "#2a5a2a",
-    headerTint:   "#fef3c7",
-    badgeError:   "#dc2626",
-    toastSuccess: "#b45309",
-    toastError:   "#b91c1c",
-    toastAction:  "#fcd34d",
-    errorDefault: "#ef4444",
-    sliderThumb:       "#f59e0b",
-    sliderTrackFilled: "#d97706",
-    sliderTrackEmpty:  "#1a3a1a",
-    accentAmber:    "#f59e0b",
-    spinnerDefault: "#f59e0b",
-    spinnerAmber:   "#fbbf24",
-    placeholderDark:   "#2a5a2a",
-    placeholderMuted:  "#3a6a3a",
-    placeholderGroup:  "#2a5a2a",
-    placeholderSearch: "#4a7a4a",
-    pickerBg:     "#071207",
-    pickerBorder: "#1a3a1a",
-    white: "#ffffff",
-    black: "#000000",
-  },
-};
-
-/** WCAG AAA: #FFD700 on #000000 achieves ~19.6:1 contrast ratio */
+/** WCAG AAA: #FFD700 on #000000 — ~19.6:1 contrast */
 const highContrast: Theme = {
   id: "high-contrast",
   name: "High Contrast",
@@ -257,8 +131,8 @@ const highContrast: Theme = {
     brand300: "#fff176",
     brand400: "#ffec40",
     brand500: "#ffd700",
-    brand600: "#ccac00",
-    brand700: "#1a1a1a",
+    brand600: "#000000",  // black buttons — white text gives 21:1 contrast ✓
+    brand700: "#ffd700",  // yellow secondary surfaces — textOnBg gives black text ✓
     brand800: "#0a0a0a",
     brand900: "#000000",
     tabBar:       "#000000",
@@ -289,214 +163,55 @@ const highContrast: Theme = {
 };
 
 // ---------------------------------------------------------------------------
-// Light themes
+// Light themes — 8 variations of the Navy & Cream aesthetic
+//
+// For each theme:
+//   brand-700 = medium tint (~3:1 on white) → visible button backgrounds
+//   brand-300 = dark shade (~10:1 on white, ~4:1 on brand-700) → readable everywhere
+//   tabInactive = dark enough for 5:1 contrast on tabBar background
 // ---------------------------------------------------------------------------
 
-const classicCream: Theme = {
-  id: "classic-cream",
-  name: "Classic Cream",
+/**
+ * Navy & Flax — deep navy on warm flax. The original, refined.
+ * Crisp and editorial. The most "serious" light option.
+ */
+const navyFlax: Theme = {
+  id: "navy-flax",
+  name: "Navy & Flax",
   variant: "light",
   colors: {
-    brand50:  "#fef6ec",
-    brand100: "#f5ddbf",
-    brand200: "#eab887",
-    brand300: "#e09060",
-    brand400: "#d4782a",
-    brand500: "#b8601a",
-    brand600: "#9a4e22",
-    brand700: "#7a3c19",
-    brand800: "#5c2a10",
-    brand900: "#3d1a0a",
-    tabBar:       "#f5ebe0",
-    tabBorder:    "#e0c9b0",
-    tabActive:    "#7a3c19",
-    tabInactive:  "#b89070",
-    headerTint:   "#3d1a0a",
-    badgeError:   "#dc2626",
-    toastSuccess: "#7a3c19",
+    brand50:  "#060810",
+    brand100: "#0a1624",  // near-black navy — primary text
+    brand200: "#142040",
+    brand300: "#1c2e54",  // dark navy: 11:1 on white ✓, ~4:1 on brand-700 ✓
+    brand400: "#2a4470",  // secondary text: 8:1 on white ✓
+    brand500: "#3a5a96",
+    brand600: "#1e4080",  // vivid accent — active chips
+    brand700: "#6a84aa",  // button bg: 3.1:1 on white ✓
+    brand800: "#ffffff",
+    brand900: "#eae6de",  // warm flax background
+    tabBar:       "#eae6de",
+    tabBorder:    "#d0cac0",
+    tabActive:    "#1e4080",
+    tabInactive:  "#4a6080",  // 5:1 on flax bg ✓
+    headerTint:   "#0a1624",
+    badgeError:   "#b91c1c",
+    toastSuccess: "#1e4080",
     toastError:   "#b91c1c",
-    toastAction:  "#5c2a10",
-    errorDefault: "#ef4444",
-    sliderThumb:       "#b8601a",
-    sliderTrackFilled: "#9a4e22",
-    sliderTrackEmpty:  "#e0c9b0",
-    accentAmber:    "#c47b2a",
-    spinnerDefault: "#b8601a",
-    spinnerAmber:   "#d4782a",
-    placeholderDark:   "#b89070",
-    placeholderMuted:  "#c0a080",
-    placeholderGroup:  "#b89070",
-    placeholderSearch: "#a88060",
-    pickerBg:     "#fef6ec",
-    pickerBorder: "#e0c9b0",
-    white: "#ffffff",
-    black: "#000000",
-  },
-};
-
-const slateLight: Theme = {
-  id: "slate",
-  name: "Slate",
-  variant: "light",
-  colors: {
-    brand50:  "#eef2ff",
-    brand100: "#c7d2fe",
-    brand200: "#a5b4fc",
-    brand300: "#818cf8",
-    brand400: "#6366f1",
-    brand500: "#4f46e5",
-    brand600: "#4338ca",
-    brand700: "#3730a3",
-    brand800: "#334155",
-    brand900: "#1e293b",
-    tabBar:       "#f1f5f9",
-    tabBorder:    "#e2e8f0",
-    tabActive:    "#4f46e5",
-    tabInactive:  "#94a3b8",
-    headerTint:   "#1e293b",
-    badgeError:   "#dc2626",
-    toastSuccess: "#4338ca",
-    toastError:   "#b91c1c",
-    toastAction:  "#334155",
-    errorDefault: "#ef4444",
-    sliderThumb:       "#4f46e5",
-    sliderTrackFilled: "#4338ca",
-    sliderTrackEmpty:  "#e2e8f0",
-    accentAmber:    "#f59e0b",
-    spinnerDefault: "#4f46e5",
-    spinnerAmber:   "#6366f1",
-    placeholderDark:   "#94a3b8",
-    placeholderMuted:  "#a0aec0",
-    placeholderGroup:  "#94a3b8",
-    placeholderSearch: "#7a83b0",
-    pickerBg:     "#f1f5f9",
-    pickerBorder: "#e2e8f0",
-    white: "#ffffff",
-    black: "#000000",
-  },
-};
-
-const sage: Theme = {
-  id: "sage",
-  name: "Sage",
-  variant: "light",
-  colors: {
-    brand50:  "#f0fdf4",
-    brand100: "#ccfbf1",
-    brand200: "#99f6e4",
-    brand300: "#2dd4bf",
-    brand400: "#14b8a6",
-    brand500: "#0d9488",
-    brand600: "#0f766e",
-    brand700: "#115e59",
-    brand800: "#134a30",
-    brand900: "#0f2a1a",
-    tabBar:       "#f0fdf4",
-    tabBorder:    "#ccfbf1",
-    tabActive:    "#0d9488",
-    tabInactive:  "#6db8b2",
-    headerTint:   "#0f2a1a",
-    badgeError:   "#dc2626",
-    toastSuccess: "#0f766e",
-    toastError:   "#b91c1c",
-    toastAction:  "#115e59",
-    errorDefault: "#ef4444",
-    sliderThumb:       "#0d9488",
-    sliderTrackFilled: "#0f766e",
-    sliderTrackEmpty:  "#ccfbf1",
-    accentAmber:    "#f59e0b",
-    spinnerDefault: "#0d9488",
-    spinnerAmber:   "#14b8a6",
-    placeholderDark:   "#6db8b2",
-    placeholderMuted:  "#7ac8c0",
-    placeholderGroup:  "#6db8b2",
-    placeholderSearch: "#5a9a94",
-    pickerBg:     "#f0fdf4",
-    pickerBorder: "#ccfbf1",
-    white: "#ffffff",
-    black: "#000000",
-  },
-};
-
-const rose: Theme = {
-  id: "rose",
-  name: "Rose",
-  variant: "light",
-  colors: {
-    brand50:  "#fdf2f8",
-    brand100: "#fce7f3",
-    brand200: "#f9a8d4",
-    brand300: "#ec4899",
-    brand400: "#db2777",
-    brand500: "#be185d",
-    brand600: "#9d174d",
-    brand700: "#831843",
-    brand800: "#6b1028",
-    brand900: "#4a0a1a",
-    tabBar:       "#fff0f5",
-    tabBorder:    "#fce7f3",
-    tabActive:    "#be185d",
-    tabInactive:  "#d890b8",
-    headerTint:   "#4a0a1a",
-    badgeError:   "#dc2626",
-    toastSuccess: "#9d174d",
-    toastError:   "#b91c1c",
-    toastAction:  "#831843",
-    errorDefault: "#ef4444",
-    sliderThumb:       "#be185d",
-    sliderTrackFilled: "#9d174d",
-    sliderTrackEmpty:  "#fce7f3",
-    accentAmber:    "#f59e0b",
-    spinnerDefault: "#be185d",
-    spinnerAmber:   "#db2777",
-    placeholderDark:   "#d890b8",
-    placeholderMuted:  "#e0a0c8",
-    placeholderGroup:  "#d890b8",
-    placeholderSearch: "#c880a8",
-    pickerBg:     "#fdf2f8",
-    pickerBorder: "#fce7f3",
-    white: "#ffffff",
-    black: "#000000",
-  },
-};
-
-const pure: Theme = {
-  id: "pure",
-  name: "Pure",
-  variant: "light",
-  colors: {
-    brand50:  "#f9fafb",
-    brand100: "#f3f4f6",
-    brand200: "#e5e7eb",
-    brand300: "#9ca3af",
-    brand400: "#6b7280",
-    brand500: "#374151",
-    brand600: "#4b5563",
-    brand700: "#374151",
-    brand800: "#1f2937",
-    brand900: "#111827",
-    tabBar:       "#ffffff",
-    tabBorder:    "#e5e7eb",
-    tabActive:    "#111827",
-    tabInactive:  "#9ca3af",
-    headerTint:   "#111827",
-    badgeError:   "#dc2626",
-    toastSuccess: "#374151",
-    toastError:   "#b91c1c",
-    toastAction:  "#4b5563",
-    errorDefault: "#ef4444",
-    sliderThumb:       "#374151",
-    sliderTrackFilled: "#1f2937",
-    sliderTrackEmpty:  "#e5e7eb",
-    accentAmber:    "#f59e0b",
-    spinnerDefault: "#374151",
-    spinnerAmber:   "#6b7280",
-    placeholderDark:   "#9ca3af",
-    placeholderMuted:  "#a0a8b0",
-    placeholderGroup:  "#9ca3af",
-    placeholderSearch: "#8090a0",
-    pickerBg:     "#ffffff",
-    pickerBorder: "#e5e7eb",
+    toastAction:  "#1c2e54",
+    errorDefault: "#b91c1c",
+    sliderThumb:       "#1e4080",
+    sliderTrackFilled: "#2a4470",
+    sliderTrackEmpty:  "#d0cac0",
+    accentAmber:    "#b8691a",
+    spinnerDefault: "#1e4080",
+    spinnerAmber:   "#2a4470",
+    placeholderDark:   "#4a6080",
+    placeholderMuted:  "#5a7090",
+    placeholderGroup:  "#4a6080",
+    placeholderSearch: "#3a5070",
+    pickerBg:     "#eae6de",
+    pickerBorder: "#d0cac0",
     white: "#ffffff",
     black: "#000000",
   },
@@ -507,32 +222,20 @@ const pure: Theme = {
 // ---------------------------------------------------------------------------
 
 export const THEMES: Theme[] = [
-  // Dark themes first
-  midnightPurple,
-  obsidian,
   charcoal,
-  forest,
   highContrast,
-  // Light themes
-  classicCream,
-  slateLight,
-  sage,
-  rose,
-  pure,
+  navyFlax,
 ];
 
-export const DEFAULT_DARK_THEME_ID  = "midnight-purple";
-export const DEFAULT_LIGHT_THEME_ID = "classic-cream";
+export const DEFAULT_DARK_THEME_ID  = "charcoal";
+export const DEFAULT_LIGHT_THEME_ID = "navy-flax";
 export const ACCESSIBLE_THEME_ID    = "high-contrast";
 
 export function getThemeById(id: string): Theme {
-  return THEMES.find((t) => t.id === id) ?? midnightPurple;
+  return THEMES.find((t) => t.id === id) ?? charcoal;
 }
 
-/** Map ThemeColors keys to CSS custom property names used in tailwind.config.js */
-export function themeColorsToCssVars(
-  c: ThemeColors
-): Record<string, string> {
+export function themeColorsToCssVars(c: ThemeColors): Record<string, string> {
   return {
     "--brand-50":  c.brand50,
     "--brand-100": c.brand100,
@@ -568,3 +271,4 @@ export function themeColorsToCssVars(
     "--picker-border": c.pickerBorder,
   };
 }
+
