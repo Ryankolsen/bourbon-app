@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 import { useAuth } from "@/hooks/use-auth";
 import { isAdmin } from "@/lib/admin";
 import { useGroupNotifications } from "@/hooks/use-group-notifications";
-import { colors } from "@/lib/colors";
+import { useTheme } from "@/lib/theme-provider";
 
 function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
   return (
@@ -16,6 +16,7 @@ function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
 function GroupsTabIcon({ focused }: { focused: boolean }) {
   const { user } = useAuth();
   const { data: notifications } = useGroupNotifications(user?.id);
+  const { activeTheme } = useTheme();
   const unreadCount = notifications?.length ?? 0;
 
   return (
@@ -30,7 +31,7 @@ function GroupsTabIcon({ focused }: { focused: boolean }) {
             width: 10,
             height: 10,
             borderRadius: 5,
-            backgroundColor: colors.badgeError,
+            backgroundColor: activeTheme.colors.badgeError,
           }}
         />
       )}
@@ -40,19 +41,21 @@ function GroupsTabIcon({ focused }: { focused: boolean }) {
 
 export default function TabsLayout() {
   const { user } = useAuth();
+  const { activeTheme } = useTheme();
   const adminUser = !!(user?.email && isAdmin(user.email));
+  const c = activeTheme.colors;
 
   return (
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: colors.tabBar,
-          borderTopColor: colors.tabBorder,
+          backgroundColor: c.tabBar,
+          borderTopColor: c.tabBorder,
         },
-        tabBarActiveTintColor: colors.tabActive,
-        tabBarInactiveTintColor: colors.tabInactive,
-        headerStyle: { backgroundColor: colors.tabBar },
-        headerTintColor: colors.headerTint,
+        tabBarActiveTintColor: c.tabActive,
+        tabBarInactiveTintColor: c.tabInactive,
+        headerStyle: { backgroundColor: c.tabBar },
+        headerTintColor: c.headerTint,
       }}
     >
       <Tabs.Screen

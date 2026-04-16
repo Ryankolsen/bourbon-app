@@ -15,6 +15,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { DEV_USERS, DEV_PASSWORD } from "@/lib/dev-users";
 import { useQueryClient } from "@tanstack/react-query";
@@ -33,6 +34,7 @@ function DevUserSwitcherPanel() {
   const [switching, setSwitching] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   async function switchTo(email: string) {
     setSwitching(email);
@@ -138,11 +140,20 @@ function DevUserSwitcherPanel() {
                 })}
               </ScrollView>
 
+              {/* Theme picker link */}
+              <Pressable
+                onPress={() => { setOpen(false); router.push("/dev/themes"); }}
+                className="mt-4 bg-gray-800 rounded-xl py-3 items-center"
+                accessibilityLabel="Open theme picker"
+              >
+                <Text className="text-indigo-300 font-medium">🎨 Theme Picker</Text>
+              </Pressable>
+
               {/* Sign out / back to admin */}
               <Pressable
                 onPress={signOut}
                 disabled={switching !== null}
-                className="mt-4 bg-gray-800 rounded-xl py-3 items-center"
+                className="mt-2 bg-gray-800 rounded-xl py-3 items-center"
                 accessibilityLabel="Sign out and return to admin login"
               >
                 {switching === "signout" ? (

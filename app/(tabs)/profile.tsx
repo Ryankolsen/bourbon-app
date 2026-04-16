@@ -19,6 +19,15 @@ import {
 } from "@/hooks/use-profile";
 import { useFollowerCount, useFollowingCount } from "@/hooks/use-follows";
 import { colors } from "@/lib/colors";
+import { useTheme } from "@/lib/theme-provider";
+import { type ThemeMode } from "@/lib/themes";
+
+const THEME_OPTIONS: { label: string; value: ThemeMode }[] = [
+  { label: "System", value: "system" },
+  { label: "Light",  value: "light" },
+  { label: "Dark",   value: "dark" },
+  { label: "A11y",   value: "accessible" },
+];
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
@@ -27,6 +36,7 @@ export default function ProfileScreen() {
   const uploadAvatar = useUploadAvatar();
   const { data: followerCount } = useFollowerCount(user?.id);
   const { data: followingCount } = useFollowingCount(user?.id);
+  const { themeMode, setThemeMode } = useTheme();
 
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState("");
@@ -213,6 +223,34 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </>
           )}
+        </View>
+
+        {/* Theme Selector */}
+        <View className="bg-brand-800 rounded-2xl p-5 mb-4">
+          <Text className="text-brand-400 text-xs uppercase tracking-widest mb-3">
+            Appearance
+          </Text>
+          <View className="flex-row gap-2">
+            {THEME_OPTIONS.map((opt) => (
+              <TouchableOpacity
+                key={opt.value}
+                onPress={() => setThemeMode(opt.value)}
+                className={`flex-1 py-2 rounded-xl items-center border ${
+                  themeMode === opt.value
+                    ? "bg-brand-500 border-brand-500"
+                    : "border-brand-600"
+                }`}
+              >
+                <Text
+                  className={`text-xs font-semibold ${
+                    themeMode === opt.value ? "text-white" : "text-brand-400"
+                  }`}
+                >
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
         {/* Sign Out */}
