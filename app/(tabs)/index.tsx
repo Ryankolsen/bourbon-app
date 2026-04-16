@@ -4,21 +4,25 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useState, useMemo } from "react";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/hooks/use-auth";
-import { useCollection } from "@/hooks/use-collection";
+import { useCollection, useRemoveFromCollection } from "@/hooks/use-collection";
 import { useBourbonFilters } from "@/hooks/use-bourbon-filters";
 import { useUserRatings, useAllBourbonRatingStats } from "@/hooks/use-ratings";
 import { FilterSheet } from "@/components/FilterSheet";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { BourbonCard } from "@/components/BourbonCard";
+import { useToast } from "@/lib/toast-provider";
 
 export default function CollectionScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const { showToast } = useToast();
   const [filterSheetVisible, setFilterSheetVisible] = useState(false);
+  const removeFromCollection = useRemoveFromCollection();
 
   const {
     filters,
@@ -121,9 +125,10 @@ export default function CollectionScreen() {
           }
           renderItem={({ item }) => {
             const bourbon = (item as any).bourbons;
+            const bourbonName = bourbon?.name ?? "Unknown";
             return (
               <BourbonCard
-                name={bourbon?.name ?? "Unknown"}
+                name={bourbonName}
                 distillery={bourbon?.distillery ?? null}
                 type={bourbon?.type ?? null}
                 proof={bourbon?.proof ?? null}
@@ -131,7 +136,37 @@ export default function CollectionScreen() {
                 personalRating={userRatings?.get(item.bourbon_id) ?? null}
                 communityRating={communityRatingsMap.get(item.bourbon_id) ?? null}
                 onPress={() => router.push(`/bourbon/${item.bourbon_id}`)}
-              />
+              >
+                <TouchableOpacity
+                  onPress={() => {
+                    if (!user) return;
+                    Alert.alert(
+                      "Remove from Vault",
+                      `Remove ${bourbonName} from your vault?`,
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        {
+                          text: "Remove",
+                          style: "destructive",
+                          onPress: () => {
+                            removeFromCollection.mutate(
+                              { id: item.id, userId: user.id },
+                              {
+                                onSuccess: () => showToast("Removed from vault", "success"),
+                                onError: () => showToast("Failed to remove", "error"),
+                              }
+                            );
+                          },
+                        },
+                      ]
+                    );
+                  }}
+                  className="mt-3 px-3 py-1.5 rounded-xl bg-bourbon-700 items-center"
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text className="text-bourbon-300 text-xs">Remove from Vault</Text>
+                </TouchableOpacity>
+              </BourbonCard>
             );
           }}
         />
