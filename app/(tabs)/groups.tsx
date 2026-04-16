@@ -1,3 +1,4 @@
+import { colors } from "@/lib/colors";
 import {
   View,
   Text,
@@ -137,8 +138,8 @@ export default function GroupsScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center">
-        <ActivityIndicator color="#e39e38" size="large" />
+      <View className="flex-1 bg-brand-900 items-center justify-center">
+        <ActivityIndicator color={colors.spinnerDefault} size="large" />
       </View>
     );
   }
@@ -148,13 +149,13 @@ export default function GroupsScreen() {
   const unreadNotifications: GroupNotificationRow[] = notifications ?? [];
 
   return (
-    <View className="flex-1 bg-bourbon-900">
+    <View className="flex-1 bg-brand-900">
       <ScrollView contentContainerClassName="p-4 pb-8">
 
         {/* Join Notifications */}
         {unreadNotifications.length > 0 && (
           <View className="mb-6">
-            <Text className="text-bourbon-400 text-xs font-semibold uppercase mb-3">
+            <Text className="text-brand-400 text-xs font-semibold uppercase mb-3">
               New Members
             </Text>
             {unreadNotifications.map((notif) => {
@@ -167,18 +168,18 @@ export default function GroupsScreen() {
               return (
                 <View
                   key={notif.id}
-                  className="bg-bourbon-800 rounded-2xl p-4 mb-3 flex-row items-start"
+                  className="bg-brand-800 rounded-2xl p-4 mb-3 flex-row items-start"
                 >
                   <View className="flex-1">
-                    <Text className="text-bourbon-100 text-sm font-semibold">
+                    <Text className="text-brand-100 text-sm font-semibold">
                       {joinerName} joined{" "}
-                      <Text className="text-bourbon-300">{groupName}</Text>
+                      <Text className="text-brand-300">{groupName}</Text>
                     </Text>
                     <TouchableOpacity
                       onPress={() => router.push(`/group/${groupId}`)}
                       className="mt-1"
                     >
-                      <Text className="text-bourbon-500 text-xs font-semibold">
+                      <Text className="text-brand-500 text-xs font-semibold">
                         Manage Group →
                       </Text>
                     </TouchableOpacity>
@@ -188,7 +189,7 @@ export default function GroupsScreen() {
                     className="ml-3 p-1"
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
-                    <Text className="text-bourbon-500 text-base">✕</Text>
+                    <Text className="text-brand-500 text-base">✕</Text>
                   </TouchableOpacity>
                 </View>
               );
@@ -199,7 +200,7 @@ export default function GroupsScreen() {
         {/* Pending invites */}
         {pendingInvites.length > 0 && (
           <View className="mb-6">
-            <Text className="text-bourbon-400 text-xs font-semibold uppercase mb-3">
+            <Text className="text-brand-400 text-xs font-semibold uppercase mb-3">
               Pending Invites
             </Text>
             {pendingInvites.map((invite) => {
@@ -222,19 +223,19 @@ export default function GroupsScreen() {
               return (
                 <View
                   key={invite.group_id}
-                  className="bg-bourbon-800 rounded-2xl p-4 mb-3"
+                  className="bg-brand-800 rounded-2xl p-4 mb-3"
                 >
-                  <Text className="text-bourbon-100 font-bold text-base">
+                  <Text className="text-brand-100 font-bold text-base">
                     {group?.name ?? "Unknown Group"}
                   </Text>
-                  <Text className="text-bourbon-400 text-xs mt-0.5 mb-3">
+                  <Text className="text-brand-400 text-xs mt-0.5 mb-3">
                     Invited by {inviterName}
                   </Text>
                   <View className="flex-row gap-3">
                     <TouchableOpacity
                       onPress={() => handleAccept(invite.group_id)}
                       disabled={acceptInvite.isPending}
-                      className="flex-1 bg-bourbon-600 rounded-xl py-2.5 items-center"
+                      className="flex-1 bg-brand-600 rounded-xl py-2.5 items-center"
                     >
                       <Text className="text-white font-semibold text-sm">
                         Accept
@@ -243,9 +244,9 @@ export default function GroupsScreen() {
                     <TouchableOpacity
                       onPress={() => handleDecline(invite.group_id)}
                       disabled={declineInvite.isPending}
-                      className="flex-1 border border-bourbon-600 rounded-xl py-2.5 items-center"
+                      className="flex-1 border border-brand-600 rounded-xl py-2.5 items-center"
                     >
-                      <Text className="text-bourbon-400 font-semibold text-sm">
+                      <Text className="text-brand-400 font-semibold text-sm">
                         Decline
                       </Text>
                     </TouchableOpacity>
@@ -258,12 +259,12 @@ export default function GroupsScreen() {
 
         {/* My Groups header + create button */}
         <View className="flex-row items-center justify-between mb-3">
-          <Text className="text-bourbon-400 text-xs font-semibold uppercase">
+          <Text className="text-brand-400 text-xs font-semibold uppercase">
             My Groups
           </Text>
           <TouchableOpacity
             onPress={() => setModalVisible(true)}
-            className="bg-bourbon-600 rounded-full px-4 py-1.5"
+            className="bg-brand-600 rounded-full px-4 py-1.5"
           >
             <Text className="text-white text-xs font-semibold">+ New</Text>
           </TouchableOpacity>
@@ -273,10 +274,10 @@ export default function GroupsScreen() {
         {groups.length === 0 ? (
           <View className="items-center mt-12 px-8">
             <Text className="text-4xl mb-4">🥃</Text>
-            <Text className="text-bourbon-100 text-lg font-bold mb-2">
+            <Text className="text-brand-100 text-lg font-bold mb-2">
               No groups yet
             </Text>
-            <Text className="text-bourbon-400 text-center text-sm">
+            <Text className="text-brand-400 text-center text-sm">
               Create a group to share tastings and recommendations with friends.
             </Text>
           </View>
@@ -290,21 +291,21 @@ export default function GroupsScreen() {
               <TouchableOpacity
                 key={item.group_id}
                 onPress={() => router.push(`/group/${item.group_id}`)}
-                className="bg-bourbon-800 rounded-2xl p-4 mb-3"
+                className="bg-brand-800 rounded-2xl p-4 mb-3"
               >
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-bourbon-100 font-bold text-base flex-1 mr-2">
+                  <Text className="text-brand-100 font-bold text-base flex-1 mr-2">
                     {group?.name ?? "Group"}
                   </Text>
                   {item.role === "owner" && (
-                    <View className="bg-bourbon-600 rounded-full px-2 py-0.5">
-                      <Text className="text-bourbon-100 text-xs">Owner</Text>
+                    <View className="bg-brand-600 rounded-full px-2 py-0.5">
+                      <Text className="text-brand-100 text-xs">Owner</Text>
                     </View>
                   )}
                 </View>
                 {group?.description ? (
                   <Text
-                    className="text-bourbon-400 text-sm mt-1"
+                    className="text-brand-400 text-sm mt-1"
                     numberOfLines={2}
                   >
                     {group.description}
@@ -324,30 +325,30 @@ export default function GroupsScreen() {
         onRequestClose={() => setModalVisible(false)}
       >
         <View className="flex-1 justify-end bg-black/60">
-          <View className="bg-bourbon-900 rounded-t-3xl px-6 pt-6 pb-10">
-            <Text className="text-bourbon-100 text-xl font-bold mb-5">
+          <View className="bg-brand-900 rounded-t-3xl px-6 pt-6 pb-10">
+            <Text className="text-brand-100 text-xl font-bold mb-5">
               Create Group
             </Text>
 
-            <Text className="text-bourbon-300 text-sm mb-1">Name *</Text>
+            <Text className="text-brand-300 text-sm mb-1">Name *</Text>
             <TextInput
               value={groupName}
               onChangeText={setGroupName}
               placeholder="e.g. Friday Night Pours"
-              placeholderTextColor="#7c6a50"
-              className="bg-bourbon-800 rounded-xl px-4 py-3 text-bourbon-100 text-sm mb-4"
+              placeholderTextColor={colors.placeholderGroup}
+              className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-4"
               maxLength={100}
             />
 
-            <Text className="text-bourbon-300 text-sm mb-1">
+            <Text className="text-brand-300 text-sm mb-1">
               Description (optional)
             </Text>
             <TextInput
               value={groupDescription}
               onChangeText={setGroupDescription}
               placeholder="A short description of your group"
-              placeholderTextColor="#7c6a50"
-              className="bg-bourbon-800 rounded-xl px-4 py-3 text-bourbon-100 text-sm mb-6"
+              placeholderTextColor={colors.placeholderGroup}
+              className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-6"
               multiline
               numberOfLines={3}
               maxLength={500}
@@ -357,15 +358,15 @@ export default function GroupsScreen() {
               onPress={handleCreate}
               disabled={!groupName.trim() || createGroup.isPending}
               className={`rounded-2xl py-4 items-center ${
-                groupName.trim() ? "bg-bourbon-600" : "bg-bourbon-800"
+                groupName.trim() ? "bg-brand-600" : "bg-brand-800"
               }`}
             >
               {createGroup.isPending ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={colors.white} />
               ) : (
                 <Text
                   className={`font-bold text-base ${
-                    groupName.trim() ? "text-white" : "text-bourbon-600"
+                    groupName.trim() ? "text-white" : "text-brand-600"
                   }`}
                 >
                   Create Group
@@ -381,7 +382,7 @@ export default function GroupsScreen() {
               }}
               className="mt-3 py-3 items-center"
             >
-              <Text className="text-bourbon-400 text-base">Cancel</Text>
+              <Text className="text-brand-400 text-base">Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>

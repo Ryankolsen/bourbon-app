@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, View, Text } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
+import { colors } from '@/lib/colors';
 
 interface SearchablePickerProps {
   data: string[];
@@ -17,38 +18,38 @@ interface SearchablePickerProps {
 type PickerItem = { label: string; value: string; _isNew?: boolean };
 
 const dropdownStyle = {
-  backgroundColor: '#1a1860',
+  backgroundColor: colors.brand800,
   borderRadius: 12,
   paddingHorizontal: 16,
   paddingVertical: 4,
 };
 
 const dropdownPlaceholderStyle = {
-  color: '#7a3c19',
+  color: colors.placeholderDark,
   fontSize: 16,
 };
 
 const dropdownSelectedTextStyle = {
-  color: '#e0e0ff',
+  color: colors.brand100,
   fontSize: 16,
 };
 
 const dropdownContainerStyle = {
-  backgroundColor: '#1a1860',
+  backgroundColor: colors.brand800,
   borderRadius: 12,
-  borderColor: '#2d2b8a',
+  borderColor: colors.brand700,
 };
 
 const dropdownItemTextStyle = {
-  color: '#e0e0ff',
+  color: colors.brand100,
   fontSize: 14,
 };
 
 const dropdownInputSearchStyle = {
-  backgroundColor: '#0f0e4a',
-  color: '#e0e0ff',
+  backgroundColor: colors.pickerBg,
+  color: colors.brand100,
   borderRadius: 8,
-  borderColor: '#2d2b8a',
+  borderColor: colors.pickerBorder,
   fontSize: 14,
 };
 
@@ -131,7 +132,7 @@ export function SearchablePicker({
     if (item._isNew) {
       return (
         <View style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
-          <Text style={{ color: '#f59e0b', fontSize: 14 }}>
+          <Text style={{ color: colors.accentAmber, fontSize: 14 }}>
             + Add "{item.label}"
           </Text>
         </View>
@@ -139,7 +140,7 @@ export function SearchablePicker({
     }
     return (
       <View style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
-        <Text style={{ color: '#e0e0ff', fontSize: 14 }}>{item.label}</Text>
+        <Text style={{ color: colors.brand100, fontSize: 14 }}>{item.label}</Text>
       </View>
     );
   };
@@ -164,11 +165,11 @@ export function SearchablePicker({
       containerStyle={dropdownContainerStyle}
       itemTextStyle={dropdownItemTextStyle}
       inputSearchStyle={dropdownInputSearchStyle}
-      searchPlaceholderTextColor="#5a5a9a"
+      searchPlaceholderTextColor={colors.placeholderSearch}
       renderItem={renderItem}
       renderRightIcon={() =>
         isLoading ? (
-          <ActivityIndicator color="#e0e0ff" size="small" style={{ marginRight: 4 }} />
+          <ActivityIndicator color={colors.brand100} size="small" style={{ marginRight: 4 }} />
         ) : null
       }
     />

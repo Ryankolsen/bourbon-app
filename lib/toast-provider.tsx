@@ -8,6 +8,7 @@ import React, {
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { enqueueToast, advanceQueue } from "@/lib/toast";
 import type { ToastQueue, ToastType } from "@/lib/toast";
+import { colors } from "@/lib/colors";
 
 interface ToastContextValue {
   showToast: (message: string, type?: ToastType, onPress?: () => void) => void;
@@ -112,19 +113,19 @@ const styles = StyleSheet.create({
     maxWidth: 340,
   },
   success: {
-    backgroundColor: "#4848c0", // bourbon-600
+    backgroundColor: colors.toastSuccess,
   },
   error: {
-    backgroundColor: "#b91c1c", // red-700
+    backgroundColor: colors.toastError,
   },
   text: {
-    color: "#ffffff",
+    color: colors.white,
     fontSize: 14,
     fontWeight: "600",
     textAlign: "center",
   },
   actionText: {
-    color: "#c8c8e8",
+    color: colors.toastAction,
     fontSize: 12,
     fontWeight: "500",
     textAlign: "center",

@@ -18,6 +18,7 @@ import {
   useUploadAvatar,
 } from "@/hooks/use-profile";
 import { useFollowerCount, useFollowingCount } from "@/hooks/use-follows";
+import { colors } from "@/lib/colors";
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
@@ -70,15 +71,15 @@ export default function ProfileScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center">
-        <ActivityIndicator color="#c8a96e" />
+      <View className="flex-1 bg-brand-900 items-center justify-center">
+        <ActivityIndicator color={colors.spinnerAmber} />
       </View>
     );
   }
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-bourbon-900"
+      className="flex-1 bg-brand-900"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -99,82 +100,82 @@ export default function ProfileScreen() {
                 className="w-24 h-24 rounded-full"
               />
             ) : (
-              <View className="w-24 h-24 rounded-full bg-bourbon-700 items-center justify-center">
-                <Text className="text-bourbon-300 text-3xl font-bold">
+              <View className="w-24 h-24 rounded-full bg-brand-700 items-center justify-center">
+                <Text className="text-brand-300 text-3xl font-bold">
                   {(profile?.display_name ?? user?.email ?? "?")[0].toUpperCase()}
                 </Text>
               </View>
             )}
-            <View className="absolute bottom-0 right-0 bg-bourbon-500 rounded-full w-7 h-7 items-center justify-center">
+            <View className="absolute bottom-0 right-0 bg-brand-500 rounded-full w-7 h-7 items-center justify-center">
               {uploadAvatar.isPending ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={colors.white} />
               ) : (
                 <Text className="text-white text-xs font-bold">✎</Text>
               )}
             </View>
           </TouchableOpacity>
-          <Text className="text-bourbon-400 text-xs mt-2">Tap to change photo</Text>
+          <Text className="text-brand-400 text-xs mt-2">Tap to change photo</Text>
         </View>
 
         {/* Follower / following counts */}
-        <View className="flex-row bg-bourbon-800 rounded-2xl p-4 mb-4 justify-around">
+        <View className="flex-row bg-brand-800 rounded-2xl p-4 mb-4 justify-around">
           <View className="items-center">
-            <Text className="text-bourbon-100 text-xl font-bold">
+            <Text className="text-brand-100 text-xl font-bold">
               {followerCount ?? 0}
             </Text>
-            <Text className="text-bourbon-400 text-xs mt-0.5">Followers</Text>
+            <Text className="text-brand-400 text-xs mt-0.5">Followers</Text>
           </View>
-          <View className="w-px bg-bourbon-700" />
+          <View className="w-px bg-brand-700" />
           <View className="items-center">
-            <Text className="text-bourbon-100 text-xl font-bold">
+            <Text className="text-brand-100 text-xl font-bold">
               {followingCount ?? 0}
             </Text>
-            <Text className="text-bourbon-400 text-xs mt-0.5">Following</Text>
+            <Text className="text-brand-400 text-xs mt-0.5">Following</Text>
           </View>
         </View>
 
         {/* Profile Info / Edit Form */}
-        <View className="bg-bourbon-800 rounded-2xl p-5 mb-4">
+        <View className="bg-brand-800 rounded-2xl p-5 mb-4">
           {editing ? (
             <>
-              <Text className="text-bourbon-400 text-xs uppercase tracking-widest mb-1">
+              <Text className="text-brand-400 text-xs uppercase tracking-widest mb-1">
                 Display Name
               </Text>
               <TextInput
                 value={displayName}
                 onChangeText={setDisplayName}
                 placeholder="Your display name"
-                placeholderTextColor="#6b5c45"
-                className="text-bourbon-100 text-base border-b border-bourbon-600 pb-2 mb-4"
+                placeholderTextColor={colors.placeholderMuted}
+                className="text-brand-100 text-base border-b border-brand-600 pb-2 mb-4"
               />
 
-              <Text className="text-bourbon-400 text-xs uppercase tracking-widest mb-1">
+              <Text className="text-brand-400 text-xs uppercase tracking-widest mb-1">
                 Username
               </Text>
               <TextInput
                 value={username}
                 onChangeText={setUsername}
                 placeholder="your_username"
-                placeholderTextColor="#6b5c45"
+                placeholderTextColor={colors.placeholderMuted}
                 autoCapitalize="none"
                 autoCorrect={false}
-                className="text-bourbon-100 text-base border-b border-bourbon-600 pb-2"
+                className="text-brand-100 text-base border-b border-brand-600 pb-2"
               />
 
               <View className="flex-row gap-3 mt-5">
                 <TouchableOpacity
                   onPress={cancelEditing}
-                  className="flex-1 border border-bourbon-600 rounded-xl py-3 items-center"
+                  className="flex-1 border border-brand-600 rounded-xl py-3 items-center"
                 >
-                  <Text className="text-bourbon-400 font-semibold">Cancel</Text>
+                  <Text className="text-brand-400 font-semibold">Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={saveProfile}
                   disabled={updateProfile.isPending}
-                  className="flex-1 bg-bourbon-500 rounded-xl py-3 items-center"
+                  className="flex-1 bg-brand-500 rounded-xl py-3 items-center"
                 >
                   {updateProfile.isPending ? (
-                    <ActivityIndicator size="small" color="#fff" />
+                    <ActivityIndicator size="small" color={colors.white} />
                   ) : (
                     <Text className="text-white font-semibold">Save</Text>
                   )}
@@ -183,32 +184,32 @@ export default function ProfileScreen() {
             </>
           ) : (
             <>
-              <Text className="text-bourbon-400 text-xs uppercase tracking-widest mb-1">
+              <Text className="text-brand-400 text-xs uppercase tracking-widest mb-1">
                 Display Name
               </Text>
-              <Text className="text-bourbon-100 font-semibold text-base mb-4">
+              <Text className="text-brand-100 font-semibold text-base mb-4">
                 {profile?.display_name ?? "—"}
               </Text>
 
-              <Text className="text-bourbon-400 text-xs uppercase tracking-widest mb-1">
+              <Text className="text-brand-400 text-xs uppercase tracking-widest mb-1">
                 Username
               </Text>
-              <Text className="text-bourbon-100 font-semibold text-base mb-4">
+              <Text className="text-brand-100 font-semibold text-base mb-4">
                 {profile?.username ? `@${profile.username}` : "—"}
               </Text>
 
-              <Text className="text-bourbon-400 text-xs uppercase tracking-widest mb-1">
+              <Text className="text-brand-400 text-xs uppercase tracking-widest mb-1">
                 Email
               </Text>
-              <Text className="text-bourbon-100 font-semibold text-base">
+              <Text className="text-brand-100 font-semibold text-base">
                 {user?.email ?? "—"}
               </Text>
 
               <TouchableOpacity
                 onPress={startEditing}
-                className="mt-5 border border-bourbon-500 rounded-xl py-3 items-center"
+                className="mt-5 border border-brand-500 rounded-xl py-3 items-center"
               >
-                <Text className="text-bourbon-300 font-semibold">Edit Profile</Text>
+                <Text className="text-brand-300 font-semibold">Edit Profile</Text>
               </TouchableOpacity>
             </>
           )}

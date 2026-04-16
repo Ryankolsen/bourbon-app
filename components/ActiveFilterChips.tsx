@@ -138,10 +138,10 @@ interface ChipProps {
 
 function Chip({ label, clearTestId, onClear }: ChipProps) {
   return (
-    <View className="flex-row items-center bg-bourbon-700 rounded-full px-3 py-1 gap-1">
-      <Text className="text-bourbon-100 text-xs">{label}</Text>
+    <View className="flex-row items-center bg-brand-700 rounded-full px-3 py-1 gap-1">
+      <Text className="text-brand-100 text-xs">{label}</Text>
       <TouchableOpacity testID={clearTestId} onPress={onClear} hitSlop={4}>
-        <Text className="text-bourbon-400 text-xs">×</Text>
+        <Text className="text-brand-400 text-xs">×</Text>
       </TouchableOpacity>
     </View>
   );

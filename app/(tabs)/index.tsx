@@ -16,6 +16,7 @@ import { FilterSheet } from "@/components/FilterSheet";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { BourbonCard } from "@/components/BourbonCard";
 import { useToast } from "@/lib/toast-provider";
+import { colors } from "@/lib/colors";
 
 export default function CollectionScreen() {
   const { user } = useAuth();
@@ -46,15 +47,15 @@ export default function CollectionScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center">
-        <ActivityIndicator color="#e39e38" size="large" />
+      <View className="flex-1 bg-brand-900 items-center justify-center">
+        <ActivityIndicator color={colors.spinnerDefault} size="large" />
       </View>
     );
   }
 
   if (isError) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center px-8">
+      <View className="flex-1 bg-brand-900 items-center justify-center px-8">
         <Text className="text-red-400 text-center">Failed to load collection.</Text>
       </View>
     );
@@ -63,13 +64,13 @@ export default function CollectionScreen() {
   const isEmpty = collection.length === 0;
 
   return (
-    <View className="flex-1 bg-bourbon-900">
+    <View className="flex-1 bg-brand-900">
       {/* Filter icon row */}
       <View className="px-4 pt-4 pb-2 flex-row justify-end">
         <TouchableOpacity
           onPress={() => setFilterSheetVisible(true)}
           className={`rounded-xl px-3 py-2 items-center justify-center ${
-            hasActiveFilters ? "bg-bourbon-600" : "bg-bourbon-800"
+            hasActiveFilters ? "bg-brand-600" : "bg-brand-800"
           }`}
         >
           <Text className="text-xl">⚙️</Text>
@@ -93,20 +94,20 @@ export default function CollectionScreen() {
         <View className="flex-1 items-center justify-center px-8">
           {hasActiveFilters ? (
             <>
-              <Text className="text-bourbon-500 text-sm text-center">
+              <Text className="text-brand-500 text-sm text-center">
                 No bourbons in your collection match the active filters.
               </Text>
               <TouchableOpacity onPress={resetFilters} className="mt-2">
-                <Text className="text-bourbon-400 text-sm underline">Clear filters</Text>
+                <Text className="text-brand-400 text-sm underline">Clear filters</Text>
               </TouchableOpacity>
             </>
           ) : (
             <>
               <Text className="text-5xl mb-4">🥃</Text>
-              <Text className="text-bourbon-100 text-xl font-bold mb-2">
+              <Text className="text-brand-100 text-xl font-bold mb-2">
                 Your vault is empty
               </Text>
-              <Text className="text-bourbon-400 text-center text-sm">
+              <Text className="text-brand-400 text-center text-sm">
                 Head to Explore to add bourbons to your collection.
               </Text>
             </>
@@ -118,7 +119,7 @@ export default function CollectionScreen() {
           keyExtractor={(item) => item.id}
           contentContainerClassName="p-4 gap-3"
           ListHeaderComponent={
-            <Text className="text-bourbon-500 text-xs pt-1 pb-1">
+            <Text className="text-brand-500 text-xs pt-1 pb-1">
               {collection.length} {collection.length === 1 ? "bottle" : "bottles"}
               {hasActiveFilters ? " (filtered)" : ""}
             </Text>
@@ -161,10 +162,10 @@ export default function CollectionScreen() {
                       ]
                     );
                   }}
-                  className="mt-3 px-3 py-1.5 rounded-xl bg-bourbon-700 items-center"
+                  className="mt-3 px-3 py-1.5 rounded-xl bg-brand-700 items-center"
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Text className="text-bourbon-300 text-xs">Remove from Vault</Text>
+                  <Text className="text-brand-300 text-xs">Remove from Vault</Text>
                 </TouchableOpacity>
               </BourbonCard>
             );

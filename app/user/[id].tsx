@@ -20,6 +20,7 @@ import {
 import { useSharesGroup } from "@/hooks/use-groups";
 import { useCollection } from "@/hooks/use-collection";
 import { useTastings } from "@/hooks/use-tastings";
+import { colors } from "@/lib/colors";
 
 export default function PublicProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -52,20 +53,20 @@ export default function PublicProfileScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center">
-        <ActivityIndicator color="#e39e38" size="large" />
+      <View className="flex-1 bg-brand-900 items-center justify-center">
+        <ActivityIndicator color={colors.spinnerDefault} size="large" />
       </View>
     );
   }
 
   if (!profile) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center px-8">
+      <View className="flex-1 bg-brand-900 items-center justify-center px-8">
         <Text className="text-red-400 text-center text-base">
           User not found.
         </Text>
         <TouchableOpacity onPress={() => router.back()} className="mt-4">
-          <Text className="text-bourbon-400 text-sm">Go back</Text>
+          <Text className="text-brand-400 text-sm">Go back</Text>
         </TouchableOpacity>
       </View>
     );
@@ -75,11 +76,11 @@ export default function PublicProfileScreen() {
   const initials = displayName[0].toUpperCase();
 
   return (
-    <View className="flex-1 bg-bourbon-900">
+    <View className="flex-1 bg-brand-900">
       {/* Header */}
       <View className="px-4 pb-2" style={{ paddingTop: insets.top + 8 }}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
-          <Text className="text-bourbon-400 text-base">← Back</Text>
+          <Text className="text-brand-400 text-base">← Back</Text>
         </TouchableOpacity>
       </View>
 
@@ -92,54 +93,54 @@ export default function PublicProfileScreen() {
               className="w-24 h-24 rounded-full"
             />
           ) : (
-            <View className="w-24 h-24 rounded-full bg-bourbon-700 items-center justify-center">
-              <Text className="text-bourbon-300 text-3xl font-bold">
+            <View className="w-24 h-24 rounded-full bg-brand-700 items-center justify-center">
+              <Text className="text-brand-300 text-3xl font-bold">
                 {initials}
               </Text>
             </View>
           )}
 
-          <Text className="text-bourbon-100 text-xl font-bold mt-3">
+          <Text className="text-brand-100 text-xl font-bold mt-3">
             {displayName}
           </Text>
           {profile.username && (
-            <Text className="text-bourbon-400 text-sm mt-0.5">
+            <Text className="text-brand-400 text-sm mt-0.5">
               @{profile.username}
             </Text>
           )}
         </View>
 
         {/* Follower / following counts */}
-        <View className="flex-row bg-bourbon-800 rounded-2xl p-4 mb-4 justify-around">
+        <View className="flex-row bg-brand-800 rounded-2xl p-4 mb-4 justify-around">
           <View className="items-center">
-            <Text className="text-bourbon-100 text-xl font-bold">
+            <Text className="text-brand-100 text-xl font-bold">
               {followerCount ?? 0}
             </Text>
-            <Text className="text-bourbon-400 text-xs mt-0.5">Followers</Text>
+            <Text className="text-brand-400 text-xs mt-0.5">Followers</Text>
           </View>
-          <View className="w-px bg-bourbon-700" />
+          <View className="w-px bg-brand-700" />
           <View className="items-center">
-            <Text className="text-bourbon-100 text-xl font-bold">
+            <Text className="text-brand-100 text-xl font-bold">
               {followingCount ?? 0}
             </Text>
-            <Text className="text-bourbon-400 text-xs mt-0.5">Following</Text>
+            <Text className="text-brand-400 text-xs mt-0.5">Following</Text>
           </View>
         </View>
 
         {/* Tasting / collection counts */}
-        <View className="flex-row bg-bourbon-800 rounded-2xl p-4 mb-4 justify-around">
+        <View className="flex-row bg-brand-800 rounded-2xl p-4 mb-4 justify-around">
           <View className="items-center">
-            <Text className="text-bourbon-100 text-xl font-bold">
+            <Text className="text-brand-100 text-xl font-bold">
               {publicStats?.tasting_count ?? 0}
             </Text>
-            <Text className="text-bourbon-400 text-xs mt-0.5">Tastings</Text>
+            <Text className="text-brand-400 text-xs mt-0.5">Tastings</Text>
           </View>
-          <View className="w-px bg-bourbon-700" />
+          <View className="w-px bg-brand-700" />
           <View className="items-center">
-            <Text className="text-bourbon-100 text-xl font-bold">
+            <Text className="text-brand-100 text-xl font-bold">
               {publicStats?.collection_count ?? 0}
             </Text>
-            <Text className="text-bourbon-400 text-xs mt-0.5">Collection</Text>
+            <Text className="text-brand-400 text-xs mt-0.5">Collection</Text>
           </View>
         </View>
 
@@ -149,15 +150,15 @@ export default function PublicProfileScreen() {
             onPress={handleFollowToggle}
             disabled={followUser.isPending || unfollowUser.isPending}
             className={`rounded-2xl py-4 items-center ${
-              isFollowing ? "bg-bourbon-800 border border-bourbon-600" : "bg-bourbon-600"
+              isFollowing ? "bg-brand-800 border border-brand-600" : "bg-brand-600"
             }`}
           >
             {followUser.isPending || unfollowUser.isPending ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color={colors.white} />
             ) : (
               <Text
                 className={`font-semibold text-base ${
-                  isFollowing ? "text-bourbon-300" : "text-white"
+                  isFollowing ? "text-brand-300" : "text-white"
                 }`}
               >
                 {isFollowing ? "Following" : "Follow"}
@@ -167,8 +168,8 @@ export default function PublicProfileScreen() {
         )}
 
         {isOwnProfile && (
-          <View className="bg-bourbon-800 rounded-2xl p-4 items-center">
-            <Text className="text-bourbon-400 text-sm">This is your profile</Text>
+          <View className="bg-brand-800 rounded-2xl p-4 items-center">
+            <Text className="text-brand-400 text-sm">This is your profile</Text>
           </View>
         )}
 
@@ -177,11 +178,11 @@ export default function PublicProfileScreen() {
           <>
             {/* Their Collection */}
             <View className="mt-6">
-              <Text className="text-bourbon-400 text-xs font-semibold uppercase tracking-wider mb-3">
+              <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
                 Collection
               </Text>
               {memberCollection.length === 0 ? (
-                <Text className="text-bourbon-500 text-sm text-center py-3">
+                <Text className="text-brand-500 text-sm text-center py-3">
                   No bottles in collection yet.
                 </Text>
               ) : (
@@ -198,13 +199,13 @@ export default function PublicProfileScreen() {
                           ? router.push(`/bourbon/${bourbon.id}` as never)
                           : undefined
                       }
-                      className="bg-bourbon-800 rounded-2xl p-3 mb-2"
+                      className="bg-brand-800 rounded-2xl p-3 mb-2"
                     >
-                      <Text className="text-bourbon-100 text-sm font-semibold">
+                      <Text className="text-brand-100 text-sm font-semibold">
                         {bourbon?.name ?? "Unknown Bourbon"}
                       </Text>
                       {bourbon?.distillery ? (
-                        <Text className="text-bourbon-400 text-xs mt-0.5">
+                        <Text className="text-brand-400 text-xs mt-0.5">
                           {bourbon.distillery}
                         </Text>
                       ) : null}
@@ -216,11 +217,11 @@ export default function PublicProfileScreen() {
 
             {/* Their Tastings */}
             <View className="mt-6">
-              <Text className="text-bourbon-400 text-xs font-semibold uppercase tracking-wider mb-3">
+              <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
                 Tastings
               </Text>
               {memberTastings.length === 0 ? (
-                <Text className="text-bourbon-500 text-sm text-center py-3">
+                <Text className="text-brand-500 text-sm text-center py-3">
                   No tastings logged yet.
                 </Text>
               ) : (
@@ -244,14 +245,14 @@ export default function PublicProfileScreen() {
                           ? router.push(`/bourbon/${bourbon.id}` as never)
                           : undefined
                       }
-                      className="bg-bourbon-800 rounded-2xl p-3 mb-2"
+                      className="bg-brand-800 rounded-2xl p-3 mb-2"
                     >
                       <View className="flex-row items-center justify-between">
-                        <Text className="text-bourbon-100 text-sm font-semibold flex-1 mr-2">
+                        <Text className="text-brand-100 text-sm font-semibold flex-1 mr-2">
                           {bourbon?.name ?? "Unknown Bourbon"}
                         </Text>
                         {(tasting as { rating: number | null }).rating != null && (
-                          <Text className="text-bourbon-400 text-xs">
+                          <Text className="text-brand-400 text-xs">
                             {"★".repeat(
                               (tasting as { rating: number }).rating
                             )}
@@ -261,7 +262,7 @@ export default function PublicProfileScreen() {
                           </Text>
                         )}
                       </View>
-                      <Text className="text-bourbon-500 text-xs mt-0.5">
+                      <Text className="text-brand-500 text-xs mt-0.5">
                         {date}
                       </Text>
                     </TouchableOpacity>

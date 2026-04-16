@@ -6,6 +6,7 @@ import { makeRedirectUri } from "expo-auth-session";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { supabase } from "@/lib/supabase";
 import { DEV_USERS, DEV_PASSWORD } from "@/lib/dev-users";
+import { colors } from "@/lib/colors";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -94,16 +95,16 @@ export default function LoginScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-bourbon-900"
+      className="flex-1 bg-brand-900"
       contentContainerClassName="items-center justify-center px-8 py-16"
       keyboardShouldPersistTaps="handled"
     >
       <View className="mb-12 items-center">
         <Text className="text-5xl mb-2">🥃</Text>
-        <Text className="text-4xl font-bold text-bourbon-100 tracking-tight">
+        <Text className="text-4xl font-bold text-brand-100 tracking-tight">
           BourbonVault
         </Text>
-        <Text className="text-bourbon-300 mt-2 text-base">
+        <Text className="text-brand-300 mt-2 text-base">
           Track your collection, tastings & wishlist
         </Text>
       </View>
@@ -126,8 +127,8 @@ export default function LoginScreen() {
         )}
 
         {!Device.isDevice && Platform.OS !== "ios" ? (
-          <View className="bg-bourbon-800 rounded-xl py-4 flex-row items-center justify-center gap-2 opacity-40">
-            <Text className="text-bourbon-400 font-semibold text-base">
+          <View className="bg-brand-800 rounded-xl py-4 flex-row items-center justify-center gap-2 opacity-40">
+            <Text className="text-brand-400 font-semibold text-base">
               Google (disabled in local dev)
             </Text>
           </View>
@@ -135,7 +136,7 @@ export default function LoginScreen() {
           <TouchableOpacity
             onPress={signInWithGoogle}
             disabled={loading}
-            className="bg-bourbon-600 rounded-xl py-4 flex-row items-center justify-center gap-2"
+            className="bg-brand-600 rounded-xl py-4 flex-row items-center justify-center gap-2"
           >
             {loading ? (
               <ActivityIndicator color="white" />
@@ -148,28 +149,28 @@ export default function LoginScreen() {
         )}
       </View>
 
-      <Text className="text-bourbon-500 text-xs mt-8 text-center">
+      <Text className="text-brand-500 text-xs mt-8 text-center">
         By continuing, you agree to our Terms of Service and Privacy Policy
       </Text>
 
       {!Device.isDevice && Platform.OS !== "ios" && (
-        <View className="mt-8 w-full border-t border-bourbon-700 pt-6">
-          <Text className="text-bourbon-500 text-xs text-center mb-3">DEV — sign in as</Text>
+        <View className="mt-8 w-full border-t border-brand-700 pt-6">
+          <Text className="text-brand-500 text-xs text-center mb-3">DEV — sign in as</Text>
           {DEV_USERS.map((u) => (
             <TouchableOpacity
               key={u.id}
               onPress={() => signInWithEmail(u.email)}
               disabled={loadingEmail !== null}
-              className="bg-bourbon-800 rounded-xl px-4 py-3 mb-2 flex-row items-center justify-between"
+              className="bg-brand-800 rounded-xl px-4 py-3 mb-2 flex-row items-center justify-between"
             >
               <View>
-                <Text className="text-bourbon-100 font-semibold text-sm">{u.name}</Text>
-                <Text className="text-bourbon-500 text-xs">{u.role}</Text>
+                <Text className="text-brand-100 font-semibold text-sm">{u.name}</Text>
+                <Text className="text-brand-500 text-xs">{u.role}</Text>
               </View>
               {loadingEmail === u.email ? (
                 <ActivityIndicator color="white" size="small" />
               ) : (
-                <Text className="text-bourbon-500 text-xs">{u.email}</Text>
+                <Text className="text-brand-500 text-xs">{u.email}</Text>
               )}
             </TouchableOpacity>
           ))}

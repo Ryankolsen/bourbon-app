@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
 import { useUserRatings, useAllBourbonRatingStats } from "@/hooks/use-ratings";
 import { BourbonCard } from "@/components/BourbonCard";
+import { colors } from "@/lib/colors";
 
 export default function WishlistScreen() {
   const { user } = useAuth();
@@ -18,15 +19,15 @@ export default function WishlistScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center">
-        <ActivityIndicator color="#e39e38" size="large" />
+      <View className="flex-1 bg-brand-900 items-center justify-center">
+        <ActivityIndicator color={colors.spinnerDefault} size="large" />
       </View>
     );
   }
 
   if (isError) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center px-8">
+      <View className="flex-1 bg-brand-900 items-center justify-center px-8">
         <Text className="text-red-400 text-center">Failed to load wishlist.</Text>
       </View>
     );
@@ -34,10 +35,10 @@ export default function WishlistScreen() {
 
   if (!wishlist || wishlist.length === 0) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center px-8">
+      <View className="flex-1 bg-brand-900 items-center justify-center px-8">
         <Text className="text-5xl mb-4">⭐</Text>
-        <Text className="text-bourbon-100 text-xl font-bold mb-2">Wishlist is empty</Text>
-        <Text className="text-bourbon-400 text-center text-sm">
+        <Text className="text-brand-100 text-xl font-bold mb-2">Wishlist is empty</Text>
+        <Text className="text-brand-400 text-center text-sm">
           Browse Explore and add bourbons you want to try.
         </Text>
       </View>
@@ -45,7 +46,7 @@ export default function WishlistScreen() {
   }
 
   return (
-    <View className="flex-1 bg-bourbon-900">
+    <View className="flex-1 bg-brand-900">
       <FlatList
         data={wishlist}
         keyExtractor={(item) => item.id}
@@ -72,10 +73,10 @@ export default function WishlistScreen() {
                     bourbonId: item.bourbon_id,
                   });
                 }}
-                className="mt-3 px-3 py-1.5 rounded-xl bg-bourbon-700 items-center"
+                className="mt-3 px-3 py-1.5 rounded-xl bg-brand-700 items-center"
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Text className="text-bourbon-300 text-xs">Remove from Wishlist</Text>
+                <Text className="text-brand-300 text-xs">Remove from Wishlist</Text>
               </TouchableOpacity>
             </BourbonCard>
           );

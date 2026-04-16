@@ -26,7 +26,7 @@ export default function AuthCallback() {
   }
 
   return (
-    <View className="flex-1 bg-bourbon-900 items-center justify-center">
+    <View className="flex-1 bg-brand-900 items-center justify-center">
       <ActivityIndicator color="white" size="large" />
     </View>
   );

@@ -70,9 +70,9 @@ describe("StarRating", () => {
     expect(filledStar.props.className).toMatch(/amber/);
   });
 
-  it("community variant applies bourbon color class to filled stars", () => {
+  it("community variant applies brand color class to filled stars", () => {
     const { getByTestId } = render(<StarRating value={1} variant="community" />);
     const filledStar = getByTestId("star-0-filled");
-    expect(filledStar.props.className).toMatch(/bourbon/);
+    expect(filledStar.props.className).toMatch(/brand/);
   });
 });

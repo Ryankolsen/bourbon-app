@@ -21,6 +21,7 @@ import { FilterSheet } from "@/components/FilterSheet";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { BourbonCard } from "@/components/BourbonCard";
 import { useFriendTastedBourbonIds } from "@/hooks/use-friend-tasted-bourbon-ids";
+import { colors } from "@/lib/colors";
 
 export default function ExploreScreen() {
   const [search, setSearch] = useState("");
@@ -84,7 +85,7 @@ export default function ExploreScreen() {
 
 
   return (
-    <View className="flex-1 bg-bourbon-900">
+    <View className="flex-1 bg-brand-900">
       <View className="px-4 pt-4 pb-2 gap-2">
         {/* Search bar + filter icon row */}
         <View className="flex-row gap-2">
@@ -92,13 +93,13 @@ export default function ExploreScreen() {
             value={search}
             onChangeText={setSearch}
             placeholder="Search bourbons..."
-            placeholderTextColor="#7a3c19"
-            className="flex-1 bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
+            placeholderTextColor={colors.placeholderDark}
+            className="flex-1 bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
           />
           <TouchableOpacity
             onPress={() => setFilterSheetVisible(true)}
             className={`rounded-xl px-3 items-center justify-center ${
-              hasActiveFilters ? "bg-bourbon-600" : "bg-bourbon-800"
+              hasActiveFilters ? "bg-brand-600" : "bg-brand-800"
             }`}
           >
             {/* Funnel icon — unicode approximation */}
@@ -121,7 +122,7 @@ export default function ExploreScreen() {
 
         <TouchableOpacity
           onPress={() => router.push("/bourbon/new")}
-          className="bg-bourbon-600 rounded-xl py-2.5 items-center"
+          className="bg-brand-600 rounded-xl py-2.5 items-center"
         >
           <Text className="text-white font-medium text-sm">+ Add a Bourbon</Text>
         </TouchableOpacity>
@@ -129,7 +130,7 @@ export default function ExploreScreen() {
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#e39e38" />
+          <ActivityIndicator color={colors.spinnerDefault} />
         </View>
       ) : (
         <FlatList
@@ -138,7 +139,7 @@ export default function ExploreScreen() {
           contentContainerClassName="px-4 pb-4 gap-3"
           ListHeaderComponent={
             bourbons && bourbons.length > 0 ? (
-              <Text className="text-bourbon-500 text-xs pt-1">
+              <Text className="text-brand-500 text-xs pt-1">
                 {bourbons.length} {bourbons.length === 1 ? "bourbon" : "bourbons"}
                 {hasActiveFilters ? " (filtered)" : ""}
               </Text>
@@ -209,7 +210,7 @@ export default function ExploreScreen() {
                       );
                     }}
                     disabled={isAdding}
-                    className="flex-1 ml-3 bg-bourbon-600 rounded-xl py-2 items-center"
+                    className="flex-1 ml-3 bg-brand-600 rounded-xl py-2 items-center"
                   >
                     <Text className="text-white font-medium text-sm">
                       {isAdding ? "Adding..." : "+ Add to Collection"}
@@ -221,14 +222,14 @@ export default function ExploreScreen() {
           }}
           ListEmptyComponent={
             <View className="items-center py-12">
-              <Text className="text-bourbon-500 text-sm">
+              <Text className="text-brand-500 text-sm">
                 {search || hasActiveFilters
                   ? "No bourbons match your search or filters."
                   : "No bourbons in the database yet."}
               </Text>
               {hasActiveFilters && (
                 <TouchableOpacity onPress={resetFilters} className="mt-2">
-                  <Text className="text-bourbon-400 text-sm underline">Clear filters</Text>
+                  <Text className="text-brand-400 text-sm underline">Clear filters</Text>
                 </TouchableOpacity>
               )}
             </View>

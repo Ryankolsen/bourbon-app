@@ -14,6 +14,7 @@ import { useBourbon } from "@/hooks/use-bourbons";
 import { useLogTasting } from "@/hooks/use-tastings";
 import { useAuth } from "@/hooks/use-auth";
 import { buildTastingPayload } from "@/lib/tastings";
+import { colors } from "@/lib/colors";
 
 const RATING_STEPS = [1, 2, 3, 4, 5];
 const STAR_LABELS: Record<number, string> = {
@@ -56,36 +57,36 @@ export default function NewTastingScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center">
-        <ActivityIndicator color="#e39e38" size="large" />
+      <View className="flex-1 bg-brand-900 items-center justify-center">
+        <ActivityIndicator color={colors.spinnerDefault} size="large" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-bourbon-900">
+    <View className="flex-1 bg-brand-900">
       {/* Header */}
       <View
         className="px-4 pb-2 flex-row items-center gap-3"
         style={{ paddingTop: insets.top + 8 }}
       >
         <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
-          <Text className="text-bourbon-400 text-base">← Back</Text>
+          <Text className="text-brand-400 text-base">← Back</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerClassName="px-4 pb-8">
         {/* Title */}
         <View className="mb-6">
-          <Text className="text-bourbon-100 text-2xl font-bold">Log Tasting</Text>
+          <Text className="text-brand-100 text-2xl font-bold">Log Tasting</Text>
           {bourbon && (
-            <Text className="text-bourbon-400 text-base mt-1">{bourbon.name}</Text>
+            <Text className="text-brand-400 text-base mt-1">{bourbon.name}</Text>
           )}
         </View>
 
         {/* Rating */}
-        <View className="bg-bourbon-800 rounded-2xl p-4 mb-4">
-          <Text className="text-bourbon-400 text-xs font-semibold uppercase tracking-wider mb-3">
+        <View className="bg-brand-800 rounded-2xl p-4 mb-4">
+          <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
             Rating
           </Text>
           <View className="flex-row gap-3 justify-center">
@@ -102,7 +103,7 @@ export default function NewTastingScreen() {
             ))}
           </View>
           {rating !== null && (
-            <Text className="text-bourbon-300 text-sm mt-3 text-center">
+            <Text className="text-brand-300 text-sm mt-3 text-center">
               {rating}/5 — {STAR_LABELS[rating]}
             </Text>
           )}
@@ -145,7 +146,7 @@ export default function NewTastingScreen() {
         <TouchableOpacity
           onPress={handleSubmit}
           disabled={logTasting.isPending}
-          className="bg-bourbon-600 rounded-2xl py-4 items-center mt-2"
+          className="bg-brand-600 rounded-2xl py-4 items-center mt-2"
         >
           <Text className="text-white font-semibold text-base">
             {logTasting.isPending ? "Saving..." : "Save Tasting"}
@@ -170,19 +171,19 @@ function NoteField({
   tall?: boolean;
 }) {
   return (
-    <View className="bg-bourbon-800 rounded-2xl p-4 mb-4">
-      <Text className="text-bourbon-400 text-xs font-semibold uppercase tracking-wider mb-2">
+    <View className="bg-brand-800 rounded-2xl p-4 mb-4">
+      <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-2">
         {label}
       </Text>
       <TextInput
         value={value}
         onChangeText={onChange}
         placeholder={placeholder}
-        placeholderTextColor="#7a3c19"
+        placeholderTextColor={colors.placeholderDark}
         multiline
         numberOfLines={tall ? 4 : 2}
         textAlignVertical="top"
-        className="text-bourbon-100 text-sm leading-relaxed"
+        className="text-brand-100 text-sm leading-relaxed"
         style={{ minHeight: tall ? 80 : 44 }}
       />
     </View>

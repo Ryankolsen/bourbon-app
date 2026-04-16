@@ -3,6 +3,7 @@ import { Text, View } from "react-native";
 import { useAuth } from "@/hooks/use-auth";
 import { isAdmin } from "@/lib/admin";
 import { useGroupNotifications } from "@/hooks/use-group-notifications";
+import { colors } from "@/lib/colors";
 
 function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
   return (
@@ -29,7 +30,7 @@ function GroupsTabIcon({ focused }: { focused: boolean }) {
             width: 10,
             height: 10,
             borderRadius: 5,
-            backgroundColor: "#dc2626",
+            backgroundColor: colors.badgeError,
           }}
         />
       )}
@@ -45,13 +46,13 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          backgroundColor: "#0d0a2e",
-          borderTopColor: "#2a1f6e",
+          backgroundColor: colors.tabBar,
+          borderTopColor: colors.tabBorder,
         },
-        tabBarActiveTintColor: "#818cf8",
-        tabBarInactiveTintColor: "#4a4580",
-        headerStyle: { backgroundColor: "#0d0a2e" },
-        headerTintColor: "#e0e7ff",
+        tabBarActiveTintColor: colors.tabActive,
+        tabBarInactiveTintColor: colors.tabInactive,
+        headerStyle: { backgroundColor: colors.tabBar },
+        headerTintColor: colors.headerTint,
       }}
     >
       <Tabs.Screen

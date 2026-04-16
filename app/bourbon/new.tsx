@@ -1,3 +1,4 @@
+import { colors } from "@/lib/colors";
 import {
   View,
   Text,
@@ -112,14 +113,14 @@ export default function NewBourbonScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-bourbon-900"
+      className="flex-1 bg-brand-900"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
         contentContainerClassName="px-4 py-6 gap-4"
         keyboardShouldPersistTaps="handled"
       >
-        <Text className="text-bourbon-100 text-2xl font-bold mb-2">Add a Bourbon</Text>
+        <Text className="text-brand-100 text-2xl font-bold mb-2">Add a Bourbon</Text>
 
         {/* Required fields */}
         <Field label="Name *" error={errors.name?.message}>
@@ -128,8 +129,8 @@ export default function NewBourbonScreen() {
             name="name"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor="#7a3c19"
+                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                placeholderTextColor={colors.placeholderDark}
                 placeholder="e.g. Blanton's Original"
                 onBlur={onBlur}
                 onChangeText={onChange}
@@ -175,8 +176,8 @@ export default function NewBourbonScreen() {
             name="proof"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor="#7a3c19"
+                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                placeholderTextColor={colors.placeholderDark}
                 placeholder="e.g. 93"
                 keyboardType="decimal-pad"
                 onBlur={onBlur}
@@ -188,7 +189,7 @@ export default function NewBourbonScreen() {
         </Field>
 
         {/* Optional fields */}
-        <Text className="text-bourbon-400 text-xs uppercase tracking-widest mt-2">
+        <Text className="text-brand-400 text-xs uppercase tracking-widest mt-2">
           Optional
         </Text>
 
@@ -204,13 +205,13 @@ export default function NewBourbonScreen() {
                     onPress={() => onChange(value === typeValue ? "" : typeValue)}
                     className={`px-3 py-1.5 rounded-lg border ${
                       value === typeValue
-                        ? "bg-bourbon-600 border-bourbon-500"
-                        : "bg-bourbon-800 border-bourbon-700"
+                        ? "bg-brand-600 border-brand-500"
+                        : "bg-brand-800 border-brand-700"
                     }`}
                   >
                     <Text
                       className={`text-xs ${
-                        value === typeValue ? "text-white" : "text-bourbon-400"
+                        value === typeValue ? "text-white" : "text-brand-400"
                       }`}
                     >
                       {label}
@@ -228,8 +229,8 @@ export default function NewBourbonScreen() {
             name="age_statement"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor="#7a3c19"
+                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                placeholderTextColor={colors.placeholderDark}
                 placeholder="e.g. 12"
                 keyboardType="decimal-pad"
                 onBlur={onBlur}
@@ -246,8 +247,8 @@ export default function NewBourbonScreen() {
             name="mashbill"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor="#7a3c19"
+                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                placeholderTextColor={colors.placeholderDark}
                 placeholder="e.g. 75% corn, 13% rye, 12% barley"
                 onBlur={onBlur}
                 onChangeText={onChange}
@@ -263,8 +264,8 @@ export default function NewBourbonScreen() {
             name="msrp"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor="#7a3c19"
+                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                placeholderTextColor={colors.placeholderDark}
                 placeholder="e.g. 49.99"
                 keyboardType="decimal-pad"
                 onBlur={onBlur}
@@ -281,8 +282,8 @@ export default function NewBourbonScreen() {
             name="description"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor="#7a3c19"
+                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                placeholderTextColor={colors.placeholderDark}
                 placeholder="Brief description of this bourbon"
                 multiline
                 numberOfLines={3}
@@ -348,8 +349,8 @@ export default function NewBourbonScreen() {
             name="city"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                className="bg-bourbon-800 text-bourbon-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor="#7a3c19"
+                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                placeholderTextColor={colors.placeholderDark}
                 placeholder="e.g. Frankfort"
                 onBlur={onBlur}
                 onChangeText={onChange}
@@ -362,10 +363,10 @@ export default function NewBourbonScreen() {
         <TouchableOpacity
           onPress={onSubmit}
           disabled={addBourbon.isPending}
-          className="mt-4 bg-bourbon-600 rounded-xl py-4 items-center"
+          className="mt-4 bg-brand-600 rounded-xl py-4 items-center"
         >
           {addBourbon.isPending ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.white} />
           ) : (
             <Text className="text-white font-semibold text-base">Add Bourbon</Text>
           )}
@@ -375,7 +376,7 @@ export default function NewBourbonScreen() {
           onPress={() => router.back()}
           className="py-3 items-center"
         >
-          <Text className="text-bourbon-400 text-sm">Cancel</Text>
+          <Text className="text-brand-400 text-sm">Cancel</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -383,30 +384,30 @@ export default function NewBourbonScreen() {
 }
 
 const dropdownStyle = {
-  backgroundColor: "#1a1860",
+  backgroundColor: colors.brand800,
   borderRadius: 12,
   paddingHorizontal: 16,
   paddingVertical: 4,
 };
 
 const dropdownPlaceholderStyle = {
-  color: "#7a3c19",
+  color: colors.placeholderDark,
   fontSize: 16,
 };
 
 const dropdownSelectedTextStyle = {
-  color: "#e0e0ff",
+  color: colors.brand100,
   fontSize: 16,
 };
 
 const dropdownContainerStyle = {
-  backgroundColor: "#1a1860",
+  backgroundColor: colors.brand800,
   borderRadius: 12,
-  borderColor: "#2d2b8a",
+  borderColor: colors.brand700,
 };
 
 const dropdownItemTextStyle = {
-  color: "#e0e0ff",
+  color: colors.brand100,
   fontSize: 14,
 };
 
@@ -421,7 +422,7 @@ function Field({
 }) {
   return (
     <View className="gap-1">
-      <Text className="text-bourbon-300 text-sm font-medium">{label}</Text>
+      <Text className="text-brand-300 text-sm font-medium">{label}</Text>
       {children}
       {error ? <Text className="text-red-400 text-xs">{error}</Text> : null}
     </View>
@@ -435,38 +436,38 @@ function DuplicateCard({ bourbon }: { bourbon: BourbonRow }) {
     type ? type.replace(/_/g, " ") : null;
 
   return (
-    <View className="bg-bourbon-800 border border-amber-700 rounded-xl px-4 py-3 gap-1">
-      <Text className="text-bourbon-100 font-semibold text-sm">{bourbon.name}</Text>
+    <View className="bg-brand-800 border border-amber-700 rounded-xl px-4 py-3 gap-1">
+      <Text className="text-brand-100 font-semibold text-sm">{bourbon.name}</Text>
       <View className="flex-row flex-wrap gap-x-3 gap-y-0.5">
         {bourbon.distillery ? (
-          <Text className="text-bourbon-400 text-xs">{bourbon.distillery}</Text>
+          <Text className="text-brand-400 text-xs">{bourbon.distillery}</Text>
         ) : null}
         {bourbon.proof != null ? (
-          <Text className="text-bourbon-400 text-xs">{bourbon.proof} proof</Text>
+          <Text className="text-brand-400 text-xs">{bourbon.proof} proof</Text>
         ) : null}
         {bourbon.type ? (
-          <Text className="text-bourbon-400 text-xs">{formatType(bourbon.type)}</Text>
+          <Text className="text-brand-400 text-xs">{formatType(bourbon.type)}</Text>
         ) : null}
       </View>
 
       {expanded && (
         <View className="mt-1 gap-0.5">
           {bourbon.age_statement != null ? (
-            <Text className="text-bourbon-400 text-xs">Age: {bourbon.age_statement} years</Text>
+            <Text className="text-brand-400 text-xs">Age: {bourbon.age_statement} years</Text>
           ) : null}
           {bourbon.mashbill ? (
-            <Text className="text-bourbon-400 text-xs">Mashbill: {bourbon.mashbill}</Text>
+            <Text className="text-brand-400 text-xs">Mashbill: {bourbon.mashbill}</Text>
           ) : null}
           {bourbon.msrp != null ? (
-            <Text className="text-bourbon-400 text-xs">MSRP: ${bourbon.msrp}</Text>
+            <Text className="text-brand-400 text-xs">MSRP: ${bourbon.msrp}</Text>
           ) : null}
           {bourbon.city || bourbon.state || bourbon.country ? (
-            <Text className="text-bourbon-400 text-xs">
+            <Text className="text-brand-400 text-xs">
               {[bourbon.city, bourbon.state, bourbon.country].filter(Boolean).join(", ")}
             </Text>
           ) : null}
           {bourbon.description ? (
-            <Text className="text-bourbon-400 text-xs">{bourbon.description}</Text>
+            <Text className="text-brand-400 text-xs">{bourbon.description}</Text>
           ) : null}
         </View>
       )}

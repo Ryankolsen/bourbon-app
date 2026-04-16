@@ -1,3 +1,4 @@
+import { colors } from "@/lib/colors";
 import {
   View,
   Text,
@@ -182,20 +183,20 @@ export default function GroupDetailScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center">
-        <ActivityIndicator color="#e39e38" size="large" />
+      <View className="flex-1 bg-brand-900 items-center justify-center">
+        <ActivityIndicator color={colors.spinnerDefault} size="large" />
       </View>
     );
   }
 
   if (!group) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center px-8">
+      <View className="flex-1 bg-brand-900 items-center justify-center px-8">
         <Text className="text-red-400 text-center text-base">
           Group not found.
         </Text>
         <TouchableOpacity onPress={() => router.back()} className="mt-4">
-          <Text className="text-bourbon-400 text-sm">Go back</Text>
+          <Text className="text-brand-400 text-sm">Go back</Text>
         </TouchableOpacity>
       </View>
     );
@@ -208,11 +209,11 @@ export default function GroupDetailScreen() {
     foundProfile?.display_name ?? foundProfile?.username ?? null;
 
   return (
-    <View className="flex-1 bg-bourbon-900">
+    <View className="flex-1 bg-brand-900">
       {/* Header */}
       <View className="px-4 pb-2" style={{ paddingTop: insets.top + 8 }}>
         <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
-          <Text className="text-bourbon-400 text-base">← Back</Text>
+          <Text className="text-brand-400 text-base">← Back</Text>
         </TouchableOpacity>
       </View>
 
@@ -220,32 +221,32 @@ export default function GroupDetailScreen() {
         {/* Group name + description */}
         <View className="mt-4 mb-6">
           <View className="flex-row items-start justify-between">
-            <Text className="text-bourbon-100 text-2xl font-bold flex-1 mr-2">
+            <Text className="text-brand-100 text-2xl font-bold flex-1 mr-2">
               {group.name}
             </Text>
             {isOwner && (
               <TouchableOpacity
                 onPress={handleOpenEdit}
-                className="bg-bourbon-700 rounded-xl px-3 py-1.5 mt-1"
+                className="bg-brand-700 rounded-xl px-3 py-1.5 mt-1"
                 accessibilityLabel="Edit group"
               >
-                <Text className="text-bourbon-200 text-xs font-semibold">Edit</Text>
+                <Text className="text-brand-200 text-xs font-semibold">Edit</Text>
               </TouchableOpacity>
             )}
           </View>
           {group.description ? (
-            <Text className="text-bourbon-400 text-sm mt-1">
+            <Text className="text-brand-400 text-sm mt-1">
               {group.description}
             </Text>
           ) : null}
         </View>
 
         {/* Member count */}
-        <View className="bg-bourbon-800 rounded-2xl p-4 mb-4 flex-row items-center justify-between">
-          <Text className="text-bourbon-300 text-sm font-semibold">
+        <View className="bg-brand-800 rounded-2xl p-4 mb-4 flex-row items-center justify-between">
+          <Text className="text-brand-300 text-sm font-semibold">
             Members
           </Text>
-          <Text className="text-bourbon-100 text-lg font-bold">
+          <Text className="text-brand-100 text-lg font-bold">
             {acceptedMembers.length}
           </Text>
         </View>
@@ -268,7 +269,7 @@ export default function GroupDetailScreen() {
             return (
               <View
                 key={m.user_id}
-                className="flex-row items-center bg-bourbon-800 rounded-2xl p-3 mb-2"
+                className="flex-row items-center bg-brand-800 rounded-2xl p-3 mb-2"
               >
                 <TouchableOpacity
                   onPress={() => router.push(`/user/${m.user_id}` as never)}
@@ -280,26 +281,26 @@ export default function GroupDetailScreen() {
                       className="w-10 h-10 rounded-full"
                     />
                   ) : (
-                    <View className="w-10 h-10 rounded-full bg-bourbon-700 items-center justify-center">
-                      <Text className="text-bourbon-300 font-bold">
+                    <View className="w-10 h-10 rounded-full bg-brand-700 items-center justify-center">
+                      <Text className="text-brand-300 font-bold">
                         {initials}
                       </Text>
                     </View>
                   )}
                   <View className="ml-3 flex-1">
-                    <Text className="text-bourbon-100 text-sm font-semibold">
+                    <Text className="text-brand-100 text-sm font-semibold">
                       {name}
                       {isMe ? " (you)" : ""}
                     </Text>
                     {profile?.username ? (
-                      <Text className="text-bourbon-400 text-xs">
+                      <Text className="text-brand-400 text-xs">
                         @{profile.username}
                       </Text>
                     ) : null}
                   </View>
                   {m.role === "owner" && (
-                    <View className="bg-bourbon-600 rounded-full px-2 py-0.5">
-                      <Text className="text-bourbon-100 text-xs">Owner</Text>
+                    <View className="bg-brand-600 rounded-full px-2 py-0.5">
+                      <Text className="text-brand-100 text-xs">Owner</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -321,7 +322,7 @@ export default function GroupDetailScreen() {
         {/* Pending invites (owner only) */}
         {isOwner && pendingMembers.length > 0 && (
           <View className="mb-6">
-            <Text className="text-bourbon-400 text-xs font-semibold uppercase mb-2">
+            <Text className="text-brand-400 text-xs font-semibold uppercase mb-2">
               Pending Invites
             </Text>
             {pendingMembers.map((m) => {
@@ -338,16 +339,16 @@ export default function GroupDetailScreen() {
               return (
                 <View
                   key={m.user_id}
-                  className="flex-row items-center bg-bourbon-800 rounded-2xl p-3 mb-2"
+                  className="flex-row items-center bg-brand-800 rounded-2xl p-3 mb-2"
                 >
-                  <View className="w-10 h-10 rounded-full bg-bourbon-700 items-center justify-center">
-                    <Text className="text-bourbon-300 font-bold">?</Text>
+                  <View className="w-10 h-10 rounded-full bg-brand-700 items-center justify-center">
+                    <Text className="text-brand-300 font-bold">?</Text>
                   </View>
                   <View className="ml-3 flex-1">
-                    <Text className="text-bourbon-100 text-sm font-semibold">
+                    <Text className="text-brand-100 text-sm font-semibold">
                       {name}
                     </Text>
-                    <Text className="text-bourbon-400 text-xs">Pending</Text>
+                    <Text className="text-brand-400 text-xs">Pending</Text>
                   </View>
                 </View>
               );
@@ -357,8 +358,8 @@ export default function GroupDetailScreen() {
 
         {/* Invite by username (owner only) */}
         {isOwner && (
-          <View className="bg-bourbon-800 rounded-2xl p-4 mb-4">
-            <Text className="text-bourbon-300 text-sm font-semibold mb-3">
+          <View className="bg-brand-800 rounded-2xl p-4 mb-4">
+            <Text className="text-brand-300 text-sm font-semibold mb-3">
               Invite Member
             </Text>
 
@@ -370,8 +371,8 @@ export default function GroupDetailScreen() {
                   if (lookupQuery !== undefined) setLookupQuery(undefined);
                 }}
                 placeholder="@username or email"
-                placeholderTextColor="#7c6a50"
-                className="bg-bourbon-700 rounded-xl px-4 py-3 text-bourbon-100 text-sm flex-1"
+                placeholderTextColor={colors.placeholderGroup}
+                className="bg-brand-700 rounded-xl px-4 py-3 text-brand-100 text-sm flex-1"
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="email-address"
@@ -381,12 +382,12 @@ export default function GroupDetailScreen() {
               <TouchableOpacity
                 onPress={handleFindUser}
                 disabled={!inviteInput.trim() || profileFetching}
-                className="bg-bourbon-700 rounded-xl px-4 py-3 justify-center"
+                className="bg-brand-700 rounded-xl px-4 py-3 justify-center"
               >
                 {profileFetching ? (
-                  <ActivityIndicator size="small" color="#e39e38" />
+                  <ActivityIndicator size="small" color={colors.spinnerDefault} />
                 ) : (
-                  <Text className="text-bourbon-200 text-sm font-semibold">
+                  <Text className="text-brand-200 text-sm font-semibold">
                     Find
                   </Text>
                 )}
@@ -397,15 +398,15 @@ export default function GroupDetailScreen() {
             {lookupDone && (
               <>
                 {foundProfile ? (
-                  <View className="bg-bourbon-900 rounded-xl p-3 mb-3 flex-row items-center gap-3">
+                  <View className="bg-brand-900 rounded-xl p-3 mb-3 flex-row items-center gap-3">
                     {foundProfile.avatar_url ? (
                       <Image
                         source={{ uri: foundProfile.avatar_url }}
                         className="w-9 h-9 rounded-full"
                       />
                     ) : (
-                      <View className="w-9 h-9 rounded-full bg-bourbon-700 items-center justify-center">
-                        <Text className="text-bourbon-300 font-bold text-sm">
+                      <View className="w-9 h-9 rounded-full bg-brand-700 items-center justify-center">
+                        <Text className="text-brand-300 font-bold text-sm">
                           {(
                             foundProfile.display_name ??
                             foundProfile.username ??
@@ -415,18 +416,18 @@ export default function GroupDetailScreen() {
                       </View>
                     )}
                     <View className="flex-1">
-                      <Text className="text-bourbon-100 text-sm font-semibold">
+                      <Text className="text-brand-100 text-sm font-semibold">
                         {inviteeName ?? "—"}
                       </Text>
                       {foundProfile.username && (
-                        <Text className="text-bourbon-400 text-xs">
+                        <Text className="text-brand-400 text-xs">
                           @{foundProfile.username}
                         </Text>
                       )}
                     </View>
                   </View>
                 ) : (
-                  <Text className="text-bourbon-500 text-sm mb-3">
+                  <Text className="text-brand-500 text-sm mb-3">
                     No user found for "{inviteInput}".
                   </Text>
                 )}
@@ -437,15 +438,15 @@ export default function GroupDetailScreen() {
               onPress={handleInvite}
               disabled={!foundProfile || inviteToGroup.isPending}
               className={`rounded-xl py-3 items-center ${
-                foundProfile ? "bg-bourbon-600" : "bg-bourbon-700"
+                foundProfile ? "bg-brand-600" : "bg-brand-700"
               }`}
             >
               {inviteToGroup.isPending ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={colors.white} />
               ) : (
                 <Text
                   className={`font-semibold text-sm ${
-                    foundProfile ? "text-white" : "text-bourbon-600"
+                    foundProfile ? "text-white" : "text-brand-600"
                   }`}
                 >
                   {foundProfile
@@ -460,7 +461,7 @@ export default function GroupDetailScreen() {
         {/* Recommendations */}
         {recommendations.length > 0 && (
           <View className="mb-6">
-            <Text className="text-bourbon-400 text-xs font-semibold uppercase mb-2">
+            <Text className="text-brand-400 text-xs font-semibold uppercase mb-2">
               Recommendations
             </Text>
             {recommendations.map((rec) => {
@@ -485,25 +486,25 @@ export default function GroupDetailScreen() {
                 <TouchableOpacity
                   key={recAny.id}
                   onPress={() => bourbonId ? router.push(`/bourbon/${bourbonId}` as never) : undefined}
-                  className="bg-bourbon-800 rounded-2xl p-4 mb-2"
+                  className="bg-brand-800 rounded-2xl p-4 mb-2"
                 >
                   <View className="flex-row items-start justify-between">
                     <View className="flex-1">
-                      <Text className="text-bourbon-100 text-sm font-semibold">
+                      <Text className="text-brand-100 text-sm font-semibold">
                         {bourbonName}
                       </Text>
                       {distillery ? (
-                        <Text className="text-bourbon-400 text-xs mt-0.5">{distillery}</Text>
+                        <Text className="text-brand-400 text-xs mt-0.5">{distillery}</Text>
                       ) : null}
                       {recAny.note ? (
-                        <Text className="text-bourbon-300 text-xs mt-1 leading-relaxed">
+                        <Text className="text-brand-300 text-xs mt-1 leading-relaxed">
                           "{recAny.note}"
                         </Text>
                       ) : null}
                     </View>
                     <View className="items-end ml-2">
-                      <Text className="text-bourbon-300 text-xs font-medium">{recommenderName}</Text>
-                      <Text className="text-bourbon-500 text-xs mt-0.5">{date}</Text>
+                      <Text className="text-brand-300 text-xs font-medium">{recommenderName}</Text>
+                      <Text className="text-brand-500 text-xs mt-0.5">{date}</Text>
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -520,7 +521,7 @@ export default function GroupDetailScreen() {
             className="border border-red-700 rounded-2xl py-4 items-center"
           >
             {leaveGroup.isPending ? (
-              <ActivityIndicator size="small" color="#ef4444" />
+              <ActivityIndicator size="small" color={colors.errorDefault} />
             ) : (
               <Text className="text-red-400 font-semibold text-base">
                 Leave Group
@@ -552,31 +553,31 @@ export default function GroupDetailScreen() {
             </View>
 
             {/* Name field */}
-            <Text className="text-bourbon-300 text-sm font-semibold mb-1">
+            <Text className="text-brand-300 text-sm font-semibold mb-1">
               Group Name *
             </Text>
             <TextInput
               value={editName}
               onChangeText={setEditName}
               placeholder="Group name"
-              placeholderTextColor="#7c6a50"
+              placeholderTextColor={colors.placeholderGroup}
               maxLength={100}
-              className="bg-bourbon-800 rounded-xl px-4 py-3 text-bourbon-100 text-sm mb-4"
+              className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-4"
             />
 
             {/* Description field */}
-            <Text className="text-bourbon-300 text-sm font-semibold mb-1">
+            <Text className="text-brand-300 text-sm font-semibold mb-1">
               Description
             </Text>
             <TextInput
               value={editDescription}
               onChangeText={setEditDescription}
               placeholder="Optional description"
-              placeholderTextColor="#7c6a50"
+              placeholderTextColor={colors.placeholderGroup}
               maxLength={500}
               multiline
               numberOfLines={3}
-              className="bg-bourbon-800 rounded-xl px-4 py-3 text-bourbon-100 text-sm mb-6"
+              className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-6"
               style={{ textAlignVertical: "top" }}
             />
 
@@ -584,25 +585,25 @@ export default function GroupDetailScreen() {
             <View className="flex-row gap-3">
               <TouchableOpacity
                 onPress={() => setEditModalVisible(false)}
-                className="flex-1 border border-bourbon-700 rounded-xl py-3 items-center"
+                className="flex-1 border border-brand-700 rounded-xl py-3 items-center"
               >
-                <Text className="text-bourbon-300 font-semibold text-sm">Cancel</Text>
+                <Text className="text-brand-300 font-semibold text-sm">Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleSaveEdit}
                 disabled={!editName.trim() || updateGroup.isPending}
                 className={`flex-1 rounded-xl py-3 items-center ${
                   editName.trim() && !updateGroup.isPending
-                    ? "bg-bourbon-600"
-                    : "bg-bourbon-800"
+                    ? "bg-brand-600"
+                    : "bg-brand-800"
                 }`}
               >
                 {updateGroup.isPending ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color={colors.white} />
                 ) : (
                   <Text
                     className={`font-semibold text-sm ${
-                      editName.trim() ? "text-white" : "text-bourbon-600"
+                      editName.trim() ? "text-white" : "text-brand-600"
                     }`}
                   >
                     Save

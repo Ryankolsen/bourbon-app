@@ -12,6 +12,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import { useTasting, useUpdateTasting } from "@/hooks/use-tastings";
 import { useAuth } from "@/hooks/use-auth";
+import { colors } from "@/lib/colors";
 
 const RATING_STEPS = [1, 2, 3, 4, 5];
 const STAR_LABELS: Record<number, string> = {
@@ -84,18 +85,18 @@ export default function TastingDetailScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center">
-        <ActivityIndicator color="#e39e38" size="large" />
+      <View className="flex-1 bg-brand-900 items-center justify-center">
+        <ActivityIndicator color={colors.spinnerDefault} size="large" />
       </View>
     );
   }
 
   if (isError || !tasting) {
     return (
-      <View className="flex-1 bg-bourbon-900 items-center justify-center px-8">
+      <View className="flex-1 bg-brand-900 items-center justify-center px-8">
         <Text className="text-red-400 text-center">Failed to load tasting.</Text>
         <TouchableOpacity onPress={() => router.back()} className="mt-4">
-          <Text className="text-bourbon-400 text-sm">Go back</Text>
+          <Text className="text-brand-400 text-sm">Go back</Text>
         </TouchableOpacity>
       </View>
     );
@@ -110,27 +111,27 @@ export default function TastingDetailScreen() {
   });
 
   return (
-    <View className="flex-1 bg-bourbon-900">
+    <View className="flex-1 bg-brand-900">
       {/* Header */}
       <View
         className="px-4 pb-2 flex-row items-center justify-between"
         style={{ paddingTop: insets.top + 8 }}
       >
         <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
-          <Text className="text-bourbon-400 text-base">← Back</Text>
+          <Text className="text-brand-400 text-base">← Back</Text>
         </TouchableOpacity>
         {isOwner && !editing && (
           <TouchableOpacity onPress={startEditing}>
-            <Text className="text-bourbon-400 text-base">Edit</Text>
+            <Text className="text-brand-400 text-base">Edit</Text>
           </TouchableOpacity>
         )}
         {editing && (
           <View className="flex-row gap-4">
             <TouchableOpacity onPress={cancelEditing}>
-              <Text className="text-bourbon-400 text-base">Cancel</Text>
+              <Text className="text-brand-400 text-base">Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleSave} disabled={updateTasting.isPending}>
-              <Text className="text-bourbon-400 text-base">
+              <Text className="text-brand-400 text-base">
                 {updateTasting.isPending ? "Saving..." : "Save"}
               </Text>
             </TouchableOpacity>
@@ -141,18 +142,18 @@ export default function TastingDetailScreen() {
       <ScrollView contentContainerClassName="px-4 pb-8">
         {/* Title */}
         <View className="mb-6">
-          <Text className="text-bourbon-100 text-2xl font-bold">
+          <Text className="text-brand-100 text-2xl font-bold">
             {bourbon?.name ?? "Tasting Note"}
           </Text>
           {bourbon?.distillery && (
-            <Text className="text-bourbon-400 text-base mt-0.5">{bourbon.distillery}</Text>
+            <Text className="text-brand-400 text-base mt-0.5">{bourbon.distillery}</Text>
           )}
-          <Text className="text-bourbon-600 text-xs mt-1">{formattedDate}</Text>
+          <Text className="text-brand-600 text-xs mt-1">{formattedDate}</Text>
         </View>
 
         {/* Rating */}
-        <View className="bg-bourbon-800 rounded-2xl p-4 mb-4">
-          <Text className="text-bourbon-400 text-xs font-semibold uppercase tracking-wider mb-3">
+        <View className="bg-brand-800 rounded-2xl p-4 mb-4">
+          <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
             Rating
           </Text>
           {editing ? (
@@ -171,18 +172,18 @@ export default function TastingDetailScreen() {
                 ))}
               </View>
               {rating !== null && (
-                <Text className="text-bourbon-300 text-sm mt-3 text-center">
+                <Text className="text-brand-300 text-sm mt-3 text-center">
                   {rating}/5 — {STAR_LABELS[rating]}
                 </Text>
               )}
             </>
           ) : (
             <View>
-              <Text className="text-bourbon-100 text-2xl font-bold">
+              <Text className="text-brand-100 text-2xl font-bold">
                 {rating !== null ? `${rating}/5` : "—"}
               </Text>
               {rating !== null && (
-                <Text className="text-bourbon-400 text-sm mt-0.5">{STAR_LABELS[rating]}</Text>
+                <Text className="text-brand-400 text-sm mt-0.5">{STAR_LABELS[rating]}</Text>
               )}
             </View>
           )}
@@ -223,7 +224,7 @@ export default function TastingDetailScreen() {
           <TouchableOpacity
             onPress={handleSave}
             disabled={updateTasting.isPending}
-            className="bg-bourbon-600 rounded-2xl py-4 items-center mt-2"
+            className="bg-brand-600 rounded-2xl py-4 items-center mt-2"
           >
             <Text className="text-white font-semibold text-base">
               {updateTasting.isPending ? "Saving..." : "Save Changes"}
@@ -236,7 +237,7 @@ export default function TastingDetailScreen() {
             onPress={() => router.push(`/bourbon/${tasting.bourbon_id}`)}
             className="mt-4 items-center"
           >
-            <Text className="text-bourbon-500 text-sm">View bourbon →</Text>
+            <Text className="text-brand-500 text-sm">View bourbon →</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -262,8 +263,8 @@ function NoteField({
   if (!editing && !value) return null;
 
   return (
-    <View className="bg-bourbon-800 rounded-2xl p-4 mb-4">
-      <Text className="text-bourbon-400 text-xs font-semibold uppercase tracking-wider mb-2">
+    <View className="bg-brand-800 rounded-2xl p-4 mb-4">
+      <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-2">
         {label}
       </Text>
       {editing ? (
@@ -271,15 +272,15 @@ function NoteField({
           value={value}
           onChangeText={onChange}
           placeholder={placeholder}
-          placeholderTextColor="#7a3c19"
+          placeholderTextColor={colors.placeholderDark}
           multiline
           numberOfLines={tall ? 4 : 2}
           textAlignVertical="top"
-          className="text-bourbon-100 text-sm leading-relaxed"
+          className="text-brand-100 text-sm leading-relaxed"
           style={{ minHeight: tall ? 80 : 44 }}
         />
       ) : (
-        <Text className="text-bourbon-100 text-sm leading-relaxed">{value}</Text>
+        <Text className="text-brand-100 text-sm leading-relaxed">{value}</Text>
       )}
     </View>
   );

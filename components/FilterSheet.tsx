@@ -8,6 +8,7 @@ import {
   Switch,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { colors } from "@/lib/colors";
 import { Slider } from "@miblanchard/react-native-slider";
 import { SearchablePicker } from "@/components/SearchablePicker";
 import { useDistilleries } from "@/hooks/use-distilleries";
@@ -167,14 +168,14 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {}}
-          className="bg-bourbon-900 rounded-t-2xl"
+          className="bg-brand-900 rounded-t-2xl"
           style={{ paddingBottom: insets.bottom + 16 }}
         >
           {/* Header */}
-          <View className="flex-row items-center justify-between px-4 pt-4 pb-3 border-b border-bourbon-700">
-            <Text className="text-bourbon-100 text-lg font-bold">Filter & Sort</Text>
+          <View className="flex-row items-center justify-between px-4 pt-4 pb-3 border-b border-brand-700">
+            <Text className="text-brand-100 text-lg font-bold">Filter & Sort</Text>
             <TouchableOpacity onPress={onClose} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Text className="text-bourbon-400 text-xl">✕</Text>
+              <Text className="text-brand-400 text-xl">✕</Text>
             </TouchableOpacity>
           </View>
 
@@ -194,13 +195,13 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
                       onPress={() => toggleType(value)}
                       className={`px-3 py-1.5 rounded-full border ${
                         selected
-                          ? "bg-bourbon-600 border-bourbon-600"
-                          : "bg-bourbon-800 border-bourbon-700"
+                          ? "bg-brand-600 border-brand-600"
+                          : "bg-brand-800 border-brand-700"
                       }`}
                     >
                       <Text
                         className={`text-xs font-medium ${
-                          selected ? "text-white" : "text-bourbon-300"
+                          selected ? "text-white" : "text-brand-300"
                         }`}
                       >
                         {label}
@@ -221,26 +222,26 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
                 onValueChange={(values) =>
                   handleProofChange(Array.isArray(values) ? values : [values])
                 }
-                minimumTrackTintColor="#c47b2a"
-                maximumTrackTintColor="#3a2a1a"
-                thumbTintColor="#e39e38"
+                minimumTrackTintColor={colors.sliderTrackFilled}
+                maximumTrackTintColor={colors.sliderTrackEmpty}
+                thumbTintColor={colors.sliderThumb}
               />
             </Section>
 
             {/* ---- Age ---- */}
             <Section label="Age">
               <View className="flex-row items-center justify-between mb-2">
-                <Text className="text-bourbon-300 text-sm">NAS only</Text>
+                <Text className="text-brand-300 text-sm">NAS only</Text>
                 <Switch
                   value={draft.nasOnly}
                   onValueChange={(v) => setDraft((d) => ({ ...d, nasOnly: v }))}
-                  trackColor={{ false: "#3a2a1a", true: "#c47b2a" }}
-                  thumbColor="#e39e38"
+                  trackColor={{ false: colors.sliderTrackEmpty, true: colors.sliderTrackFilled }}
+                  thumbColor={colors.sliderThumb}
                 />
               </View>
               {!draft.nasOnly && (
                 <>
-                  <Text className="text-bourbon-400 text-xs mb-1">
+                  <Text className="text-brand-400 text-xs mb-1">
                     {ageSliderValue[0]}–{ageSliderValue[1]} yr
                   </Text>
                   <Slider
@@ -251,9 +252,9 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
                     onValueChange={(values) =>
                       handleAgeChange(Array.isArray(values) ? values : [values])
                     }
-                    minimumTrackTintColor="#c47b2a"
-                    maximumTrackTintColor="#3a2a1a"
-                    thumbTintColor="#e39e38"
+                    minimumTrackTintColor={colors.sliderTrackFilled}
+                    maximumTrackTintColor={colors.sliderTrackEmpty}
+                    thumbTintColor={colors.sliderThumb}
                   />
                 </>
               )}
@@ -281,13 +282,13 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
                       onPress={() => selectSortField(sf.value)}
                       className={`px-3 py-1.5 rounded-full border ${
                         selected
-                          ? "bg-bourbon-600 border-bourbon-600"
-                          : "bg-bourbon-800 border-bourbon-700"
+                          ? "bg-brand-600 border-brand-600"
+                          : "bg-brand-800 border-brand-700"
                       }`}
                     >
                       <Text
                         className={`text-xs font-medium ${
-                          selected ? "text-white" : "text-bourbon-300"
+                          selected ? "text-white" : "text-brand-300"
                         }`}
                       >
                         {sf.label}
@@ -301,7 +302,7 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
                   onPress={toggleSortDirection}
                   className="flex-row items-center gap-2"
                 >
-                  <Text className="text-bourbon-400 text-sm">
+                  <Text className="text-brand-400 text-sm">
                     {draft.sortAscending ? "↑ Ascending" : "↓ Descending"}
                   </Text>
                 </TouchableOpacity>
@@ -313,16 +314,16 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
           </ScrollView>
 
           {/* ---- Action buttons ---- */}
-          <View className="flex-row gap-3 px-4 pt-3 border-t border-bourbon-700">
+          <View className="flex-row gap-3 px-4 pt-3 border-t border-brand-700">
             <TouchableOpacity
               onPress={handleClear}
-              className="flex-1 border border-bourbon-600 rounded-xl py-3 items-center"
+              className="flex-1 border border-brand-600 rounded-xl py-3 items-center"
             >
-              <Text className="text-bourbon-300 font-medium">Clear All</Text>
+              <Text className="text-brand-300 font-medium">Clear All</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleApply}
-              className="flex-1 bg-bourbon-600 rounded-xl py-3 items-center"
+              className="flex-1 bg-brand-600 rounded-xl py-3 items-center"
             >
               <Text className="text-white font-bold">Apply</Text>
             </TouchableOpacity>
@@ -340,7 +341,7 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <View className="mt-4">
-      <Text className="text-bourbon-400 text-xs font-semibold uppercase tracking-wide mb-2">
+      <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wide mb-2">
         {label}
       </Text>
       {children}
