@@ -33,27 +33,49 @@ jest.mock('@/hooks/use-auth', () => ({
 
 const mockDeleteMutate = jest.fn();
 
+type MockBourbon = {
+  id: string;
+  name: string;
+  distillery: string | null;
+  proof: number | null;
+  type: string | null;
+  age_statement: number | null;
+  mashbill: string | null;
+  msrp: number | null;
+  description: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  image_url: string | null;
+  submitted_by: string | null;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+let mockBourbonDetailData: MockBourbon = {
+  id: 'bourbon-delete-id',
+  name: "Blanton's Original",
+  distillery: 'Buffalo Trace',
+  proof: 93,
+  type: 'single_barrel',
+  age_statement: null,
+  mashbill: null,
+  msrp: null,
+  description: null,
+  city: null,
+  state: 'Kentucky',
+  country: 'USA',
+  image_url: null,
+  submitted_by: null,
+  updated_by: null,
+  created_at: '2024-01-01T00:00:00Z',
+  updated_at: '2024-01-01T00:00:00Z',
+};
+
 jest.mock('@/hooks/use-bourbons', () => ({
   useBourbon: () => ({
-    data: {
-      id: 'bourbon-delete-id',
-      name: "Blanton's Original",
-      distillery: 'Buffalo Trace',
-      proof: 93,
-      type: 'single_barrel',
-      age_statement: null,
-      mashbill: null,
-      msrp: null,
-      description: null,
-      city: null,
-      state: 'Kentucky',
-      country: 'USA',
-      image_url: null,
-      submitted_by: null,
-      updated_by: null,
-      created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
-    },
+    data: mockBourbonDetailData,
     isLoading: false,
     isError: false,
   }),
@@ -121,6 +143,25 @@ jest.mock('@/hooks/use-profile', () => ({
 describe('BourbonDetailScreen — admin delete flow', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockBourbonDetailData = {
+      id: 'bourbon-delete-id',
+      name: "Blanton's Original",
+      distillery: 'Buffalo Trace',
+      proof: 93,
+      type: 'single_barrel',
+      age_statement: null,
+      mashbill: null,
+      msrp: null,
+      description: null,
+      city: null,
+      state: 'Kentucky',
+      country: 'USA',
+      image_url: null,
+      submitted_by: null,
+      updated_by: null,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z',
+    };
   });
 
   // Slice 4 — confirmation dialog shows counts
@@ -192,5 +233,95 @@ describe('BourbonDetailScreen — admin delete flow', () => {
     );
 
     jest.restoreAllMocks();
+  });
+});
+
+// ── "Add Missing Info" button tests ──────────────────────────────────────────
+
+describe('BourbonDetailScreen — Add Missing Info button', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  // Test 3 — "Add Missing Info" visible for non-admin when at least one optional field is null
+  it('shows "Add Missing Info" for authenticated non-admin when at least one optional field is null', () => {
+    mockIsAdmin = false;
+    mockBourbonDetailData = {
+      id: 'bourbon-delete-id',
+      name: "Blanton's Original",
+      distillery: 'Buffalo Trace',
+      proof: 93,
+      type: 'single_barrel',
+      age_statement: null,
+      mashbill: null,   // null optional field
+      msrp: null,
+      description: null,
+      city: null,
+      state: 'Kentucky',
+      country: 'USA',
+      image_url: null,
+      submitted_by: null,
+      updated_by: null,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z',
+    };
+
+    render(<BourbonDetailScreen />);
+    expect(screen.getByText('Add Missing Info')).toBeTruthy();
+  });
+
+  // Test 4 — "Add Missing Info" hidden when all optional fields are populated
+  it('hides "Add Missing Info" for non-admin when all optional fields are populated', () => {
+    mockIsAdmin = false;
+    mockBourbonDetailData = {
+      id: 'bourbon-delete-id',
+      name: "Blanton's Original",
+      distillery: 'Buffalo Trace',
+      proof: 93,
+      type: 'single_barrel',
+      age_statement: 12,
+      mashbill: '75% corn',
+      msrp: 49.99,
+      description: 'A fine bourbon',
+      city: 'Frankfort',
+      state: 'Kentucky',
+      country: 'USA',
+      image_url: 'https://example.com/img.png',
+      submitted_by: null,
+      updated_by: null,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z',
+    };
+
+    render(<BourbonDetailScreen />);
+    expect(screen.queryByText('Add Missing Info')).toBeNull();
+  });
+
+  // Test 6 — admin sees "Edit" not "Add Missing Info"
+  it('shows "Edit" for admin and NOT "Add Missing Info" even when optional fields are null', () => {
+    mockIsAdmin = true;
+    mockBourbonDetailData = {
+      id: 'bourbon-delete-id',
+      name: "Blanton's Original",
+      distillery: 'Buffalo Trace',
+      proof: 93,
+      type: 'single_barrel',
+      age_statement: null,
+      mashbill: null,   // null optional field
+      msrp: null,
+      description: null,
+      city: null,
+      state: 'Kentucky',
+      country: 'USA',
+      image_url: null,
+      submitted_by: null,
+      updated_by: null,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z',
+    };
+
+    render(<BourbonDetailScreen />);
+    expect(screen.getByText('Edit')).toBeTruthy();
+    expect(screen.queryByText('Add Missing Info')).toBeNull();
   });
 });

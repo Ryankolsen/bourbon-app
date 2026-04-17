@@ -10,7 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect, useState } from "react";
@@ -20,12 +20,26 @@ import { useUpdateBourbon, useBourbon } from "@/hooks/use-bourbons";
 import { useProfile } from "@/hooks/use-profile";
 import { useDistilleries } from "@/hooks/use-distilleries";
 import { useToast } from "@/lib/toast-provider";
-import { BOURBON_TYPES } from "@/lib/bourbons";
+import { BOURBON_TYPES, BourbonUpdateFormFields } from "@/lib/bourbons";
 import { WHISKEY_COUNTRIES, getProvincesForCountry } from "@/lib/location-data";
 import { SearchablePicker } from "@/components/SearchablePicker";
 
-const schema = z.object({
-  name: z.string().min(1, "Name is required"),
+/** Optional bourbon fields that regular users can contribute to. */
+const OPTIONAL_FIELDS = [
+  "distillery",
+  "proof",
+  "type",
+  "age_statement",
+  "mashbill",
+  "msrp",
+  "description",
+  "city",
+  "state",
+  "country",
+  "image_url",
+] as const;
+
+const baseSchema = z.object({
   distillery: z.string().optional(),
   proof: z
     .string()
@@ -48,10 +62,17 @@ const schema = z.object({
   image_url: z.string().optional(),
 });
 
-type FormValues = z.infer<typeof schema>;
+// Admin mode requires a non-empty name; user mode pre-fills it from the DB (read-only)
+const adminSchema = baseSchema.extend({ name: z.string().min(1, "Name is required") });
+const userSchema = baseSchema.extend({ name: z.string().optional() });
+
+const schema = adminSchema;
+
+type FormValues = z.infer<typeof adminSchema>;
 
 export default function EditBourbonScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, mode: modeParam } = useLocalSearchParams<{ id: string; mode?: string }>();
+  const mode = modeParam === "user" ? "user" : "admin";
   const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -60,6 +81,8 @@ export default function EditBourbonScreen() {
   const updateBourbon = useUpdateBourbon();
   const [distillerySearch, setDistillerySearch] = useState("");
   const { distilleries, isLoading: distilleriesLoading } = useDistilleries(distillerySearch);
+  // Tracks which optional fields were null when the bourbon first loaded (user mode only)
+  const [nullFields, setNullFields] = useState<Set<string>>(new Set());
 
   const {
     control,
@@ -69,7 +92,7 @@ export default function EditBourbonScreen() {
     setValue,
     reset,
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(mode === "user" ? userSchema : adminSchema) as Resolver<FormValues>,
     defaultValues: {
       name: "",
       distillery: "",
@@ -105,9 +128,19 @@ export default function EditBourbonScreen() {
         country: bourbon.country ?? "",
         image_url: bourbon.image_url ?? "",
       });
+
+      if (mode === "user") {
+        const nullSet = new Set<string>();
+        for (const field of OPTIONAL_FIELDS) {
+          if (bourbon[field] == null) {
+            nullSet.add(field);
+          }
+        }
+        setNullFields(nullSet);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bourbonId, reset]);
+  }, [bourbonId, reset, mode]);
 
   const countryValue = watch("country");
   const provinces = getProvincesForCountry(countryValue ?? "");
@@ -117,11 +150,19 @@ export default function EditBourbonScreen() {
       showToast("Not authenticated", "error");
       return;
     }
+    // In user mode, only submit fields that were null at load time
+    const fieldsToSubmit: BourbonUpdateFormFields =
+      mode === "user"
+        ? (Object.fromEntries(
+            Object.entries(values).filter(([k]) => nullFields.has(k))
+          ) as BourbonUpdateFormFields)
+        : values;
+
     updateBourbon.mutate(
       {
         id,
         updatedBy: user.id,
-        fields: values,
+        fields: fieldsToSubmit,
       },
       {
         onSuccess: (bourbon) => {
@@ -144,7 +185,8 @@ export default function EditBourbonScreen() {
     );
   }
 
-  if (!profile?.is_admin) {
+  // Admin mode requires is_admin; user mode only requires authentication
+  if (mode === "admin" && !profile?.is_admin) {
     return (
       <View className="flex-1 bg-brand-900 items-center justify-center px-8">
         <Text className="text-red-400 text-center text-base">
@@ -166,210 +208,236 @@ export default function EditBourbonScreen() {
         contentContainerClassName="px-4 py-6 gap-4"
         keyboardShouldPersistTaps="handled"
       >
-        <Text className="text-brand-100 text-2xl font-bold mb-2">Edit Bourbon</Text>
+        <Text className="text-brand-100 text-2xl font-bold mb-2">
+          {mode === "user" ? "Add Missing Info" : "Edit Bourbon"}
+        </Text>
 
-        <Field label="Name *" error={errors.name?.message}>
-          <Controller
-            control={control}
-            name="name"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="e.g. Blanton's Original"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        {/* Name — visible in admin mode; hidden-registered in user mode for validation */}
+        {mode !== "user" ? (
+          <Field label="Name *" error={errors.name?.message}>
+            <Controller
+              control={control}
+              name="name"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                  placeholderTextColor={colors.placeholderDark}
+                  placeholder="e.g. Blanton's Original"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+          </Field>
+        ) : (
+          // Register name so Zod validation can use the pre-filled bourbon name value
+          <Controller control={control} name="name" render={() => <></>} />
+        )}
 
-        <Field label="Distillery" error={errors.distillery?.message}>
-          <Controller
-            control={control}
-            name="distillery"
-            render={({ field: { onChange, value } }) => (
-              <SearchablePicker
-                testID="distillery-picker"
-                data={distilleries}
-                value={value ?? ""}
-                onChange={onChange}
-                onSearchChange={setDistillerySearch}
-                allowCreate
-                placeholder="e.g. Buffalo Trace"
-                isLoading={distilleriesLoading}
-              />
-            )}
-          />
-        </Field>
+        {(mode !== "user" || nullFields.has("distillery")) && (
+          <Field label="Distillery" error={errors.distillery?.message}>
+            <Controller
+              control={control}
+              name="distillery"
+              render={({ field: { onChange, value } }) => (
+                <SearchablePicker
+                  testID="distillery-picker"
+                  data={distilleries}
+                  value={value ?? ""}
+                  onChange={onChange}
+                  onSearchChange={setDistillerySearch}
+                  allowCreate
+                  placeholder="e.g. Buffalo Trace"
+                  isLoading={distilleriesLoading}
+                />
+              )}
+            />
+          </Field>
+        )}
 
-        <Field label="Proof" error={errors.proof?.message}>
-          <Controller
-            control={control}
-            name="proof"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="e.g. 93"
-                keyboardType="decimal-pad"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        {(mode !== "user" || nullFields.has("proof")) && (
+          <Field label="Proof" error={errors.proof?.message}>
+            <Controller
+              control={control}
+              name="proof"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                  placeholderTextColor={colors.placeholderDark}
+                  placeholder="e.g. 93"
+                  keyboardType="decimal-pad"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+          </Field>
+        )}
 
-        <Field label="Type" error={errors.type?.message}>
-          <Controller
-            control={control}
-            name="type"
-            render={({ field: { onChange, value } }) => (
-              <View className="flex-row flex-wrap gap-2">
-                {BOURBON_TYPES.map(({ label, value: typeValue }) => (
-                  <TouchableOpacity
-                    key={typeValue}
-                    onPress={() => onChange(value === typeValue ? "" : typeValue)}
-                    className={`px-3 py-1.5 rounded-lg border ${
-                      value === typeValue
-                        ? "bg-brand-600 border-brand-500"
-                        : "bg-brand-800 border-brand-700"
-                    }`}
-                  >
-                    <Text
-                      className={`text-xs ${
-                        value === typeValue ? "text-white" : "text-brand-400"
+        {(mode !== "user" || nullFields.has("type")) && (
+          <Field label="Type" error={errors.type?.message}>
+            <Controller
+              control={control}
+              name="type"
+              render={({ field: { onChange, value } }) => (
+                <View className="flex-row flex-wrap gap-2">
+                  {BOURBON_TYPES.map(({ label, value: typeValue }) => (
+                    <TouchableOpacity
+                      key={typeValue}
+                      onPress={() => onChange(value === typeValue ? "" : typeValue)}
+                      className={`px-3 py-1.5 rounded-lg border ${
+                        value === typeValue
+                          ? "bg-brand-600 border-brand-500"
+                          : "bg-brand-800 border-brand-700"
                       }`}
                     >
-                      {label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          />
-        </Field>
+                      <Text
+                        className={`text-xs ${
+                          value === typeValue ? "text-white" : "text-brand-400"
+                        }`}
+                      >
+                        {label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            />
+          </Field>
+        )}
 
-        <Field label="Age Statement (years)" error={errors.age_statement?.message}>
-          <Controller
-            control={control}
-            name="age_statement"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="e.g. 12"
-                keyboardType="decimal-pad"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        {(mode !== "user" || nullFields.has("age_statement")) && (
+          <Field label="Age Statement (years)" error={errors.age_statement?.message}>
+            <Controller
+              control={control}
+              name="age_statement"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                  placeholderTextColor={colors.placeholderDark}
+                  placeholder="e.g. 12"
+                  keyboardType="decimal-pad"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+          </Field>
+        )}
 
-        <Field label="Mashbill" error={errors.mashbill?.message}>
-          <Controller
-            control={control}
-            name="mashbill"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="e.g. 75% corn, 13% rye, 12% barley"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        {(mode !== "user" || nullFields.has("mashbill")) && (
+          <Field label="Mashbill" error={errors.mashbill?.message}>
+            <Controller
+              control={control}
+              name="mashbill"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                  placeholderTextColor={colors.placeholderDark}
+                  placeholder="e.g. 75% corn, 13% rye, 12% barley"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+          </Field>
+        )}
 
-        <Field label="MSRP ($)" error={errors.msrp?.message}>
-          <Controller
-            control={control}
-            name="msrp"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="e.g. 49.99"
-                keyboardType="decimal-pad"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        {(mode !== "user" || nullFields.has("msrp")) && (
+          <Field label="MSRP ($)" error={errors.msrp?.message}>
+            <Controller
+              control={control}
+              name="msrp"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                  placeholderTextColor={colors.placeholderDark}
+                  placeholder="e.g. 49.99"
+                  keyboardType="decimal-pad"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+          </Field>
+        )}
 
-        <Field label="Description" error={errors.description?.message}>
-          <Controller
-            control={control}
-            name="description"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="Brief description of this bourbon"
-                multiline
-                numberOfLines={3}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        {(mode !== "user" || nullFields.has("description")) && (
+          <Field label="Description" error={errors.description?.message}>
+            <Controller
+              control={control}
+              name="description"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                  placeholderTextColor={colors.placeholderDark}
+                  placeholder="Brief description of this bourbon"
+                  multiline
+                  numberOfLines={3}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+          </Field>
+        )}
 
-        <Field label="Image URL" error={errors.image_url?.message}>
-          <Controller
-            control={control}
-            name="image_url"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="https://..."
-                autoCapitalize="none"
-                keyboardType="url"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        {(mode !== "user" || nullFields.has("image_url")) && (
+          <Field label="Image URL" error={errors.image_url?.message}>
+            <Controller
+              control={control}
+              name="image_url"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                  placeholderTextColor={colors.placeholderDark}
+                  placeholder="https://..."
+                  autoCapitalize="none"
+                  keyboardType="url"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+          </Field>
+        )}
 
-        <Field label="Country" error={errors.country?.message}>
-          <Controller
-            control={control}
-            name="country"
-            render={({ field: { onChange, value } }) => (
-              <Dropdown
-                testID="country-dropdown"
-                data={WHISKEY_COUNTRIES}
-                labelField="label"
-                valueField="value"
-                value={value ?? null}
-                onChange={(item) => {
-                  onChange(item.value);
-                  setValue("state", "");
-                }}
-                placeholder="Select country"
-                style={dropdownStyle}
-                placeholderStyle={dropdownPlaceholderStyle}
-                selectedTextStyle={dropdownSelectedTextStyle}
-                containerStyle={dropdownContainerStyle}
-                itemTextStyle={dropdownItemTextStyle}
-              />
-            )}
-          />
-        </Field>
+        {(mode !== "user" || nullFields.has("country")) && (
+          <Field label="Country" error={errors.country?.message}>
+            <Controller
+              control={control}
+              name="country"
+              render={({ field: { onChange, value } }) => (
+                <Dropdown
+                  testID="country-dropdown"
+                  data={WHISKEY_COUNTRIES}
+                  labelField="label"
+                  valueField="value"
+                  value={value ?? null}
+                  onChange={(item) => {
+                    onChange(item.value);
+                    setValue("state", "");
+                  }}
+                  placeholder="Select country"
+                  style={dropdownStyle}
+                  placeholderStyle={dropdownPlaceholderStyle}
+                  selectedTextStyle={dropdownSelectedTextStyle}
+                  containerStyle={dropdownContainerStyle}
+                  itemTextStyle={dropdownItemTextStyle}
+                />
+              )}
+            />
+          </Field>
+        )}
 
-        {provinces && (
+        {provinces && (mode !== "user" || nullFields.has("state")) && (
           <Field label="State / Province" error={errors.state?.message}>
             <Controller
               control={control}
@@ -394,22 +462,24 @@ export default function EditBourbonScreen() {
           </Field>
         )}
 
-        <Field label="City" error={errors.city?.message}>
-          <Controller
-            control={control}
-            name="city"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="e.g. Frankfort"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        {(mode !== "user" || nullFields.has("city")) && (
+          <Field label="City" error={errors.city?.message}>
+            <Controller
+              control={control}
+              name="city"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+                  placeholderTextColor={colors.placeholderDark}
+                  placeholder="e.g. Frankfort"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+          </Field>
+        )}
 
         <TouchableOpacity
           onPress={onSubmit}
