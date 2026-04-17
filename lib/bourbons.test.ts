@@ -1,4 +1,52 @@
-import { buildBourbonSearchFilter, buildBourbonInsertPayload, tokenizeName } from './bourbons';
+import { buildBourbonSearchFilter, buildBourbonInsertPayload, buildBourbonUpdatePayload, tokenizeName } from './bourbons';
+
+// ---------------------------------------------------------------------------
+// buildBourbonUpdatePayload
+// ---------------------------------------------------------------------------
+
+describe('buildBourbonUpdatePayload', () => {
+  const updatedBy = 'admin-user-id';
+
+  // Slice 1 — core wiring: stamps updated_by and includes provided fields
+  it('stamps updated_by with the provided user id', () => {
+    const payload = buildBourbonUpdatePayload(updatedBy, { name: 'New Name' });
+    expect(payload.updated_by).toBe(updatedBy);
+  });
+
+  it('includes the provided field in the payload', () => {
+    const payload = buildBourbonUpdatePayload(updatedBy, { name: 'New Name' });
+    expect(payload.name).toBe('New Name');
+  });
+
+  // Slice 2 — numeric conversion: proof, age_statement, msrp as strings → numbers
+  it('converts proof string to number', () => {
+    const payload = buildBourbonUpdatePayload(updatedBy, { proof: '107' });
+    expect(payload.proof).toBe(107);
+  });
+
+  it('converts age_statement string to number', () => {
+    const payload = buildBourbonUpdatePayload(updatedBy, { age_statement: '12' });
+    expect(payload.age_statement).toBe(12);
+  });
+
+  it('converts msrp string to number', () => {
+    const payload = buildBourbonUpdatePayload(updatedBy, { msrp: '49.99' });
+    expect(payload.msrp).toBeCloseTo(49.99);
+  });
+
+  // Slice 3 — empty string → null for optional string fields
+  it('converts empty string distillery to null', () => {
+    const payload = buildBourbonUpdatePayload(updatedBy, { distillery: '' });
+    expect(payload.distillery).toBeNull();
+  });
+
+  // Slice 4 — does not include fields that were not provided
+  it('does not include fields absent from the input', () => {
+    const payload = buildBourbonUpdatePayload(updatedBy, { name: 'Test' });
+    expect(Object.keys(payload)).not.toContain('description');
+    expect(Object.keys(payload)).not.toContain('city');
+  });
+});
 
 // ---------------------------------------------------------------------------
 // tokenizeName

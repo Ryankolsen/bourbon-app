@@ -14,6 +14,7 @@ export interface Database {
           username: string | null;
           display_name: string | null;
           avatar_url: string | null;
+          is_admin: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -22,6 +23,7 @@ export interface Database {
           username?: string | null;
           display_name?: string | null;
           avatar_url?: string | null;
+          is_admin?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -30,6 +32,7 @@ export interface Database {
           username?: string | null;
           display_name?: string | null;
           avatar_url?: string | null;
+          is_admin?: boolean;
           updated_at?: string;
         };
         Relationships: [];
@@ -50,6 +53,7 @@ export interface Database {
           state: string | null;
           country: string | null;
           submitted_by: string | null;
+          updated_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -68,6 +72,7 @@ export interface Database {
           state?: string | null;
           country?: string | null;
           submitted_by?: string | null;
+          updated_by?: string | null;
         };
         Update: {
           name?: string;
@@ -83,6 +88,7 @@ export interface Database {
           state?: string | null;
           country?: string | null;
           submitted_by?: string | null;
+          updated_by?: string | null;
           updated_at?: string;
         };
         Relationships: [];

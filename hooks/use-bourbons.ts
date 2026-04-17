@@ -4,9 +4,11 @@ import { supabase } from "@/lib/supabase";
 import {
   buildBourbonSearchFilter,
   buildBourbonFilterQuery,
+  buildBourbonUpdatePayload,
   tokenizeName,
   BourbonFilterState,
   DEFAULT_BOURBON_FILTERS,
+  BourbonUpdateFormFields,
 } from "@/lib/bourbons";
 import { Database } from "@/types/database";
 import { SupabaseClient } from "@supabase/supabase-js";
@@ -106,6 +108,35 @@ export function useSearchSimilarBourbons(name: string) {
     queryFn: () => searchSimilarBourbons(supabase, debouncedName),
     enabled: debouncedName.trim().length >= 3,
     staleTime: 30_000,
+  });
+}
+
+export function useUpdateBourbon() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      updatedBy,
+      fields,
+    }: {
+      id: string;
+      updatedBy: string;
+      fields: BourbonUpdateFormFields;
+    }) => {
+      const payload = buildBourbonUpdatePayload(updatedBy, fields);
+      const { data, error } = await supabase
+        .from("bourbons")
+        .update(payload)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as BourbonRow;
+    },
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ["bourbon", variables.id] });
+      qc.invalidateQueries({ queryKey: ["bourbons"] });
+    },
   });
 }
 

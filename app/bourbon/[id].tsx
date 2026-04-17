@@ -18,6 +18,7 @@ import { useComments, useGroupComments, useAddComment, useDeleteComment } from "
 import { useBourbonRatingStats, useGroupRatingStats } from "@/hooks/use-ratings";
 import { useMyGroups, useRecommendBourbon } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
+import { useProfile } from "@/hooks/use-profile";
 import { useToast } from "@/lib/toast-provider";
 import { buildAddToWishlistPayload } from "@/lib/wishlist";
 import { buildAddToCollectionPayload } from "@/lib/collection";
@@ -29,6 +30,8 @@ export default function BourbonDetailScreen() {
   const insets = useSafeAreaInsets();
   const { data: bourbon, isLoading, isError } = useBourbon(id);
   const { user } = useAuth();
+  const { data: profile } = useProfile(user?.id);
+  const isAdmin = profile?.is_admin ?? false;
   const { showToast } = useToast();
   const addToCollection = useAddToCollection();
   const { data: wishlistItem } = useIsWishlisted(user?.id, id);
@@ -140,12 +143,20 @@ export default function BourbonDetailScreen() {
     <View className="flex-1 bg-brand-900">
       {/* Header */}
       <View
-        className="px-4 pb-2 flex-row items-center gap-3"
+        className="px-4 pb-2 flex-row items-center justify-between gap-3"
         style={{ paddingTop: insets.top + 8 }}
       >
         <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
           <Text className="text-brand-400 text-base">← Back</Text>
         </TouchableOpacity>
+        {isAdmin && (
+          <TouchableOpacity
+            onPress={() => router.push(`/bourbon/edit?id=${id}` as never)}
+            hitSlop={8}
+          >
+            <Text className="text-brand-400 text-base">Edit</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView contentContainerClassName="px-4 pb-8">

@@ -6,6 +6,7 @@
 import { Database } from '@/types/database';
 
 type BourbonInsert = Database['public']['Tables']['bourbons']['Insert'];
+type BourbonUpdate = Database['public']['Tables']['bourbons']['Update'];
 
 // ---------------------------------------------------------------------------
 // Filter state
@@ -153,6 +154,65 @@ export interface BourbonFormFields {
   city?: string;
   state?: string;
   country?: string;
+}
+
+/**
+ * Partial form fields accepted by the Edit Bourbon form.
+ * All fields are optional — only provided fields are included in the payload.
+ */
+export interface BourbonUpdateFormFields {
+  name?: string;
+  distillery?: string;
+  proof?: string;
+  type?: string;
+  age_statement?: string;
+  mashbill?: string;
+  msrp?: string;
+  description?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  image_url?: string;
+}
+
+/**
+ * Build the Supabase update payload from partial form values.
+ * Only fields present in the input are included in the output.
+ * Trims string fields, converts empty strings to null, parses numerics,
+ * and stamps updated_by with the authenticated admin's user ID.
+ */
+export function buildBourbonUpdatePayload(
+  updatedBy: string,
+  fields: BourbonUpdateFormFields,
+): BourbonUpdate {
+  const trimOrNull = (v: string | undefined): string | null | undefined => {
+    if (v === undefined) return undefined;
+    return v.trim() ? v.trim() : null;
+  };
+
+  const parseFloatOrNull = (v: string | undefined): number | null | undefined => {
+    if (v === undefined) return undefined;
+    if (!v.trim()) return null;
+    const n = parseFloat(v.trim());
+    return isNaN(n) ? null : n;
+  };
+
+  const payload: BourbonUpdate = { updated_by: updatedBy };
+
+  if (fields.name !== undefined) payload.name = fields.name.trim();
+  if (fields.distillery !== undefined) payload.distillery = trimOrNull(fields.distillery) as string | null;
+  if (fields.proof !== undefined) payload.proof = parseFloatOrNull(fields.proof) as number | null;
+  if (fields.type !== undefined) payload.type = trimOrNull(fields.type) as string | null;
+  if (fields.age_statement !== undefined) payload.age_statement = parseFloatOrNull(fields.age_statement) as number | null;
+  if (fields.mashbill !== undefined) payload.mashbill = trimOrNull(fields.mashbill) as string | null;
+  if (fields.msrp !== undefined) payload.msrp = parseFloatOrNull(fields.msrp) as number | null;
+  if (fields.description !== undefined) payload.description = trimOrNull(fields.description) as string | null;
+  if (fields.city !== undefined) payload.city = trimOrNull(fields.city) as string | null;
+  if (fields.state !== undefined) payload.state = trimOrNull(fields.state) as string | null;
+  if (fields.country !== undefined) payload.country = trimOrNull(fields.country) as string | null;
+  if (fields.image_url !== undefined) payload.image_url = trimOrNull(fields.image_url) as string | null;
+
+  return payload;
 }
 
 /**
