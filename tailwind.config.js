@@ -47,6 +47,8 @@ module.exports = {
         "placeholder-muted":    "var(--placeholder-muted)",
         "placeholder-group":    "var(--placeholder-group)",
         "placeholder-search":   "var(--placeholder-search)",
+        // Readable text/label color for interactive elements on brand-700 surfaces
+        "surface-text":         "var(--surface-text)",
         // Semantic tokens — picker overlay
         "picker-bg":     "var(--picker-bg)",
         "picker-border": "var(--picker-border)",

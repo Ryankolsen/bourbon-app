@@ -17,42 +17,6 @@ interface SearchablePickerProps {
 
 type PickerItem = { label: string; value: string; _isNew?: boolean };
 
-const dropdownStyle = {
-  backgroundColor: colors.brand800,
-  borderRadius: 12,
-  paddingHorizontal: 16,
-  paddingVertical: 4,
-};
-
-const dropdownPlaceholderStyle = {
-  color: colors.placeholderDark,
-  fontSize: 16,
-};
-
-const dropdownSelectedTextStyle = {
-  color: colors.brand100,
-  fontSize: 16,
-};
-
-const dropdownContainerStyle = {
-  backgroundColor: colors.brand800,
-  borderRadius: 12,
-  borderColor: colors.brand700,
-};
-
-const dropdownItemTextStyle = {
-  color: colors.brand100,
-  fontSize: 14,
-};
-
-const dropdownInputSearchStyle = {
-  backgroundColor: colors.pickerBg,
-  color: colors.brand100,
-  borderRadius: 8,
-  borderColor: colors.pickerBorder,
-  fontSize: 14,
-};
-
 /**
  * A searchable dropdown picker backed by react-native-element-dropdown.
  * Accepts a list of plain strings as `data`. Supports free-text fallback:
@@ -73,6 +37,7 @@ export function SearchablePicker({
   isLoading = false,
   testID,
 }: SearchablePickerProps) {
+
   // Separate local state for the Dropdown's selected value so that free-text
   // typed by the user (propagated to the parent via onChange) doesn't feed
   // back into the Dropdown's value prop and reset the internal search input.
@@ -159,12 +124,36 @@ export function SearchablePicker({
       search
       searchPlaceholder="Type to search..."
       onChangeText={handleSearchChange}
-      style={dropdownStyle}
-      placeholderStyle={dropdownPlaceholderStyle}
-      selectedTextStyle={dropdownSelectedTextStyle}
-      containerStyle={dropdownContainerStyle}
-      itemTextStyle={dropdownItemTextStyle}
-      inputSearchStyle={dropdownInputSearchStyle}
+      style={{
+        backgroundColor: colors.brand800,
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 4,
+      }}
+      placeholderStyle={{
+        color: colors.placeholderDark,
+        fontSize: 16,
+      }}
+      selectedTextStyle={{
+        color: colors.brand100,
+        fontSize: 16,
+      }}
+      containerStyle={{
+        backgroundColor: colors.brand800,
+        borderRadius: 12,
+        borderColor: colors.brand700,
+      }}
+      itemTextStyle={{
+        color: colors.brand100,
+        fontSize: 14,
+      }}
+      inputSearchStyle={{
+        backgroundColor: colors.pickerBg,
+        color: colors.brand100,
+        borderRadius: 8,
+        borderColor: colors.pickerBorder,
+        fontSize: 14,
+      }}
       searchPlaceholderTextColor={colors.placeholderSearch}
       renderItem={renderItem}
       renderRightIcon={() =>

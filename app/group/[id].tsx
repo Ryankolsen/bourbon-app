@@ -230,7 +230,7 @@ export default function GroupDetailScreen() {
                 className="bg-brand-700 rounded-xl px-3 py-1.5 mt-1"
                 accessibilityLabel="Edit group"
               >
-                <Text className="text-brand-200 text-xs font-semibold">Edit</Text>
+                <Text className="text-surface-text text-xs font-semibold">Edit</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -387,7 +387,7 @@ export default function GroupDetailScreen() {
                 {profileFetching ? (
                   <ActivityIndicator size="small" color={colors.spinnerDefault} />
                 ) : (
-                  <Text className="text-brand-200 text-sm font-semibold">
+                  <Text className="text-surface-text text-sm font-semibold">
                     Find
                   </Text>
                 )}
@@ -446,7 +446,7 @@ export default function GroupDetailScreen() {
               ) : (
                 <Text
                   className={`font-semibold text-sm ${
-                    foundProfile ? "text-white" : "text-brand-600"
+                    foundProfile ? "text-white" : "text-surface-text"
                   }`}
                 >
                   {foundProfile

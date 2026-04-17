@@ -59,6 +59,9 @@ export type ThemeColors = {
   placeholderGroup: string;
   placeholderSearch: string;
 
+  /** Readable text/label color for interactive elements on brand-700 surfaces (buttons, chips) */
+  surfaceText: string;
+
   pickerBg: string;
   pickerBorder: string;
 
@@ -108,10 +111,14 @@ const charcoal: Theme = {
     accentAmber:    "#f59e0b",
     spinnerDefault: "#38bdf8",
     spinnerAmber:   "#7dd3fc",
-    placeholderDark:   "#4a4a4a",
-    placeholderMuted:  "#5a5a5a",
-    placeholderGroup:  "#4a4a4a",
+    // Lightened — dark grey (#4a4a4a) was invisible on brand-800 #1a1a1a (near-black)
+    placeholderDark:   "#8a8aaa",
+    placeholderMuted:  "#7a7a8a",
+    // Lightened from #4a4a4a — dark grey was invisible on brand-700 #0369a1 (dark blue)
+    placeholderGroup:  "#7ab4d4",
     placeholderSearch: "#5a5a9a",
+    // Light sky blue — readable on brand-700 #0369a1 dark bg (6.7:1 contrast)
+    surfaceText: "#bae6fd",
     pickerBg:     "#0a0a0a",
     pickerBorder: "#0369a1",
     white: "#ffffff",
@@ -151,10 +158,14 @@ const highContrast: Theme = {
     accentAmber:    "#ffd700",
     spinnerDefault: "#ffd700",
     spinnerAmber:   "#ffec40",
-    placeholderDark:   "#666600",
-    placeholderMuted:  "#555500",
-    placeholderGroup:  "#666600",
+    // Brightened — dark olive was invisible on brand-800 #0a0a0a (near-black)
+    placeholderDark:   "#999400",
+    placeholderMuted:  "#888400",
+    // Darkened from #666600 — needs more contrast on brand-700 #ffd700 (yellow)
+    placeholderGroup:  "#3d3d00",
     placeholderSearch: "#666600",
+    // Black — readable on brand-700 #ffd700 yellow bg (19.6:1 contrast)
+    surfaceText: "#000000",
     pickerBg:     "#000000",
     pickerBorder: "#1a1a1a",
     white: "#ffffff",
@@ -208,8 +219,11 @@ const navyFlax: Theme = {
     spinnerAmber:   "#2a4470",
     placeholderDark:   "#4a6080",
     placeholderMuted:  "#5a7090",
-    placeholderGroup:  "#4a6080",
+    // Darkened from #4a6080 — medium blue was invisible on brand-700 #6a84aa (also medium blue)
+    placeholderGroup:  "#1c2e54",
     placeholderSearch: "#3a5070",
+    // Dark navy — readable on brand-700 #6a84aa medium-blue bg (3.8:1 contrast)
+    surfaceText: "#0a1624",
     pickerBg:     "#eae6de",
     pickerBorder: "#d0cac0",
     white: "#ffffff",
@@ -267,6 +281,7 @@ export function themeColorsToCssVars(c: ThemeColors): Record<string, string> {
     "--placeholder-muted":  c.placeholderMuted,
     "--placeholder-group":  c.placeholderGroup,
     "--placeholder-search": c.placeholderSearch,
+    "--surface-text":       c.surfaceText,
     "--picker-bg":     c.pickerBg,
     "--picker-border": c.pickerBorder,
   };

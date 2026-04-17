@@ -308,11 +308,11 @@ export default function NewBourbonScreen() {
                 value={value ?? null}
                 onChange={(item) => onChange(item.value)}
                 placeholder="Select country"
-                style={dropdownStyle}
-                placeholderStyle={dropdownPlaceholderStyle}
-                selectedTextStyle={dropdownSelectedTextStyle}
-                containerStyle={dropdownContainerStyle}
-                itemTextStyle={dropdownItemTextStyle}
+                style={{ backgroundColor: colors.brand800, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 4 }}
+                placeholderStyle={{ color: colors.placeholderDark, fontSize: 16 }}
+                selectedTextStyle={{ color: colors.brand100, fontSize: 16 }}
+                containerStyle={{ backgroundColor: colors.brand800, borderRadius: 12, borderColor: colors.brand700 }}
+                itemTextStyle={{ color: colors.brand100, fontSize: 14 }}
               />
             )}
           />
@@ -332,11 +332,11 @@ export default function NewBourbonScreen() {
                   value={value || null}
                   onChange={(item) => onChange(item.value)}
                   placeholder="Select state / province"
-                  style={dropdownStyle}
-                  placeholderStyle={dropdownPlaceholderStyle}
-                  selectedTextStyle={dropdownSelectedTextStyle}
-                  containerStyle={dropdownContainerStyle}
-                  itemTextStyle={dropdownItemTextStyle}
+                  style={{ backgroundColor: colors.brand800, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 4 }}
+                  placeholderStyle={{ color: colors.placeholderDark, fontSize: 16 }}
+                  selectedTextStyle={{ color: colors.brand100, fontSize: 16 }}
+                  containerStyle={{ backgroundColor: colors.brand800, borderRadius: 12, borderColor: colors.brand700 }}
+                  itemTextStyle={{ color: colors.brand100, fontSize: 14 }}
                 />
               )}
             />
@@ -382,34 +382,6 @@ export default function NewBourbonScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-const dropdownStyle = {
-  backgroundColor: colors.brand800,
-  borderRadius: 12,
-  paddingHorizontal: 16,
-  paddingVertical: 4,
-};
-
-const dropdownPlaceholderStyle = {
-  color: colors.placeholderDark,
-  fontSize: 16,
-};
-
-const dropdownSelectedTextStyle = {
-  color: colors.brand100,
-  fontSize: 16,
-};
-
-const dropdownContainerStyle = {
-  backgroundColor: colors.brand800,
-  borderRadius: 12,
-  borderColor: colors.brand700,
-};
-
-const dropdownItemTextStyle = {
-  color: colors.brand100,
-  fontSize: 14,
-};
 
 function Field({
   label,
