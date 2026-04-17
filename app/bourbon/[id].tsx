@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { useBourbon } from "@/hooks/use-bourbons";
+import { useBourbon, useBourbonDeletionImpact, useDeleteBourbon } from "@/hooks/use-bourbons";
 import { useAddToCollection } from "@/hooks/use-collection";
 import { useIsWishlisted, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
 import { useComments, useGroupComments, useAddComment, useDeleteComment } from "@/hooks/use-comments";
@@ -32,6 +32,8 @@ export default function BourbonDetailScreen() {
   const { user } = useAuth();
   const { data: profile } = useProfile(user?.id);
   const isAdmin = profile?.is_admin ?? false;
+  const { data: deletionImpact } = useBourbonDeletionImpact(isAdmin ? id : undefined);
+  const deleteBourbon = useDeleteBourbon();
   const { showToast } = useToast();
   const addToCollection = useAddToCollection();
   const { data: wishlistItem } = useIsWishlisted(user?.id, id);
@@ -119,6 +121,38 @@ export default function BourbonDetailScreen() {
     );
   }
 
+  function handleDelete() {
+    const impact = deletionImpact;
+    const lines: string[] = [];
+    if (impact) {
+      if (impact.tastings > 0) lines.push(`${impact.tastings} tasting note${impact.tastings !== 1 ? "s" : ""}`);
+      if (impact.collection > 0) lines.push(`${impact.collection} collection entr${impact.collection !== 1 ? "ies" : "y"}`);
+      if (impact.wishlist > 0) lines.push(`${impact.wishlist} wishlist entr${impact.wishlist !== 1 ? "ies" : "y"}`);
+      if (impact.community_comments > 0) lines.push(`${impact.community_comments} community comment${impact.community_comments !== 1 ? "s" : ""}`);
+      if (impact.group_comments > 0) lines.push(`${impact.group_comments} group comment${impact.group_comments !== 1 ? "s" : ""}`);
+    }
+    const impactMessage = lines.length > 0
+      ? `This will also permanently delete:\n${lines.join("\n")}\n\nThis cannot be undone.`
+      : "This cannot be undone.";
+
+    Alert.alert(
+      "Delete Bourbon",
+      `Are you sure you want to delete "${bourbon!.name}"?\n\n${impactMessage}`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () =>
+            deleteBourbon.mutate(bourbon!.id, {
+              onSuccess: () => router.replace("/(tabs)/explore" as never),
+              onError: () => Alert.alert("Error", "Failed to delete bourbon."),
+            }),
+        },
+      ]
+    );
+  }
+
   function handleDeleteComment(commentId: string, groupId?: string | null) {
     Alert.alert("Delete Comment", "Remove this comment?", [
       { text: "Cancel", style: "cancel" },
@@ -150,12 +184,21 @@ export default function BourbonDetailScreen() {
           <Text className="text-brand-400 text-base">← Back</Text>
         </TouchableOpacity>
         {isAdmin && (
-          <TouchableOpacity
-            onPress={() => router.push(`/bourbon/edit?id=${id}` as never)}
-            hitSlop={8}
-          >
-            <Text className="text-brand-400 text-base">Edit</Text>
-          </TouchableOpacity>
+          <View className="flex-row gap-4">
+            <TouchableOpacity
+              onPress={() => router.push(`/bourbon/edit?id=${id}` as never)}
+              hitSlop={8}
+            >
+              <Text className="text-brand-400 text-base">Edit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleDelete}
+              disabled={deleteBourbon.isPending}
+              hitSlop={8}
+            >
+              <Text className="text-red-400 text-base">Delete</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 

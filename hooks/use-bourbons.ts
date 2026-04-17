@@ -140,6 +140,58 @@ export function useUpdateBourbon() {
   });
 }
 
+export interface BourbonDeletionImpact {
+  tastings: number;
+  collection: number;
+  wishlist: number;
+  community_comments: number;
+  group_comments: number;
+}
+
+export function useBourbonDeletionImpact(id: string | undefined) {
+  return useQuery({
+    queryKey: ["bourbon", id, "deletion-impact"],
+    queryFn: async (): Promise<BourbonDeletionImpact> => {
+      const [
+        { count: tastings, error: e1 },
+        { count: collection, error: e2 },
+        { count: wishlist, error: e3 },
+        { count: communityComments, error: e4 },
+        { count: groupComments, error: e5 },
+      ] = await Promise.all([
+        supabase.from("tastings").select("*", { count: "exact", head: true }).eq("bourbon_id", id!),
+        supabase.from("user_collection").select("*", { count: "exact", head: true }).eq("bourbon_id", id!),
+        supabase.from("user_wishlist").select("*", { count: "exact", head: true }).eq("bourbon_id", id!),
+        supabase.from("bourbon_comments").select("*", { count: "exact", head: true }).eq("bourbon_id", id!).eq("visibility", "public"),
+        supabase.from("bourbon_comments").select("*", { count: "exact", head: true }).eq("bourbon_id", id!).eq("visibility", "group"),
+      ]);
+      if (e1 ?? e2 ?? e3 ?? e4 ?? e5) throw e1 ?? e2 ?? e3 ?? e4 ?? e5;
+      return {
+        tastings: tastings ?? 0,
+        collection: collection ?? 0,
+        wishlist: wishlist ?? 0,
+        community_comments: communityComments ?? 0,
+        group_comments: groupComments ?? 0,
+      };
+    },
+    enabled: !!id,
+  });
+}
+
+export function useDeleteBourbon() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("bourbons").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_data, id) => {
+      qc.invalidateQueries({ queryKey: ["bourbons"] });
+      qc.invalidateQueries({ queryKey: ["bourbon", id] });
+    },
+  });
+}
+
 export function useBourbon(id: string | undefined) {
   return useQuery({
     queryKey: ["bourbon", id],

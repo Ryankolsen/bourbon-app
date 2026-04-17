@@ -26,6 +26,8 @@ jest.mock('@/hooks/use-auth', () => ({
 }));
 
 jest.mock('@/hooks/use-bourbons', () => ({
+  useBourbonDeletionImpact: () => ({ data: null }),
+  useDeleteBourbon: () => ({ mutate: jest.fn(), isPending: false }),
   useBourbon: () => ({
     data: {
       id: 'bourbon-detail-id',
