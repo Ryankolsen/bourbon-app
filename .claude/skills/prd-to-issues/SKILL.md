@@ -10,9 +10,13 @@ Ask the user for the PRD GitHub issue number (or URL).
 
 If the PRD is not already in your context window, fetch it with `gh issue view <number>` (with comments).
 
-### 2. Explore the codebase (optional)
+### 2. Explore the codebase
 
-If you have not already explored the codebase, do so to understand the current state of the code.
+Explore the codebase to understand:
+- The current state of the code relevant to this PRD
+- The **test setup**: framework (Jest/Vitest), existing test patterns, available factories and mock utilities, and where test files live
+
+Understanding the test setup is required — you will write concrete, runnable red tests for each slice, not generic placeholders.
 
 ### 3. Draft vertical slices
 
@@ -24,6 +28,7 @@ Slices may be 'HITL' or 'AFK'. HITL slices require human interaction, such as an
 - Each slice delivers a narrow but COMPLETE path through every layer (schema, API, UI, tests)
 - A completed slice is demoable or verifiable on its own
 - Prefer many thin slices over few thick ones
+- Every AFK slice MUST include tests written red-first before any implementation begins
 </vertical-slice-rules>
 
 Always create a final QA issue with a detailed manual QA plan for all items that require human verification. This QA issue should be the last item in the dependency graph, blocked by all other slices. It should be HITL.
@@ -66,6 +71,7 @@ A concise description of this vertical slice. Describe the end-to-end behavior, 
 - [ ] Criterion 1
 - [ ] Criterion 2
 - [ ] Criterion 3
+- [ ] All tests pass (`npm test`)
 
 ## Blocked by
 
@@ -82,13 +88,20 @@ Reference by number from the parent PRD:
 
 ## Tests
 
-Unit tests to write for this slice using the red-green-refactor loop. Order from thinnest slice to widest:
+**Red-green-refactor is required.** Write every test below before writing any implementation code. Each test should fail (red) when first run, then be made to pass (green) by the implementation, then cleaned up (refactor).
 
-1. **Core wiring** — one assertion that the most essential outcome is produced (e.g., record created with correct type)
-2. **Content details** — verify field values, message format, etc.
-3. **Edge cases / error paths** — one test per dimension (invalid input, not-found, permission denied, etc.)
+Tests are ordered from thinnest slice to widest — implement and pass each one before moving to the next:
 
-If this slice has no testable backend logic (e.g., UI-only or schema migration only), write "N/A — frontend or migration only."
+1. **Core wiring** — one assertion that the most essential outcome is produced (e.g., record inserted with correct fields, hook returns expected shape). Write this test, run it red, implement just enough to make it green.
+2. **Content details** — verify specific field values, payload shape, UI text, etc. Red → green before moving on.
+3. **Edge cases / error paths** — one test per failure dimension (invalid input, not-found, permission denied, null data, empty state). Red → green for each.
+
+For each test, specify:
+- The test file to create or extend (follow existing patterns in the codebase)
+- Which existing factories or mock utilities to use (e.g., `bourbonFactory()`, `createMockSupabaseClient()`)
+- The concrete assertion — not "verify it works" but the exact behavior to assert
+
+If this slice has no testable logic (e.g., a schema migration with no associated functions), write "N/A — migration only" and explain why.
 
 </issue-template>
 
