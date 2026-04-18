@@ -1,13 +1,16 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from "react-native";
 import CollectionTab from "@/components/CollectionTab";
 import WishlistTab from "@/components/WishlistTab";
+import { FeedCard } from "@/components/FeedCard";
 import {
   HOME_SEGMENTS,
   DEFAULT_SEGMENT_INDEX,
   SEGMENT_CONTENT_KEYS,
 } from "@/lib/home-segments";
 import { useTheme } from "@/lib/theme-provider";
+import { useAuth } from "@/hooks/use-auth";
+import { useFollowingFeed } from "@/hooks/use-following-feed";
 
 function FeedEmptyState() {
   return (
@@ -18,6 +21,33 @@ function FeedEmptyState() {
         Follow some users to see their tastings here.
       </Text>
     </View>
+  );
+}
+
+function FeedSegment() {
+  const { user } = useAuth();
+  const { data: feedItems, isLoading } = useFollowingFeed(user?.id);
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-brand-900 items-center justify-center">
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
+  if (!feedItems || feedItems.length === 0) {
+    return <FeedEmptyState />;
+  }
+
+  return (
+    <FlatList
+      className="flex-1 bg-brand-900"
+      data={feedItems}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => <FeedCard item={item} />}
+      contentContainerStyle={{ paddingTop: 8, paddingBottom: 24 }}
+    />
   );
 }
 
@@ -62,7 +92,7 @@ export default function HomeScreen() {
       </View>
 
       {/* Segment content */}
-      {activeKey === "feed" && <FeedEmptyState />}
+      {activeKey === "feed" && <FeedSegment />}
       {activeKey === "collection" && <CollectionTab />}
       {activeKey === "wishlist" && <WishlistTab />}
     </View>

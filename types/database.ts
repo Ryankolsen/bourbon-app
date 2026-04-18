@@ -428,6 +428,85 @@ export interface Database {
           },
         ];
       };
+      tasting_likes: {
+        Row: {
+          user_id: string;
+          tasting_id: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          tasting_id: string;
+          created_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          tasting_id?: string;
+        };
+        Relationships: [];
+      };
+      tasting_comments: {
+        Row: {
+          id: string;
+          tasting_id: string;
+          user_id: string;
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          tasting_id: string;
+          user_id: string;
+          body: string;
+          created_at?: string;
+        };
+        Update: {
+          body?: string;
+        };
+        Relationships: [];
+      };
+      group_feed_items: {
+        Row: {
+          id: string;
+          group_id: string;
+          tasting_id: string;
+          shared_by_user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          group_id: string;
+          tasting_id: string;
+          shared_by_user_id: string;
+          created_at?: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      social_notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          actor_id: string;
+          type: 'new_tasting' | 'new_follower';
+          tasting_id: string | null;
+          read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          actor_id: string;
+          type: 'new_tasting' | 'new_follower';
+          tasting_id?: string | null;
+          read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          read?: boolean;
+        };
+        Relationships: [];
+      };
       group_notifications: {
         Row: {
           id: string;
