@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -13,6 +12,7 @@ import { useState, useEffect } from "react";
 import { useTasting, useUpdateTasting } from "@/hooks/use-tastings";
 import { useAuth } from "@/hooks/use-auth";
 import { colors } from "@/lib/colors";
+import { useToast } from "@/lib/toast-provider";
 
 const RATING_STEPS = [1, 2, 3, 4, 5];
 const STAR_LABELS: Record<number, string> = {
@@ -30,6 +30,7 @@ export default function TastingDetailScreen() {
   const { user } = useAuth();
   const { data: tasting, isLoading, isError } = useTasting(id);
   const updateTasting = useUpdateTasting();
+  const { showToast } = useToast();
 
   const [editing, setEditing] = useState(false);
   const [rating, setRating] = useState<number | null>(null);
@@ -78,7 +79,7 @@ export default function TastingDetailScreen() {
       },
       {
         onSuccess: () => setEditing(false),
-        onError: () => Alert.alert("Error", "Failed to save changes."),
+        onError: () => showToast("Failed to save changes.", "error"),
       }
     );
   }

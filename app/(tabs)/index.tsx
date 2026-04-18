@@ -4,7 +4,6 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { useState, useMemo } from "react";
 import { useRouter } from "expo-router";
@@ -15,6 +14,7 @@ import { useUserRatings, useAllBourbonRatingStats } from "@/hooks/use-ratings";
 import { FilterSheet } from "@/components/FilterSheet";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { BourbonCard } from "@/components/BourbonCard";
+import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { useToast } from "@/lib/toast-provider";
 import { colors } from "@/lib/colors";
 
@@ -24,6 +24,7 @@ export default function CollectionScreen() {
   const { showToast } = useToast();
   const [filterSheetVisible, setFilterSheetVisible] = useState(false);
   const removeFromCollection = useRemoveFromCollection();
+  const [confirmRemoveItem, setConfirmRemoveItem] = useState<{ id: string; bourbonName: string } | null>(null);
 
   const {
     filters,
@@ -141,26 +142,7 @@ export default function CollectionScreen() {
                 <TouchableOpacity
                   onPress={() => {
                     if (!user) return;
-                    Alert.alert(
-                      "Remove from Vault",
-                      `Remove ${bourbonName} from your vault?`,
-                      [
-                        { text: "Cancel", style: "cancel" },
-                        {
-                          text: "Remove",
-                          style: "destructive",
-                          onPress: () => {
-                            removeFromCollection.mutate(
-                              { id: item.id, userId: user.id },
-                              {
-                                onSuccess: () => showToast("Removed from vault", "success"),
-                                onError: () => showToast("Failed to remove", "error"),
-                              }
-                            );
-                          },
-                        },
-                      ]
-                    );
+                    setConfirmRemoveItem({ id: item.id, bourbonName });
                   }}
                   className="mt-3 px-3 py-1.5 rounded-xl bg-brand-600 items-center"
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -178,6 +160,27 @@ export default function CollectionScreen() {
         filters={filters}
         onApply={applyFilters}
         onClose={() => setFilterSheetVisible(false)}
+      />
+
+      <ConfirmationModal
+        visible={confirmRemoveItem !== null}
+        title="Remove from Vault"
+        message={confirmRemoveItem ? `Remove ${confirmRemoveItem.bourbonName} from your vault?` : ""}
+        confirmLabel="Remove"
+        destructive
+        onConfirm={() => {
+          if (!user || !confirmRemoveItem) return;
+          const { id, bourbonName: _ } = confirmRemoveItem;
+          setConfirmRemoveItem(null);
+          removeFromCollection.mutate(
+            { id, userId: user.id },
+            {
+              onSuccess: () => showToast("Removed from vault", "success"),
+              onError: () => showToast("Failed to remove", "error"),
+            }
+          );
+        }}
+        onCancel={() => setConfirmRemoveItem(null)}
       />
     </View>
   );

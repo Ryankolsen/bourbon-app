@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   TextInput,
-  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -20,6 +19,7 @@ import { useMyGroups, useRecommendBourbon } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { useToast } from "@/lib/toast-provider";
+import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { buildAddToWishlistPayload } from "@/lib/wishlist";
 import { buildAddToCollectionPayload } from "@/lib/collection";
 import { buildCommentPayload } from "@/lib/comments";
@@ -67,6 +67,10 @@ export default function BourbonDetailScreen() {
   const [commentVisibility, setCommentVisibility] = useState<"public" | "group">("public");
   const recommendBourbon = useRecommendBourbon();
   const [showRecommendPicker, setShowRecommendPicker] = useState(false);
+
+  // Confirmation modal state
+  const [showDeleteBourbonConfirm, setShowDeleteBourbonConfirm] = useState(false);
+  const [confirmDeleteComment, setConfirmDeleteComment] = useState<{ id: string; groupId?: string | null } | null>(null);
 
   // Resolve the active group (default to first if only one)
   const activeGroupId = selectedGroupId ?? (myGroups.length === 1
@@ -117,7 +121,7 @@ export default function BourbonDetailScreen() {
 
     addComment.mutate(entry, {
       onSuccess: () => setCommentBody(""),
-      onError: () => Alert.alert("Error", "Failed to post comment."),
+      onError: () => showToast("Failed to post comment.", "error"),
     });
   }
 
@@ -128,19 +132,22 @@ export default function BourbonDetailScreen() {
       {
         onSuccess: () => {
           setShowRecommendPicker(false);
-          Alert.alert("Recommended!", "Bourbon recommended to the group.");
+          showToast("Bourbon recommended to the group.", "success");
         },
         onError: (err) => {
           setShowRecommendPicker(false);
           const msg = err instanceof Error ? err.message : "Failed to recommend.";
           // unique constraint violation means already recommended
-          Alert.alert("Already recommended", msg.includes("unique") ? "You already recommended this bourbon to that group." : msg);
+          showToast(
+            msg.includes("unique") ? "You already recommended this bourbon to that group." : msg,
+            "error"
+          );
         },
       }
     );
   }
 
-  function handleDelete() {
+  function buildDeleteBourbonMessage() {
     const impact = deletionImpact;
     const lines: string[] = [];
     if (impact) {
@@ -150,41 +157,35 @@ export default function BourbonDetailScreen() {
       if (impact.community_comments > 0) lines.push(`${impact.community_comments} community comment${impact.community_comments !== 1 ? "s" : ""}`);
       if (impact.group_comments > 0) lines.push(`${impact.group_comments} group comment${impact.group_comments !== 1 ? "s" : ""}`);
     }
-    const impactMessage = lines.length > 0
-      ? `This will also permanently delete:\n${lines.join("\n")}\n\nThis cannot be undone.`
-      : "This cannot be undone.";
+    return lines.length > 0
+      ? `Are you sure you want to delete "${bourbon!.name}"?\n\nThis will also permanently delete:\n${lines.join("\n")}\n\nThis cannot be undone.`
+      : `Are you sure you want to delete "${bourbon!.name}"? This cannot be undone.`;
+  }
 
-    Alert.alert(
-      "Delete Bourbon",
-      `Are you sure you want to delete "${bourbon!.name}"?\n\n${impactMessage}`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () =>
-            deleteBourbon.mutate(bourbon!.id, {
-              onSuccess: () => router.replace("/(tabs)/explore" as never),
-              onError: () => Alert.alert("Error", "Failed to delete bourbon."),
-            }),
-        },
-      ]
-    );
+  function handleDelete() {
+    setShowDeleteBourbonConfirm(true);
+  }
+
+  function confirmDeleteBourbonAction() {
+    setShowDeleteBourbonConfirm(false);
+    deleteBourbon.mutate(bourbon!.id, {
+      onSuccess: () => router.replace("/(tabs)/explore" as never),
+      onError: () => showToast("Failed to delete bourbon.", "error"),
+    });
   }
 
   function handleDeleteComment(commentId: string, groupId?: string | null) {
-    Alert.alert("Delete Comment", "Remove this comment?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () =>
-          deleteComment.mutate(
-            { id: commentId, bourbonId: bourbon!.id, groupId },
-            { onError: () => Alert.alert("Error", "Failed to delete comment.") }
-          ),
-      },
-    ]);
+    setConfirmDeleteComment({ id: commentId, groupId });
+  }
+
+  function confirmDeleteCommentAction() {
+    if (!confirmDeleteComment) return;
+    const { id: commentId, groupId } = confirmDeleteComment;
+    setConfirmDeleteComment(null);
+    deleteComment.mutate(
+      { id: commentId, bourbonId: bourbon!.id, groupId },
+      { onError: () => showToast("Failed to delete comment.", "error") }
+    );
   }
 
   const hasGroups = myGroups.length > 0;
@@ -639,6 +640,28 @@ export default function BourbonDetailScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Delete Bourbon confirmation */}
+      <ConfirmationModal
+        visible={showDeleteBourbonConfirm}
+        title="Delete Bourbon"
+        message={showDeleteBourbonConfirm ? buildDeleteBourbonMessage() : ""}
+        confirmLabel="Delete"
+        destructive
+        onConfirm={confirmDeleteBourbonAction}
+        onCancel={() => setShowDeleteBourbonConfirm(false)}
+      />
+
+      {/* Delete Comment confirmation */}
+      <ConfirmationModal
+        visible={confirmDeleteComment !== null}
+        title="Delete Comment"
+        message="Remove this comment?"
+        confirmLabel="Delete"
+        destructive
+        onConfirm={confirmDeleteCommentAction}
+        onCancel={() => setConfirmDeleteComment(null)}
+      />
     </View>
   );
 }

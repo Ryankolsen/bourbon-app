@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   TextInput,
   Modal,
-  Alert,
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -98,7 +97,7 @@ export default function GroupsScreen() {
           const message =
             pgErr?.message ?? pgErr?.code ?? "Failed to create group.";
           console.error("[createGroup]", pgErr);
-          Alert.alert("Error", message);
+          showToast(message, "error");
         },
       }
     );
@@ -112,7 +111,7 @@ export default function GroupsScreen() {
         onError: (err) => {
           const pgErr = err as any;
           console.error("[acceptInvite]", pgErr);
-          Alert.alert("Error", pgErr?.message ?? pgErr?.code ?? "Failed to accept invite.");
+          showToast(pgErr?.message ?? pgErr?.code ?? "Failed to accept invite.", "error");
         },
       }
     );
@@ -126,7 +125,7 @@ export default function GroupsScreen() {
         onError: (err) => {
           const pgErr = err as any;
           console.error("[declineInvite]", pgErr);
-          Alert.alert("Error", pgErr?.message ?? pgErr?.code ?? "Failed to decline invite.");
+          showToast(pgErr?.message ?? pgErr?.code ?? "Failed to decline invite.", "error");
         },
       }
     );

@@ -8,7 +8,6 @@
  */
 
 import React from 'react';
-import { Alert } from 'react-native';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 import BourbonDetailScreen from './[id]';
 
@@ -167,72 +166,52 @@ describe('BourbonDetailScreen — admin delete flow', () => {
   // Slice 4 — confirmation dialog shows counts
   it('shows Delete button for admin and dialog contains impact counts when tapped', () => {
     mockIsAdmin = true;
-    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
 
     render(<BourbonDetailScreen />);
 
-    const deleteButton = screen.getByText('Delete');
-    expect(deleteButton).toBeTruthy();
+    // Before pressing Delete, the header Delete button is the only one
+    const headerDeleteButton = screen.getByText('Delete');
+    expect(headerDeleteButton).toBeTruthy();
 
-    fireEvent.press(deleteButton);
+    fireEvent.press(headerDeleteButton);
 
-    expect(alertSpy).toHaveBeenCalledWith(
-      'Delete Bourbon',
-      expect.stringContaining('3 tasting notes'),
-      expect.any(Array)
-    );
-    expect(alertSpy).toHaveBeenCalledWith(
-      'Delete Bourbon',
-      expect.stringContaining('12 collection entries'),
-      expect.any(Array)
-    );
-
-    alertSpy.mockRestore();
+    // After pressing, the ConfirmationModal becomes visible with title and impact counts
+    expect(screen.getByText('Delete Bourbon')).toBeTruthy();
+    expect(screen.getByText(/3 tasting notes/)).toBeTruthy();
+    expect(screen.getByText(/12 collection entries/)).toBeTruthy();
   });
 
   // Slice 5 — cancel does not delete
   it('does NOT call useDeleteBourbon when Cancel is pressed in the confirmation dialog', () => {
     mockIsAdmin = true;
 
-    let capturedButtons: Array<{ text: string; onPress?: () => void }> = [];
-    jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
-      capturedButtons = (buttons ?? []) as typeof capturedButtons;
-    });
-
     render(<BourbonDetailScreen />);
     fireEvent.press(screen.getByText('Delete'));
 
-    const cancelButton = capturedButtons.find((b) => b.text === 'Cancel');
+    // Modal is now visible; press Cancel
+    const cancelButton = screen.getByLabelText('Cancel');
     expect(cancelButton).toBeTruthy();
-    cancelButton?.onPress?.();
+    fireEvent.press(cancelButton);
 
     expect(mockDeleteMutate).not.toHaveBeenCalled();
-
-    jest.restoreAllMocks();
   });
 
   // Confirming dialog triggers useDeleteBourbon
   it('calls useDeleteBourbon when the Delete button in the dialog is confirmed', () => {
     mockIsAdmin = true;
 
-    let capturedButtons: Array<{ text: string; onPress?: () => void }> = [];
-    jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
-      capturedButtons = (buttons ?? []) as typeof capturedButtons;
-    });
-
     render(<BourbonDetailScreen />);
     fireEvent.press(screen.getByText('Delete'));
 
-    const confirmButton = capturedButtons.find((b) => b.text === 'Delete');
+    // Modal is now visible; confirm via the Delete confirm button (accessibilityLabel)
+    const confirmButton = screen.getByLabelText('Delete');
     expect(confirmButton).toBeTruthy();
-    confirmButton?.onPress?.();
+    fireEvent.press(confirmButton);
 
     expect(mockDeleteMutate).toHaveBeenCalledWith(
       'bourbon-delete-id',
       expect.any(Object)
     );
-
-    jest.restoreAllMocks();
   });
 });
 

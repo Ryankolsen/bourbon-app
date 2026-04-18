@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
-  Alert,
   Image,
   Modal,
 } from "react-native";
@@ -26,6 +25,7 @@ import {
 import { useSearchProfiles } from "@/hooks/use-profile";
 import { useToast } from "@/lib/toast-provider";
 import { useTheme } from "@/lib/theme-provider";
+import { ConfirmationModal } from "@/components/ConfirmationModal";
 
 export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -52,6 +52,10 @@ export default function GroupDetailScreen() {
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
 
+  // Confirmation modal state
+  const [confirmRemoveMember, setConfirmRemoveMember] = useState<{ userId: string; name: string } | null>(null);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+
   const { data: searchResults, isFetching: profileFetching } =
     useSearchProfiles(lookupQuery);
 
@@ -77,9 +81,9 @@ export default function GroupDetailScreen() {
     if (!foundProfile || !id || !user?.id) return;
 
     if (memberIds.has(foundProfile.id)) {
-      Alert.alert(
-        "Already a member",
-        `${foundProfile.display_name ?? foundProfile.username} is already in this group.`
+      showToast(
+        `${foundProfile.display_name ?? foundProfile.username} is already in this group.`,
+        "error"
       );
       return;
     }
@@ -90,12 +94,12 @@ export default function GroupDetailScreen() {
         onSuccess: () => {
           setInviteInput("");
           setLookupQuery(undefined);
-          Alert.alert("Invited", "Invitation sent.");
+          showToast("Invitation sent.", "success");
         },
         onError: (err) => {
-          Alert.alert(
-            "Error",
-            err instanceof Error ? err.message : "Failed to send invite."
+          showToast(
+            err instanceof Error ? err.message : "Failed to send invite.",
+            "error"
           );
         },
       }
@@ -118,9 +122,9 @@ export default function GroupDetailScreen() {
           showToast("Group updated.", "success");
         },
         onError: (err) => {
-          Alert.alert(
-            "Error",
-            err instanceof Error ? err.message : "Failed to update group."
+          showToast(
+            err instanceof Error ? err.message : "Failed to update group.",
+            "error"
           );
         },
       }
@@ -128,59 +132,48 @@ export default function GroupDetailScreen() {
   }
 
   function handleRemoveMember(targetUserId: string, memberName: string) {
-    if (!id) return;
-    Alert.alert(
-      "Remove Member",
-      `Remove ${memberName} from this group?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: () => {
-            removeGroupMember.mutate(
-              { groupId: id, userId: targetUserId },
-              {
-                onSuccess: () => {
-                  showToast(`${memberName} was removed.`, "success");
-                },
-                onError: (err) => {
-                  Alert.alert(
-                    "Error",
-                    err instanceof Error ? err.message : "Failed to remove member."
-                  );
-                },
-              }
-            );
-          },
+    setConfirmRemoveMember({ userId: targetUserId, name: memberName });
+  }
+
+  function confirmRemoveMemberAction() {
+    if (!id || !confirmRemoveMember) return;
+    const { userId: targetUserId, name: memberName } = confirmRemoveMember;
+    setConfirmRemoveMember(null);
+    removeGroupMember.mutate(
+      { groupId: id, userId: targetUserId },
+      {
+        onSuccess: () => {
+          showToast(`${memberName} was removed.`, "success");
         },
-      ]
+        onError: (err) => {
+          showToast(
+            err instanceof Error ? err.message : "Failed to remove member.",
+            "error"
+          );
+        },
+      }
     );
   }
 
   function handleLeave() {
+    setShowLeaveConfirm(true);
+  }
+
+  function confirmLeaveAction() {
     if (!id || !user?.id) return;
-    Alert.alert("Leave Group", "Are you sure you want to leave this group?", [
-      { text: "Cancel", style: "cancel" },
+    setShowLeaveConfirm(false);
+    leaveGroup.mutate(
+      { groupId: id, userId: user.id },
       {
-        text: "Leave",
-        style: "destructive",
-        onPress: () => {
-          leaveGroup.mutate(
-            { groupId: id, userId: user.id },
-            {
-              onSuccess: () => router.replace("/(tabs)/groups" as never),
-              onError: (err) => {
-                Alert.alert(
-                  "Error",
-                  err instanceof Error ? err.message : "Failed to leave group."
-                );
-              },
-            }
+        onSuccess: () => router.replace("/(tabs)/groups" as never),
+        onError: (err) => {
+          showToast(
+            err instanceof Error ? err.message : "Failed to leave group.",
+            "error"
           );
         },
-      },
-    ]);
+      }
+    );
   }
 
   if (isLoading) {
@@ -616,6 +609,28 @@ export default function GroupDetailScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Remove Member confirmation */}
+      <ConfirmationModal
+        visible={confirmRemoveMember !== null}
+        title="Remove Member"
+        message={confirmRemoveMember ? `Remove ${confirmRemoveMember.name} from this group?` : ""}
+        confirmLabel="Remove"
+        destructive
+        onConfirm={confirmRemoveMemberAction}
+        onCancel={() => setConfirmRemoveMember(null)}
+      />
+
+      {/* Leave Group confirmation */}
+      <ConfirmationModal
+        visible={showLeaveConfirm}
+        title="Leave Group"
+        message="Are you sure you want to leave this group?"
+        confirmLabel="Leave"
+        destructive
+        onConfirm={confirmLeaveAction}
+        onCancel={() => setShowLeaveConfirm(false)}
+      />
     </View>
   );
 }

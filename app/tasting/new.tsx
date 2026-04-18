@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -15,6 +14,7 @@ import { useLogTasting } from "@/hooks/use-tastings";
 import { useAuth } from "@/hooks/use-auth";
 import { buildTastingPayload } from "@/lib/tastings";
 import { colors } from "@/lib/colors";
+import { useToast } from "@/lib/toast-provider";
 
 const RATING_STEPS = [1, 2, 3, 4, 5];
 const STAR_LABELS: Record<number, string> = {
@@ -32,6 +32,7 @@ export default function NewTastingScreen() {
   const { user } = useAuth();
   const { data: bourbon, isLoading } = useBourbon(bourbonId);
   const logTasting = useLogTasting();
+  const { showToast } = useToast();
 
   const [rating, setRating] = useState<number | null>(null);
   const [nose, setNose] = useState("");
@@ -48,7 +49,7 @@ export default function NewTastingScreen() {
           router.back();
         },
         onError: (err) => {
-          Alert.alert("Error", "Failed to save tasting. Please try again.");
+          showToast("Failed to save tasting. Please try again.", "error");
           console.error(err);
         },
       }

@@ -6,7 +6,6 @@ import {
   TextInput,
   Image,
   ActivityIndicator,
-  Alert,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -21,6 +20,7 @@ import { useFollowerCount, useFollowingCount } from "@/hooks/use-follows";
 import { colors } from "@/lib/colors";
 import { useTheme } from "@/lib/theme-provider";
 import { type ThemeMode } from "@/lib/themes";
+import { useToast } from "@/lib/toast-provider";
 
 const THEME_OPTIONS: { label: string; value: ThemeMode }[] = [
   { label: "System", value: "system" },
@@ -37,6 +37,7 @@ export default function ProfileScreen() {
   const { data: followerCount } = useFollowerCount(user?.id);
   const { data: followingCount } = useFollowingCount(user?.id);
   const { themeMode, setThemeMode } = useTheme();
+  const { showToast } = useToast();
 
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState("");
@@ -65,7 +66,7 @@ export default function ProfileScreen() {
       setEditing(false);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to save profile";
-      Alert.alert("Error", message);
+      showToast(message, "error");
     }
   }
 
@@ -75,7 +76,7 @@ export default function ProfileScreen() {
       await uploadAvatar.mutateAsync({ userId: user.id });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to upload avatar";
-      Alert.alert("Error", message);
+      showToast(message, "error");
     }
   }
 
