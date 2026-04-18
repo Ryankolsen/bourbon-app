@@ -51,6 +51,8 @@ export interface BourbonFilterState {
   sortField: string | null;
   /** true = ascending, false = descending. Only meaningful when sortField is set. */
   sortAscending: boolean;
+  /** When true, only bourbons tasted by followed users are shown on Explore. */
+  friendsOnly: boolean;
 }
 
 export const DEFAULT_BOURBON_FILTERS: BourbonFilterState = {
@@ -63,6 +65,7 @@ export const DEFAULT_BOURBON_FILTERS: BourbonFilterState = {
   distillery: null,
   sortField: null,
   sortAscending: true,
+  friendsOnly: false,
 };
 
 /**

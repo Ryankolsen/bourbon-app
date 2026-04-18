@@ -37,7 +37,8 @@ export default function PublicProfileScreen() {
 
   const { data: sharesGroup } = useSharesGroup(user?.id, id);
   const { data: memberCollection = [] } = useCollection(sharesGroup ? id : undefined);
-  const { data: memberTastings = [] } = useTastings(sharesGroup ? id : undefined);
+  // Full tasting history is visible to all authenticated users (not just group members)
+  const { data: memberTastings = [] } = useTastings(user ? id : undefined);
 
   const isOwnProfile = user?.id === id;
   const insets = useSafeAreaInsets();
@@ -175,102 +176,101 @@ export default function PublicProfileScreen() {
 
         {/* ── GROUP MEMBER SECTIONS ── */}
         {sharesGroup && !isOwnProfile && (
-          <>
-            {/* Their Collection */}
-            <View className="mt-6">
-              <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
-                Collection
+          <View className="mt-6">
+            <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
+              Collection
+            </Text>
+            {memberCollection.length === 0 ? (
+              <Text className="text-brand-500 text-sm text-center py-3">
+                No bottles in collection yet.
               </Text>
-              {memberCollection.length === 0 ? (
-                <Text className="text-brand-500 text-sm text-center py-3">
-                  No bottles in collection yet.
-                </Text>
-              ) : (
-                memberCollection.map((item) => {
-                  const bourbon = item.bourbons as
-                    | { id: string; name: string; distillery: string | null }
-                    | null
-                    | undefined;
-                  return (
-                    <TouchableOpacity
-                      key={item.id}
-                      onPress={() =>
-                        bourbon?.id
-                          ? router.push(`/bourbon/${bourbon.id}` as never)
-                          : undefined
-                      }
-                      className="bg-brand-800 rounded-2xl p-3 mb-2"
-                    >
-                      <Text className="text-brand-100 text-sm font-semibold">
+            ) : (
+              memberCollection.map((item) => {
+                const bourbon = item.bourbons as
+                  | { id: string; name: string; distillery: string | null }
+                  | null
+                  | undefined;
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    onPress={() =>
+                      bourbon?.id
+                        ? router.push(`/bourbon/${bourbon.id}` as never)
+                        : undefined
+                    }
+                    className="bg-brand-800 rounded-2xl p-3 mb-2"
+                  >
+                    <Text className="text-brand-100 text-sm font-semibold">
+                      {bourbon?.name ?? "Unknown Bourbon"}
+                    </Text>
+                    {bourbon?.distillery ? (
+                      <Text className="text-brand-400 text-xs mt-0.5">
+                        {bourbon.distillery}
+                      </Text>
+                    ) : null}
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </View>
+        )}
+
+        {/* ── TASTING HISTORY (visible to all authenticated users) ── */}
+        {user && !isOwnProfile && (
+          <View className="mt-6">
+            <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
+              Tasting History
+            </Text>
+            {memberTastings.length === 0 ? (
+              <Text className="text-brand-500 text-sm text-center py-3">
+                No tastings logged yet.
+              </Text>
+            ) : (
+              memberTastings.map((tasting) => {
+                const bourbon = tasting.bourbons as
+                  | { id: string; name: string }
+                  | null
+                  | undefined;
+                const date = new Date(
+                  (tasting as { tasted_at: string }).tasted_at
+                ).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                });
+                return (
+                  <TouchableOpacity
+                    key={tasting.id}
+                    onPress={() =>
+                      bourbon?.id
+                        ? router.push(`/bourbon/${bourbon.id}` as never)
+                        : undefined
+                    }
+                    className="bg-brand-800 rounded-2xl p-3 mb-2"
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <Text className="text-brand-100 text-sm font-semibold flex-1 mr-2">
                         {bourbon?.name ?? "Unknown Bourbon"}
                       </Text>
-                      {bourbon?.distillery ? (
-                        <Text className="text-brand-400 text-xs mt-0.5">
-                          {bourbon.distillery}
+                      {(tasting as { rating: number | null }).rating != null && (
+                        <Text className="text-brand-400 text-xs">
+                          {"★".repeat(
+                            (tasting as { rating: number }).rating
+                          )}
+                          {"☆".repeat(
+                            5 - (tasting as { rating: number }).rating
+                          )}
                         </Text>
-                      ) : null}
-                    </TouchableOpacity>
-                  );
-                })
-              )}
-            </View>
-
-            {/* Their Tastings */}
-            <View className="mt-6">
-              <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
-                Tastings
-              </Text>
-              {memberTastings.length === 0 ? (
-                <Text className="text-brand-500 text-sm text-center py-3">
-                  No tastings logged yet.
-                </Text>
-              ) : (
-                memberTastings.map((tasting) => {
-                  const bourbon = tasting.bourbons as
-                    | { id: string; name: string }
-                    | null
-                    | undefined;
-                  const date = new Date(
-                    (tasting as { tasted_at: string }).tasted_at
-                  ).toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  });
-                  return (
-                    <TouchableOpacity
-                      key={tasting.id}
-                      onPress={() =>
-                        bourbon?.id
-                          ? router.push(`/bourbon/${bourbon.id}` as never)
-                          : undefined
-                      }
-                      className="bg-brand-800 rounded-2xl p-3 mb-2"
-                    >
-                      <View className="flex-row items-center justify-between">
-                        <Text className="text-brand-100 text-sm font-semibold flex-1 mr-2">
-                          {bourbon?.name ?? "Unknown Bourbon"}
-                        </Text>
-                        {(tasting as { rating: number | null }).rating != null && (
-                          <Text className="text-brand-400 text-xs">
-                            {"★".repeat(
-                              (tasting as { rating: number }).rating
-                            )}
-                            {"☆".repeat(
-                              5 - (tasting as { rating: number }).rating
-                            )}
-                          </Text>
-                        )}
-                      </View>
-                      <Text className="text-brand-500 text-xs mt-0.5">
-                        {date}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })
-              )}
-            </View>
-          </>
+                      )}
+                    </View>
+                    <Text className="text-brand-500 text-xs mt-0.5">
+                      {date}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </View>
         )}
       </ScrollView>
     </View>

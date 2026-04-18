@@ -2,6 +2,43 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
 /**
+ * Returns the count of followed users (via user_follows only) who have tasted
+ * a specific bourbon. Used for the "X people you follow have tried this" on the
+ * bourbon detail page.
+ */
+export function useFollowedUsersTastedCount(
+  userId: string | undefined,
+  bourbonId: string | undefined,
+): ReturnType<typeof useQuery<number>> {
+  return useQuery({
+    queryKey: ["followed-users-tasted-count", userId, bourbonId],
+    queryFn: async (): Promise<number> => {
+      if (!userId || !bourbonId) return 0;
+
+      const { data: follows, error: followsError } = await supabase
+        .from("user_follows")
+        .select("following_id")
+        .eq("follower_id", userId);
+      if (followsError) throw followsError;
+
+      const followedIds = (follows ?? []).map((f: { following_id: string }) => f.following_id);
+      if (followedIds.length === 0) return 0;
+
+      const { count, error } = await supabase
+        .from("tastings")
+        .select("user_id", { count: "exact", head: true })
+        .eq("bourbon_id", bourbonId)
+        .in("user_id", followedIds);
+      if (error) throw error;
+
+      return count ?? 0;
+    },
+    enabled: !!userId && !!bourbonId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
  * Returns a cached Set of bourbon IDs that have been tasted by:
  *   - users the current user follows (via user_follows), and
  *   - members of groups the current user belongs to (via group_members).

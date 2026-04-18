@@ -15,6 +15,7 @@ import { useAddToCollection } from "@/hooks/use-collection";
 import { useIsWishlisted, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
 import { useComments, useGroupComments, useAddComment, useDeleteComment } from "@/hooks/use-comments";
 import { useBourbonRatingStats, useGroupRatingStats } from "@/hooks/use-ratings";
+import { useFollowedUsersTastedCount } from "@/hooks/use-friend-tasted-bourbon-ids";
 import { useMyGroups, useRecommendBourbon } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
@@ -56,6 +57,7 @@ export default function BourbonDetailScreen() {
   const removeFromWishlist = useRemoveFromWishlist();
 
   const { data: ratingStats } = useBourbonRatingStats(id);
+  const { data: followedTastedCount = 0 } = useFollowedUsersTastedCount(user?.id, id);
   const { data: comments = [], isLoading: commentsLoading } = useComments(id);
   const addComment = useAddComment();
   const deleteComment = useDeleteComment();
@@ -265,6 +267,13 @@ export default function BourbonDetailScreen() {
               </View>
             ) : (
               <Text className="text-brand-500 text-sm">No ratings yet</Text>
+            )}
+            {followedTastedCount > 0 && (
+              <Text className="text-brand-400 text-xs mt-1">
+                {followedTastedCount}{" "}
+                {followedTastedCount === 1 ? "person" : "people"} you follow{" "}
+                {followedTastedCount === 1 ? "has" : "have"} tried this
+              </Text>
             )}
           </View>
           {ratingStats && ratingStats.rating_count > 0 && (

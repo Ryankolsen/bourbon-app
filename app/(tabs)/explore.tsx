@@ -5,6 +5,7 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { useState, useMemo } from "react";
 import { useRouter } from "expo-router";
@@ -21,11 +22,13 @@ import { FilterSheet } from "@/components/FilterSheet";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { BourbonCard } from "@/components/BourbonCard";
 import { useFriendTastedBourbonIds } from "@/hooks/use-friend-tasted-bourbon-ids";
+import { useTrendingFollowedBourbons } from "@/hooks/use-trending-followed-bourbons";
 import { colors } from "@/lib/colors";
 
 export default function ExploreScreen() {
   const [search, setSearch] = useState("");
   const [filterSheetVisible, setFilterSheetVisible] = useState(false);
+  const [trendingToggle, setTrendingToggle] = useState<"taste_count" | "rating">("taste_count");
   // Track which bourbon IDs have an in-flight add-to-collection request
   const [addingIds, setAddingIds] = useState<Set<string>>(new Set());
 
@@ -41,16 +44,25 @@ export default function ExploreScreen() {
   const { data: bourbonsRaw, isLoading } = useBourbons(search, filters);
   const { data: friendTastedIds = new Set<string>() } = useFriendTastedBourbonIds(user?.id);
   const { data: allRatingStats = [] } = useAllBourbonRatingStats();
+  const { data: trending } = useTrendingFollowedBourbons(user?.id);
 
   // Apply client-side sorts that can't be done server-side:
   // - "social": friend-tasted bourbons first
   // - "avg_rating": requires join with bourbon_rating_stats view
+  // - "friendsOnly": filter to only bourbons tasted by followed users
   const bourbons = useMemo(() => {
     if (!bourbonsRaw) return bourbonsRaw;
+    let result = bourbonsRaw;
+
+    if (filters.friendsOnly) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      result = result.filter((b: any) => friendTastedIds.has(b.id));
+    }
+
     if (filters.sortField === "social") {
-      const tasted: typeof bourbonsRaw = [];
-      const rest: typeof bourbonsRaw = [];
-      for (const b of bourbonsRaw) {
+      const tasted: typeof result = [];
+      const rest: typeof result = [];
+      for (const b of result) {
         if (friendTastedIds.has(b.id)) tasted.push(b);
         else rest.push(b);
       }
@@ -58,7 +70,7 @@ export default function ExploreScreen() {
     }
     if (filters.sortField === "avg_rating") {
       const ratingLookup = new Map(allRatingStats.map((s) => [s.bourbon_id, s.avg_rating]));
-      return [...bourbonsRaw].sort((a, b) => {
+      return [...result].sort((a, b) => {
         const aRating = ratingLookup.get(a.id) ?? null;
         const bRating = ratingLookup.get(b.id) ?? null;
         // Bourbons with no ratings sort to the end regardless of direction
@@ -69,8 +81,21 @@ export default function ExploreScreen() {
         return filters.sortAscending ? diff : -diff;
       });
     }
-    return bourbonsRaw;
-  }, [bourbonsRaw, filters.sortField, filters.sortAscending, friendTastedIds, allRatingStats]);
+    return result;
+  }, [bourbonsRaw, filters.friendsOnly, filters.sortField, filters.sortAscending, friendTastedIds, allRatingStats]);
+
+  // Build a lookup map from the fetched bourbons for the trending section
+  const bourbonLookup = useMemo(() => {
+    if (!bourbonsRaw) return new Map<string, Record<string, unknown>>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new Map<string, any>(bourbonsRaw.map((b: any) => [b.id, b]));
+  }, [bourbonsRaw]);
+
+  const trendingIds =
+    trendingToggle === "taste_count"
+      ? (trending?.byTasteCount ?? [])
+      : (trending?.byRating ?? []);
+  const hasTrending = trendingIds.length > 0;
   const { showToast } = useToast();
   const addToCollection = useAddToCollection();
   const addToWishlist = useAddToWishlist();
@@ -138,12 +163,76 @@ export default function ExploreScreen() {
           keyExtractor={(item) => item.id}
           contentContainerClassName="px-4 pb-4 gap-3"
           ListHeaderComponent={
-            bourbons && bourbons.length > 0 ? (
-              <Text className="text-brand-500 text-xs pt-1">
-                {bourbons.length} {bourbons.length === 1 ? "bourbon" : "bourbons"}
-                {hasActiveFilters ? " (filtered)" : ""}
-              </Text>
-            ) : null
+            <>
+              {/* ── Trending section ── */}
+              {hasTrending && (
+                <View className="mb-4">
+                  <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-2">
+                    Trending among people you follow
+                  </Text>
+                  {/* Toggle */}
+                  <View className="flex-row gap-2 mb-3">
+                    {(["taste_count", "rating"] as const).map((key) => {
+                      const label = key === "taste_count" ? "Most Tasted" : "Highest Rated";
+                      const active = trendingToggle === key;
+                      return (
+                        <TouchableOpacity
+                          key={key}
+                          onPress={() => setTrendingToggle(key)}
+                          className={`px-3 py-1.5 rounded-full border ${
+                            active
+                              ? "bg-brand-600 border-brand-600"
+                              : "bg-brand-800 border-brand-700"
+                          }`}
+                        >
+                          <Text
+                            className={`text-xs font-medium ${
+                              active ? "text-white" : "text-brand-300"
+                            }`}
+                          >
+                            {label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                  {/* Horizontal scroll of trending bourbons */}
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {trendingIds.map((bourbonId) => {
+                      const b = bourbonLookup.get(bourbonId);
+                      if (!b) return null;
+                      return (
+                        <TouchableOpacity
+                          key={bourbonId}
+                          onPress={() => router.push(`/bourbon/${bourbonId}`)}
+                          className="bg-brand-800 rounded-xl p-3 mr-3 w-44"
+                        >
+                          <Text className="text-brand-100 font-semibold text-sm" numberOfLines={2}>
+                            {b.name}
+                          </Text>
+                          {b.distillery ? (
+                            <Text className="text-brand-400 text-xs mt-0.5" numberOfLines={1}>
+                              {b.distillery}
+                            </Text>
+                          ) : null}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+                  <View className="h-px bg-brand-700 mt-4 mb-2" />
+                </View>
+              )}
+              {/* ── Count line ── */}
+              {bourbons && bourbons.length > 0 ? (
+                <Text className="text-brand-500 text-xs pt-1">
+                  {bourbons.length} {bourbons.length === 1 ? "bourbon" : "bourbons"}
+                  {hasActiveFilters ? " (filtered)" : ""}
+                </Text>
+              ) : null}
+            </>
           }
           renderItem={({ item }) => {
             const wishlisted = wishlistMap.has(item.id);

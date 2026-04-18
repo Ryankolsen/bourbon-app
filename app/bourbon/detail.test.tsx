@@ -80,6 +80,10 @@ jest.mock('@/hooks/use-groups', () => ({
   useRecommendBourbon: () => ({ mutate: jest.fn(), isPending: false }),
 }));
 
+jest.mock('@/hooks/use-friend-tasted-bourbon-ids', () => ({
+  useFollowedUsersTastedCount: () => ({ data: 0 }),
+}));
+
 jest.mock('@/lib/toast-provider', () => ({
   useToast: () => ({ showToast: jest.fn() }),
 }));

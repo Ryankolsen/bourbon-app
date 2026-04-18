@@ -310,6 +310,23 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
               )}
             </Section>
 
+            {/* ---- Friends Only (Explore only) ---- */}
+            {showSocialSort && (
+              <Section label="Social">
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-brand-300 text-sm">
+                    Only show bourbons tried by people I follow
+                  </Text>
+                  <Switch
+                    value={draft.friendsOnly}
+                    onValueChange={(v) => setDraft((d) => ({ ...d, friendsOnly: v }))}
+                    trackColor={{ false: colors.sliderTrackEmpty, true: colors.sliderTrackFilled }}
+                    thumbColor={colors.sliderThumb}
+                  />
+                </View>
+              </Section>
+            )}
+
             {/* Spacer so content clears the action buttons */}
             <View className="h-4" />
           </ScrollView>

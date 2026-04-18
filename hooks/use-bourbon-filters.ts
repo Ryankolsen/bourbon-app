@@ -131,7 +131,8 @@ export function useBourbonFilters(): UseBourbonFiltersReturn {
     filters.ageMax !== null ||
     filters.nasOnly ||
     filters.distillery !== null ||
-    filters.sortField !== null;
+    filters.sortField !== null ||
+    filters.friendsOnly;
 
   const applyFilters = useCallback(
     (next: BourbonFilterState) => dispatch({ type: 'APPLY', next }),
