@@ -1,5 +1,5 @@
 /**
- * Tests for (tabs)/index.tsx — Remove from Vault confirmation modal
+ * Tests for components/CollectionTab.tsx — Remove from Vault confirmation modal
  * (issue #96: verify unified toast and confirmation modal across all screens)
  *
  * Covers:
@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
-import CollectionScreen from './index';
+import CollectionScreen from '@/components/CollectionTab';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -97,7 +97,7 @@ jest.mock('@/components/ActiveFilterChips', () => ({
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe('CollectionScreen — Remove from Vault confirmation', () => {
+describe('CollectionTab — Remove from Vault confirmation', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });

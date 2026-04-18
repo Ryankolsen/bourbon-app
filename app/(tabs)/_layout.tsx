@@ -61,8 +61,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Collection",
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🍶" focused={focused} />,
+          title: "Home",
+          tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
         }}
       />
       <Tabs.Screen
@@ -80,13 +80,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="wishlist"
-        options={{
-          title: "Wishlist",
-          tabBarIcon: ({ focused }) => <TabIcon emoji="⭐" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
         name="groups"
         options={{
           title: "Groups",
@@ -98,6 +91,12 @@ export default function TabsLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ focused }) => <TabIcon emoji="👤" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="wishlist"
+        options={{
+          href: null,
         }}
       />
       <Tabs.Screen
