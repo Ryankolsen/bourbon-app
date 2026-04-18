@@ -13,6 +13,8 @@ interface SearchablePickerProps {
   placeholder?: string;
   isLoading?: boolean;
   testID?: string;
+  /** Override dropdown position. Use "top" when rendering inside a Modal to avoid coordinate miscalculation. */
+  dropdownPosition?: 'auto' | 'top' | 'bottom';
 }
 
 type PickerItem = { label: string; value: string; _isNew?: boolean };
@@ -36,6 +38,7 @@ export function SearchablePicker({
   placeholder = 'Search...',
   isLoading = false,
   testID,
+  dropdownPosition = 'auto',
 }: SearchablePickerProps) {
 
   // Separate local state for the Dropdown's selected value so that free-text
@@ -113,6 +116,7 @@ export function SearchablePicker({
   return (
     <Dropdown
       testID={testID}
+      dropdownPosition={dropdownPosition}
       data={items}
       labelField="label"
       valueField="value"

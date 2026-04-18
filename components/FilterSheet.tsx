@@ -268,6 +268,7 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
                 onChange={handleDistilleryChange}
                 placeholder="Search distillery..."
                 isLoading={distilleriesLoading}
+                dropdownPosition="top"
               />
             </Section>
 
