@@ -1,8 +1,9 @@
-import { Tabs } from "expo-router";
-import { Text, View } from "react-native";
+import { Tabs, useRouter } from "expo-router";
+import { Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "@/hooks/use-auth";
 import { isAdmin } from "@/lib/admin";
 import { useGroupNotifications } from "@/hooks/use-group-notifications";
+import { useSocialNotifications } from "@/hooks/use-social-notifications";
 import { useTheme } from "@/lib/theme-provider";
 
 function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
@@ -39,6 +40,39 @@ function GroupsTabIcon({ focused }: { focused: boolean }) {
   );
 }
 
+function BellIcon() {
+  const { user } = useAuth();
+  const { data: notifications } = useSocialNotifications(user?.id);
+  const { activeTheme } = useTheme();
+  const router = useRouter();
+  const unreadCount = notifications?.length ?? 0;
+
+  return (
+    <TouchableOpacity
+      onPress={() => router.push('/notifications' as never)}
+      accessibilityLabel="Notifications"
+      style={{ marginRight: 12 }}
+    >
+      <View>
+        <Text style={{ fontSize: 22 }}>🔔</Text>
+        {unreadCount > 0 && (
+          <View
+            style={{
+              position: 'absolute',
+              top: -2,
+              right: -4,
+              width: 10,
+              height: 10,
+              borderRadius: 5,
+              backgroundColor: activeTheme.colors.badgeError,
+            }}
+          />
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 export default function TabsLayout() {
   const { user } = useAuth();
   const { activeTheme } = useTheme();
@@ -63,6 +97,7 @@ export default function TabsLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
+          headerRight: () => <BellIcon />,
         }}
       />
       <Tabs.Screen

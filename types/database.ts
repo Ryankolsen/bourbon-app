@@ -486,24 +486,24 @@ export interface Database {
       social_notifications: {
         Row: {
           id: string;
-          user_id: string;
+          recipient_id: string;
           actor_id: string;
           type: 'new_tasting' | 'new_follower';
           tasting_id: string | null;
-          read: boolean;
           created_at: string;
+          dismissed_at: string | null;
         };
         Insert: {
           id?: string;
-          user_id: string;
+          recipient_id: string;
           actor_id: string;
           type: 'new_tasting' | 'new_follower';
           tasting_id?: string | null;
-          read?: boolean;
           created_at?: string;
+          dismissed_at?: string | null;
         };
         Update: {
-          read?: boolean;
+          dismissed_at?: string | null;
         };
         Relationships: [];
       };
