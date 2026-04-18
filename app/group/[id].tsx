@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
+  FlatList,
   Image,
   Modal,
 } from "react-native";
@@ -22,10 +23,91 @@ import {
   useUpdateGroup,
   useRemoveGroupMember,
 } from "@/hooks/use-groups";
+import { useGroupFeed, GroupFeedItem } from "@/hooks/use-group-feed";
 import { useSearchProfiles } from "@/hooks/use-profile";
 import { useToast } from "@/lib/toast-provider";
 import { useTheme } from "@/lib/theme-provider";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
+import { StarRating } from "@/components/StarRating";
+
+type Tab = "feed" | "recommendations" | "members";
+
+// ─── GroupFeedCard ────────────────────────────────────────────────────────────
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function getInitials(displayName: string | null, username: string | null): string {
+  const name = displayName ?? username ?? "?";
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function GroupFeedCard({ item }: { item: GroupFeedItem }) {
+  const router = useRouter();
+
+  const isShared =
+    item.taster_user_id !== item.shared_by_user_id;
+  const posterName = item.taster_display_name ?? item.taster_username ?? "Unknown";
+  const posterInitials = getInitials(item.taster_display_name, item.taster_username);
+  const sharerName = item.sharer_display_name ?? item.sharer_username ?? "Unknown";
+
+  return (
+    <TouchableOpacity
+      className="bg-brand-800 rounded-2xl p-4 mb-3 mx-4"
+      onPress={() => router.push(`/bourbon/${item.bourbon_id}` as never)}
+    >
+      {/* Attribution line */}
+      <View className="mb-2">
+        {isShared ? (
+          <Text className="text-brand-400 text-xs">
+            Shared by{" "}
+            <Text className="text-brand-300 font-semibold">@{item.sharer_username ?? sharerName}</Text>
+          </Text>
+        ) : (
+          <Text className="text-brand-400 text-xs">
+            Tasted by{" "}
+            <Text className="text-brand-300 font-semibold">@{item.taster_username ?? posterName}</Text>
+          </Text>
+        )}
+      </View>
+
+      {/* Header: avatar + name + date */}
+      <View className="flex-row items-center mb-3">
+        <View className="w-9 h-9 rounded-full bg-brand-600 items-center justify-center mr-3">
+          <Text className="text-brand-100 text-sm font-bold">{posterInitials}</Text>
+        </View>
+        <View className="flex-1">
+          <Text className="text-brand-100 font-semibold text-sm" numberOfLines={1}>
+            {posterName}
+          </Text>
+          {item.taster_username ? (
+            <Text className="text-brand-400 text-xs">@{item.taster_username}</Text>
+          ) : null}
+        </View>
+        <Text className="text-brand-400 text-xs">{formatDate(item.tasted_at)}</Text>
+      </View>
+
+      {/* Bourbon name */}
+      <Text className="text-brand-100 font-bold text-base mb-1" numberOfLines={1}>
+        {item.bourbon_name}
+      </Text>
+
+      {/* Star rating */}
+      <StarRating value={item.rating} variant="personal" size="sm" />
+    </TouchableOpacity>
+  );
+}
+
+// ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,16 +117,18 @@ export default function GroupDetailScreen() {
   const { showToast } = useToast();
   const { activeTheme } = useTheme();
 
+  const [activeTab, setActiveTab] = useState<Tab>("feed");
+
   const { data: group, isLoading: groupLoading } = useGroup(id);
   const { data: members, isLoading: membersLoading } = useGroupMembers(id);
   const { data: recommendations = [] } = useGroupRecommendations(id);
+  const { data: feedItems = [], isLoading: feedLoading } = useGroupFeed(id);
   const inviteToGroup = useInviteToGroup();
   const leaveGroup = useLeaveGroup();
   const updateGroup = useUpdateGroup();
   const removeGroupMember = useRemoveGroupMember();
 
   const [inviteInput, setInviteInput] = useState("");
-  // The value we actually fire the lookup for (only set when user presses Find)
   const [lookupQuery, setLookupQuery] = useState<string | undefined>(undefined);
 
   // Edit group modal state
@@ -68,7 +152,6 @@ export default function GroupDetailScreen() {
   const acceptedMembers = members?.filter((m) => m.status === "accepted") ?? [];
   const pendingMembers = members?.filter((m) => m.status === "pending") ?? [];
 
-  // IDs already in the group (any status) so we don't re-invite
   const memberIds = new Set(members?.map((m) => m.user_id) ?? []);
 
   function handleFindUser() {
@@ -197,11 +280,16 @@ export default function GroupDetailScreen() {
     );
   }
 
-  // Derived state for invite UI
   const lookupFired = lookupQuery !== undefined;
   const lookupDone = lookupFired && !profileFetching;
   const inviteeName =
     foundProfile?.display_name ?? foundProfile?.username ?? null;
+
+  const TABS: { key: Tab; label: string }[] = [
+    { key: "feed", label: "Feed" },
+    { key: "recommendations", label: "Recommendations" },
+    { key: "members", label: "Members" },
+  ];
 
   return (
     <View className="flex-1 bg-brand-900">
@@ -212,254 +300,84 @@ export default function GroupDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerClassName="px-4 pb-8">
-        {/* Group name + description */}
-        <View className="mt-4 mb-6">
-          <View className="flex-row items-start justify-between">
-            <Text className="text-brand-100 text-2xl font-bold flex-1 mr-2">
-              {group.name}
-            </Text>
-            {isOwner && (
-              <TouchableOpacity
-                onPress={handleOpenEdit}
-                className="bg-brand-700 rounded-xl px-3 py-1.5 mt-1"
-                accessibilityLabel="Edit group"
-              >
-                <Text className="text-surface-text text-xs font-semibold">Edit</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          {group.description ? (
-            <Text className="text-brand-400 text-sm mt-1">
-              {group.description}
-            </Text>
-          ) : null}
-        </View>
-
-        {/* Member count */}
-        <View className="bg-brand-800 rounded-2xl p-4 mb-4 flex-row items-center justify-between">
-          <Text className="text-brand-300 text-sm font-semibold">
-            Members
+      {/* Group name + description + edit button */}
+      <View className="px-4 mt-4 mb-4">
+        <View className="flex-row items-start justify-between">
+          <Text className="text-brand-100 text-2xl font-bold flex-1 mr-2">
+            {group.name}
           </Text>
-          <Text className="text-brand-100 text-lg font-bold">
-            {acceptedMembers.length}
-          </Text>
-        </View>
-
-        {/* Accepted members list */}
-        <View className="mb-6">
-          {acceptedMembers.map((m) => {
-            const profile = m.profiles as
-              | {
-                  display_name: string | null;
-                  username: string | null;
-                  avatar_url: string | null;
-                }
-              | null
-              | undefined;
-            const name =
-              profile?.display_name ?? profile?.username ?? "Unknown";
-            const initials = name[0]?.toUpperCase() ?? "?";
-            const isMe = m.user_id === user?.id;
-            return (
-              <View
-                key={m.user_id}
-                className="flex-row items-center bg-brand-800 rounded-2xl p-3 mb-2"
-              >
-                <TouchableOpacity
-                  onPress={() => router.push(`/user/${m.user_id}` as never)}
-                  className="flex-row items-center flex-1"
-                >
-                  {profile?.avatar_url ? (
-                    <Image
-                      source={{ uri: profile.avatar_url }}
-                      className="w-10 h-10 rounded-full"
-                    />
-                  ) : (
-                    <View className="w-10 h-10 rounded-full bg-brand-700 items-center justify-center">
-                      <Text className="text-brand-300 font-bold">
-                        {initials}
-                      </Text>
-                    </View>
-                  )}
-                  <View className="ml-3 flex-1">
-                    <Text className="text-brand-100 text-sm font-semibold">
-                      {name}
-                      {isMe ? " (you)" : ""}
-                    </Text>
-                    {profile?.username ? (
-                      <Text className="text-brand-400 text-xs">
-                        @{profile.username}
-                      </Text>
-                    ) : null}
-                  </View>
-                  {m.role === "owner" && (
-                    <View className="bg-brand-600 rounded-full px-2 py-0.5">
-                      <Text className="text-white text-xs">Owner</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-                {isOwner && !isMe && m.role !== "owner" && (
-                  <TouchableOpacity
-                    onPress={() => handleRemoveMember(m.user_id, name)}
-                    disabled={removeGroupMember.isPending}
-                    className="ml-2 bg-red-800 rounded-lg px-2 py-1"
-                    accessibilityLabel={`Remove ${name}`}
-                  >
-                    <Text className="text-white text-xs font-semibold">Remove</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            );
-          })}
-        </View>
-
-        {/* Pending invites (owner only) */}
-        {isOwner && pendingMembers.length > 0 && (
-          <View className="mb-6">
-            <Text className="text-brand-400 text-xs font-semibold uppercase mb-2">
-              Pending Invites
-            </Text>
-            {pendingMembers.map((m) => {
-              const profile = m.profiles as
-                | {
-                    display_name: string | null;
-                    username: string | null;
-                    avatar_url: string | null;
-                  }
-                | null
-                | undefined;
-              const name =
-                profile?.display_name ?? profile?.username ?? m.user_id;
-              return (
-                <View
-                  key={m.user_id}
-                  className="flex-row items-center bg-brand-800 rounded-2xl p-3 mb-2"
-                >
-                  <View className="w-10 h-10 rounded-full bg-brand-700 items-center justify-center">
-                    <Text className="text-brand-300 font-bold">?</Text>
-                  </View>
-                  <View className="ml-3 flex-1">
-                    <Text className="text-brand-100 text-sm font-semibold">
-                      {name}
-                    </Text>
-                    <Text className="text-brand-400 text-xs">Pending</Text>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        )}
-
-        {/* Invite by username (owner only) */}
-        {isOwner && (
-          <View className="bg-brand-800 rounded-2xl p-4 mb-4">
-            <Text className="text-brand-300 text-sm font-semibold mb-3">
-              Invite Member
-            </Text>
-
-            <View className="flex-row gap-2 mb-3">
-              <TextInput
-                value={inviteInput}
-                onChangeText={(v) => {
-                  setInviteInput(v);
-                  if (lookupQuery !== undefined) setLookupQuery(undefined);
-                }}
-                placeholder="@username or email"
-                placeholderTextColor={activeTheme.colors.placeholderGroup}
-                className="bg-brand-700 rounded-xl px-4 py-3 text-brand-100 text-sm flex-1"
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="email-address"
-                returnKeyType="search"
-                onSubmitEditing={handleFindUser}
-              />
-              <TouchableOpacity
-                onPress={handleFindUser}
-                disabled={!inviteInput.trim() || profileFetching}
-                className="bg-brand-700 rounded-xl px-4 py-3 justify-center"
-              >
-                {profileFetching ? (
-                  <ActivityIndicator size="small" color={colors.spinnerDefault} />
-                ) : (
-                  <Text className="text-surface-text text-sm font-semibold">
-                    Find
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
-
-            {/* Lookup result */}
-            {lookupDone && (
-              <>
-                {foundProfile ? (
-                  <View className="bg-brand-900 rounded-xl p-3 mb-3 flex-row items-center gap-3">
-                    {foundProfile.avatar_url ? (
-                      <Image
-                        source={{ uri: foundProfile.avatar_url }}
-                        className="w-9 h-9 rounded-full"
-                      />
-                    ) : (
-                      <View className="w-9 h-9 rounded-full bg-brand-700 items-center justify-center">
-                        <Text className="text-brand-300 font-bold text-sm">
-                          {(
-                            foundProfile.display_name ??
-                            foundProfile.username ??
-                            "?"
-                          )[0].toUpperCase()}
-                        </Text>
-                      </View>
-                    )}
-                    <View className="flex-1">
-                      <Text className="text-brand-100 text-sm font-semibold">
-                        {inviteeName ?? "—"}
-                      </Text>
-                      {foundProfile.username && (
-                        <Text className="text-brand-400 text-xs">
-                          @{foundProfile.username}
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-                ) : (
-                  <Text className="text-brand-500 text-sm mb-3">
-                    No user found for "{inviteInput}".
-                  </Text>
-                )}
-              </>
-            )}
-
+          {isOwner && (
             <TouchableOpacity
-              onPress={handleInvite}
-              disabled={!foundProfile || inviteToGroup.isPending}
-              className={`rounded-xl py-3 items-center ${
-                foundProfile ? "bg-brand-600" : "bg-brand-700"
+              onPress={handleOpenEdit}
+              className="bg-brand-700 rounded-xl px-3 py-1.5 mt-1"
+              accessibilityLabel="Edit group"
+            >
+              <Text className="text-surface-text text-xs font-semibold">Edit</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        {group.description ? (
+          <Text className="text-brand-400 text-sm mt-1">
+            {group.description}
+          </Text>
+        ) : null}
+      </View>
+
+      {/* Segmented control */}
+      <View className="flex-row mx-4 mb-3 bg-brand-800 rounded-2xl p-1">
+        {TABS.map((tab) => (
+          <TouchableOpacity
+            key={tab.key}
+            className={`flex-1 py-2 rounded-xl items-center ${
+              activeTab === tab.key ? "bg-brand-600" : ""
+            }`}
+            onPress={() => setActiveTab(tab.key)}
+          >
+            <Text
+              className={`text-sm font-semibold ${
+                activeTab === tab.key ? "text-white" : "text-brand-400"
               }`}
             >
-              {inviteToGroup.isPending ? (
-                <ActivityIndicator size="small" color={colors.white} />
-              ) : (
-                <Text
-                  className={`font-semibold text-sm ${
-                    foundProfile ? "text-white" : "text-surface-text"
-                  }`}
-                >
-                  {foundProfile
-                    ? `Invite ${inviteeName ?? "User"}`
-                    : "Send Invite"}
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Recommendations */}
-        {recommendations.length > 0 && (
-          <View className="mb-6">
-            <Text className="text-brand-400 text-xs font-semibold uppercase mb-2">
-              Recommendations
+              {tab.label}
             </Text>
-            {recommendations.map((rec) => {
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Tab content */}
+      {activeTab === "feed" && (
+        <>
+          {feedLoading ? (
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator color={colors.spinnerDefault} size="large" />
+            </View>
+          ) : feedItems.length === 0 ? (
+            <View className="flex-1 items-center justify-center px-8">
+              <Text className="text-brand-400 text-sm text-center">
+                No activity yet. Share a tasting with the group!
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              data={feedItems}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => <GroupFeedCard item={item} />}
+              contentContainerStyle={{ paddingBottom: 32 }}
+            />
+          )}
+        </>
+      )}
+
+      {activeTab === "recommendations" && (
+        <ScrollView contentContainerClassName="px-4 pb-8">
+          {recommendations.length === 0 ? (
+            <View className="flex-1 items-center justify-center py-16">
+              <Text className="text-brand-400 text-sm text-center">
+                No recommendations yet.
+              </Text>
+            </View>
+          ) : (
+            recommendations.map((rec) => {
               const recAny = rec as {
                 id: string;
                 note: string | null;
@@ -504,27 +422,246 @@ export default function GroupDetailScreen() {
                   </View>
                 </TouchableOpacity>
               );
+            })
+          )}
+        </ScrollView>
+      )}
+
+      {activeTab === "members" && (
+        <ScrollView contentContainerClassName="px-4 pb-8">
+          {/* Member count */}
+          <View className="bg-brand-800 rounded-2xl p-4 mb-4 flex-row items-center justify-between">
+            <Text className="text-brand-300 text-sm font-semibold">Members</Text>
+            <Text className="text-brand-100 text-lg font-bold">
+              {acceptedMembers.length}
+            </Text>
+          </View>
+
+          {/* Accepted members list */}
+          <View className="mb-6">
+            {acceptedMembers.map((m) => {
+              const profile = m.profiles as
+                | {
+                    display_name: string | null;
+                    username: string | null;
+                    avatar_url: string | null;
+                  }
+                | null
+                | undefined;
+              const name =
+                profile?.display_name ?? profile?.username ?? "Unknown";
+              const initials = name[0]?.toUpperCase() ?? "?";
+              const isMe = m.user_id === user?.id;
+              return (
+                <View
+                  key={m.user_id}
+                  className="flex-row items-center bg-brand-800 rounded-2xl p-3 mb-2"
+                >
+                  <TouchableOpacity
+                    onPress={() => router.push(`/user/${m.user_id}` as never)}
+                    className="flex-row items-center flex-1"
+                  >
+                    {profile?.avatar_url ? (
+                      <Image
+                        source={{ uri: profile.avatar_url }}
+                        className="w-10 h-10 rounded-full"
+                      />
+                    ) : (
+                      <View className="w-10 h-10 rounded-full bg-brand-700 items-center justify-center">
+                        <Text className="text-brand-300 font-bold">
+                          {initials}
+                        </Text>
+                      </View>
+                    )}
+                    <View className="ml-3 flex-1">
+                      <Text className="text-brand-100 text-sm font-semibold">
+                        {name}
+                        {isMe ? " (you)" : ""}
+                      </Text>
+                      {profile?.username ? (
+                        <Text className="text-brand-400 text-xs">
+                          @{profile.username}
+                        </Text>
+                      ) : null}
+                    </View>
+                    {m.role === "owner" && (
+                      <View className="bg-brand-600 rounded-full px-2 py-0.5">
+                        <Text className="text-white text-xs">Owner</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                  {isOwner && !isMe && m.role !== "owner" && (
+                    <TouchableOpacity
+                      onPress={() => handleRemoveMember(m.user_id, name)}
+                      disabled={removeGroupMember.isPending}
+                      className="ml-2 bg-red-800 rounded-lg px-2 py-1"
+                      accessibilityLabel={`Remove ${name}`}
+                    >
+                      <Text className="text-white text-xs font-semibold">Remove</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              );
             })}
           </View>
-        )}
 
-        {/* Leave group (non-owner accepted members) */}
-        {currentMember?.status === "accepted" && !isOwner && (
-          <TouchableOpacity
-            onPress={handleLeave}
-            disabled={leaveGroup.isPending}
-            className="border border-red-700 rounded-2xl py-4 items-center"
-          >
-            {leaveGroup.isPending ? (
-              <ActivityIndicator size="small" color={colors.errorDefault} />
-            ) : (
-              <Text className="text-red-400 font-semibold text-base">
-                Leave Group
+          {/* Pending invites (owner only) */}
+          {isOwner && pendingMembers.length > 0 && (
+            <View className="mb-6">
+              <Text className="text-brand-400 text-xs font-semibold uppercase mb-2">
+                Pending Invites
               </Text>
-            )}
-          </TouchableOpacity>
-        )}
-      </ScrollView>
+              {pendingMembers.map((m) => {
+                const profile = m.profiles as
+                  | {
+                      display_name: string | null;
+                      username: string | null;
+                      avatar_url: string | null;
+                    }
+                  | null
+                  | undefined;
+                const name =
+                  profile?.display_name ?? profile?.username ?? m.user_id;
+                return (
+                  <View
+                    key={m.user_id}
+                    className="flex-row items-center bg-brand-800 rounded-2xl p-3 mb-2"
+                  >
+                    <View className="w-10 h-10 rounded-full bg-brand-700 items-center justify-center">
+                      <Text className="text-brand-300 font-bold">?</Text>
+                    </View>
+                    <View className="ml-3 flex-1">
+                      <Text className="text-brand-100 text-sm font-semibold">
+                        {name}
+                      </Text>
+                      <Text className="text-brand-400 text-xs">Pending</Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {/* Invite by username (owner only) */}
+          {isOwner && (
+            <View className="bg-brand-800 rounded-2xl p-4 mb-4">
+              <Text className="text-brand-300 text-sm font-semibold mb-3">
+                Invite Member
+              </Text>
+
+              <View className="flex-row gap-2 mb-3">
+                <TextInput
+                  value={inviteInput}
+                  onChangeText={(v) => {
+                    setInviteInput(v);
+                    if (lookupQuery !== undefined) setLookupQuery(undefined);
+                  }}
+                  placeholder="@username or email"
+                  placeholderTextColor={activeTheme.colors.placeholderGroup}
+                  className="bg-brand-700 rounded-xl px-4 py-3 text-brand-100 text-sm flex-1"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  returnKeyType="search"
+                  onSubmitEditing={handleFindUser}
+                />
+                <TouchableOpacity
+                  onPress={handleFindUser}
+                  disabled={!inviteInput.trim() || profileFetching}
+                  className="bg-brand-700 rounded-xl px-4 py-3 justify-center"
+                >
+                  {profileFetching ? (
+                    <ActivityIndicator size="small" color={colors.spinnerDefault} />
+                  ) : (
+                    <Text className="text-surface-text text-sm font-semibold">
+                      Find
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* Lookup result */}
+              {lookupDone && (
+                <>
+                  {foundProfile ? (
+                    <View className="bg-brand-900 rounded-xl p-3 mb-3 flex-row items-center gap-3">
+                      {foundProfile.avatar_url ? (
+                        <Image
+                          source={{ uri: foundProfile.avatar_url }}
+                          className="w-9 h-9 rounded-full"
+                        />
+                      ) : (
+                        <View className="w-9 h-9 rounded-full bg-brand-700 items-center justify-center">
+                          <Text className="text-brand-300 font-bold text-sm">
+                            {(
+                              foundProfile.display_name ??
+                              foundProfile.username ??
+                              "?"
+                            )[0].toUpperCase()}
+                          </Text>
+                        </View>
+                      )}
+                      <View className="flex-1">
+                        <Text className="text-brand-100 text-sm font-semibold">
+                          {inviteeName ?? "—"}
+                        </Text>
+                        {foundProfile.username && (
+                          <Text className="text-brand-400 text-xs">
+                            @{foundProfile.username}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  ) : (
+                    <Text className="text-brand-500 text-sm mb-3">
+                      No user found for "{inviteInput}".
+                    </Text>
+                  )}
+                </>
+              )}
+
+              <TouchableOpacity
+                onPress={handleInvite}
+                disabled={!foundProfile || inviteToGroup.isPending}
+                className={`rounded-xl py-3 items-center ${
+                  foundProfile ? "bg-brand-600" : "bg-brand-700"
+                }`}
+              >
+                {inviteToGroup.isPending ? (
+                  <ActivityIndicator size="small" color={colors.white} />
+                ) : (
+                  <Text
+                    className={`font-semibold text-sm ${
+                      foundProfile ? "text-white" : "text-surface-text"
+                    }`}
+                  >
+                    {foundProfile
+                      ? `Invite ${inviteeName ?? "User"}`
+                      : "Send Invite"}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Leave group (non-owner accepted members) */}
+          {currentMember?.status === "accepted" && !isOwner && (
+            <TouchableOpacity
+              onPress={handleLeave}
+              disabled={leaveGroup.isPending}
+              className="border border-red-700 rounded-2xl py-4 items-center"
+            >
+              {leaveGroup.isPending ? (
+                <ActivityIndicator size="small" color={colors.errorDefault} />
+              ) : (
+                <Text className="text-red-400 font-semibold text-base">
+                  Leave Group
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      )}
 
       {/* Edit Group modal */}
       <Modal
@@ -535,7 +672,6 @@ export default function GroupDetailScreen() {
       >
         <View className="flex-1 justify-end bg-black/60">
           <View className="bg-gray-950 rounded-t-2xl px-4 pt-4 pb-8">
-            {/* Header */}
             <View className="flex-row items-center justify-between mb-4">
               <Text className="text-white font-bold text-base">Edit Group</Text>
               <TouchableOpacity
@@ -547,7 +683,6 @@ export default function GroupDetailScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Name field */}
             <Text className="text-brand-300 text-sm font-semibold mb-1">
               Group Name *
             </Text>
@@ -560,7 +695,6 @@ export default function GroupDetailScreen() {
               className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-4"
             />
 
-            {/* Description field */}
             <Text className="text-brand-300 text-sm font-semibold mb-1">
               Description
             </Text>
@@ -576,7 +710,6 @@ export default function GroupDetailScreen() {
               style={{ textAlignVertical: "top" }}
             />
 
-            {/* Buttons */}
             <View className="flex-row gap-3">
               <TouchableOpacity
                 onPress={() => setEditModalVisible(false)}

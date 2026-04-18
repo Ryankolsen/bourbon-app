@@ -106,6 +106,15 @@ jest.mock('@/hooks/use-profile', () => ({
   useSearchProfiles: () => ({ data: mockProfileSearchResults, isFetching: false }),
 }));
 
+jest.mock('@/hooks/use-group-feed', () => ({
+  useGroupFeed: () => ({ data: [], isLoading: false }),
+  useShareTastingToGroup: () => ({ mutate: jest.fn(), isPending: false }),
+}));
+
+jest.mock('@/components/ShareToGroupSheet', () => ({
+  ShareToGroupSheet: () => null,
+}));
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('GroupDetailScreen — Remove Member (owner flow)', () => {
@@ -117,11 +126,13 @@ describe('GroupDetailScreen — Remove Member (owner flow)', () => {
 
   it('shows a Remove button for a non-owner accepted member', () => {
     render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Members'));
     expect(screen.getByLabelText('Remove Bob')).toBeTruthy();
   });
 
   it('opens the Remove Member ConfirmationModal when Remove is tapped', () => {
     render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Members'));
     fireEvent.press(screen.getByLabelText('Remove Bob'));
 
     expect(screen.getByText('Remove Member')).toBeTruthy();
@@ -130,6 +141,7 @@ describe('GroupDetailScreen — Remove Member (owner flow)', () => {
 
   it('does NOT call removeGroupMember when Cancel is pressed', () => {
     render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Members'));
     fireEvent.press(screen.getByLabelText('Remove Bob'));
 
     fireEvent.press(screen.getByLabelText('Cancel'));
@@ -138,6 +150,7 @@ describe('GroupDetailScreen — Remove Member (owner flow)', () => {
 
   it('calls removeGroupMember.mutate with the correct args when Remove is confirmed', () => {
     render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Members'));
     fireEvent.press(screen.getByLabelText('Remove Bob'));
 
     fireEvent.press(screen.getByLabelText('Remove'));
@@ -157,11 +170,13 @@ describe('GroupDetailScreen — Leave Group (member flow)', () => {
 
   it('shows the Leave Group button for a non-owner accepted member', () => {
     render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Members'));
     expect(screen.getByText('Leave Group')).toBeTruthy();
   });
 
   it('opens the Leave Group ConfirmationModal when Leave Group is tapped', () => {
     render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Members'));
     fireEvent.press(screen.getByText('Leave Group'));
 
     // Both the button text and modal title say "Leave Group"; check the modal message
@@ -170,6 +185,7 @@ describe('GroupDetailScreen — Leave Group (member flow)', () => {
 
   it('does NOT call leaveGroup when Cancel is pressed', () => {
     render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Members'));
     fireEvent.press(screen.getByText('Leave Group'));
 
     fireEvent.press(screen.getByLabelText('Cancel'));
@@ -178,6 +194,7 @@ describe('GroupDetailScreen — Leave Group (member flow)', () => {
 
   it('calls leaveGroup.mutate with the correct args when Leave is confirmed', () => {
     render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Members'));
     fireEvent.press(screen.getByText('Leave Group'));
 
     fireEvent.press(screen.getByLabelText('Leave'));
@@ -200,6 +217,7 @@ describe('GroupDetailScreen — invite toast (owner flow)', () => {
 
   it('shows an error toast when inviting a user already in the group', () => {
     render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText('Members'));
 
     // Type a username and press Find to set lookupQuery (making the result visible)
     const input = screen.getByPlaceholderText('@username or email');

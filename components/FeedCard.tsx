@@ -6,6 +6,7 @@ import type { FeedItem } from "@/hooks/use-following-feed";
 import { useIsLiked, useLikeCount, useLikeTasting, useUnlikeTasting } from "@/hooks/use-tasting-likes";
 import { useCommentCount } from "@/hooks/use-tasting-comments";
 import { CommentSheet } from "@/components/CommentSheet";
+import { ShareToGroupSheet } from "@/components/ShareToGroupSheet";
 
 export interface FeedCardProps {
   item: FeedItem;
@@ -33,6 +34,7 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
   const router = useRouter();
 
   const [commentSheetOpen, setCommentSheetOpen] = useState(false);
+  const [shareSheetOpen, setShareSheetOpen] = useState(false);
 
   const { data: isLiked = false } = useIsLiked(currentUserId, item.id);
   const { data: likeCount = item.like_count } = useLikeCount(item.id);
@@ -132,11 +134,12 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
           <Text className="text-brand-400 text-xs">{commentCount}</Text>
         </TouchableOpacity>
 
-        {/* Share button (stub — wired in Slice 7) */}
+        {/* Share button */}
         <TouchableOpacity
           className="flex-row items-center gap-1"
           onPress={(e) => {
             e.stopPropagation();
+            setShareSheetOpen(true);
           }}
           accessibilityLabel="Share to group"
           testID="feed-card-share"
@@ -150,6 +153,13 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
         currentUserId={currentUserId}
         visible={commentSheetOpen}
         onClose={() => setCommentSheetOpen(false)}
+      />
+
+      <ShareToGroupSheet
+        tastingId={item.id}
+        currentUserId={currentUserId}
+        visible={shareSheetOpen}
+        onClose={() => setShareSheetOpen(false)}
       />
     </TouchableOpacity>
   );
