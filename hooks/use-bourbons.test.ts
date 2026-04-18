@@ -8,7 +8,7 @@
 import { renderHook, act, waitFor } from "@testing-library/react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
-import { useUpdateBourbon, useBourbonDeletionImpact, useDeleteBourbon } from "./use-bourbons";
+import { useUpdateBourbon, useBourbonDeletionImpact, useDeleteBourbon, searchSimilarBourbons } from "./use-bourbons";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -28,6 +28,7 @@ const mockQueryBuilder = {
   delete: jest.fn().mockReturnThis(),
   eq: mockEq,
   single: mockSingle,
+  ilike: jest.fn().mockReturnThis(),
   then: mockThen,
 };
 
@@ -252,5 +253,63 @@ describe("useDeleteBourbon", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(invalidateSpy).not.toHaveBeenCalled();
+  });
+});
+
+// ── searchSimilarBourbons ─────────────────────────────────────────────────────
+
+describe("searchSimilarBourbons", () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let mockIlike: jest.Mock;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let mockLimit: jest.Mock;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let client: any;
+
+  beforeEach(() => {
+    mockIlike = jest.fn().mockReturnThis();
+    mockLimit = jest.fn().mockResolvedValue({ data: [], error: null });
+
+    const qb = {
+      select: jest.fn().mockReturnThis(),
+      ilike: mockIlike,
+      limit: mockLimit,
+    };
+
+    client = { from: jest.fn().mockReturnValue(qb) };
+  });
+
+  // 1. Core wiring — AND behavior
+  it("calls .ilike for each token (AND behavior) when multiple tokens are provided", async () => {
+    await searchSimilarBourbons(client, "small batch");
+
+    expect(mockIlike).toHaveBeenCalledTimes(2);
+    expect(mockIlike).toHaveBeenCalledWith("name", "%small%");
+    expect(mockIlike).toHaveBeenCalledWith("name", "%batch%");
+  });
+
+  // 2. Single-token passthrough
+  it("calls .ilike exactly once for a single-token query", async () => {
+    await searchSimilarBourbons(client, "pappy");
+
+    expect(mockIlike).toHaveBeenCalledTimes(1);
+    expect(mockIlike).toHaveBeenCalledWith("name", "%pappy%");
+  });
+
+  // 3. Token-order independence
+  it("calls .ilike with the same tokens regardless of input order", async () => {
+    await searchSimilarBourbons(client, "batch small");
+
+    expect(mockIlike).toHaveBeenCalledTimes(2);
+    expect(mockIlike).toHaveBeenCalledWith("name", "%batch%");
+    expect(mockIlike).toHaveBeenCalledWith("name", "%small%");
+  });
+
+  // 4. Empty / short input
+  it("returns [] and never calls supabase.from when given an empty string", async () => {
+    const result = await searchSimilarBourbons(client, "");
+
+    expect(client.from).not.toHaveBeenCalled();
+    expect(result).toEqual([]);
   });
 });

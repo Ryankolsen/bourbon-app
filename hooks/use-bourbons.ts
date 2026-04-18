@@ -72,8 +72,9 @@ export function useAddBourbon() {
 }
 
 /**
- * Search for bourbons similar to the given name using token-based OR ILIKE matching.
- * Each whitespace-separated token in the name generates an ILIKE '%token%' clause.
+ * Search for bourbons similar to the given name using token-based AND ILIKE matching.
+ * Each whitespace-separated token generates a chained .ilike('name', '%token%') clause,
+ * so only bourbons whose names contain every token are returned (token order is ignored).
  * Returns up to 10 results. Exported for testing.
  */
 export async function searchSimilarBourbons(
@@ -83,12 +84,12 @@ export async function searchSimilarBourbons(
   const tokens = tokenizeName(name);
   if (tokens.length === 0) return [];
 
-  const orFilter = tokens.map((t) => `name.ilike.%${t}%`).join(",");
-  const { data, error } = await client
-    .from("bourbons")
-    .select("*")
-    .or(orFilter)
-    .limit(10);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query: any = client.from("bourbons").select("*");
+  for (const token of tokens) {
+    query = query.ilike("name", `%${token}%`);
+  }
+  const { data, error } = await query.limit(10);
   if (error) throw error;
   return (data ?? []) as BourbonRow[];
 }
