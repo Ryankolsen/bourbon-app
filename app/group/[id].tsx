@@ -25,6 +25,7 @@ import {
 } from "@/hooks/use-groups";
 import { useSearchProfiles } from "@/hooks/use-profile";
 import { useToast } from "@/lib/toast-provider";
+import { useTheme } from "@/lib/theme-provider";
 
 export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -32,6 +33,7 @@ export default function GroupDetailScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { activeTheme } = useTheme();
 
   const { data: group, isLoading: groupLoading } = useGroup(id);
   const { data: members, isLoading: membersLoading } = useGroupMembers(id);
@@ -300,7 +302,7 @@ export default function GroupDetailScreen() {
                   </View>
                   {m.role === "owner" && (
                     <View className="bg-brand-600 rounded-full px-2 py-0.5">
-                      <Text className="text-brand-100 text-xs">Owner</Text>
+                      <Text className="text-white text-xs">Owner</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -308,10 +310,10 @@ export default function GroupDetailScreen() {
                   <TouchableOpacity
                     onPress={() => handleRemoveMember(m.user_id, name)}
                     disabled={removeGroupMember.isPending}
-                    className="ml-2 bg-red-900/40 rounded-lg px-2 py-1"
+                    className="ml-2 bg-red-800 rounded-lg px-2 py-1"
                     accessibilityLabel={`Remove ${name}`}
                   >
-                    <Text className="text-red-400 text-xs font-semibold">Remove</Text>
+                    <Text className="text-white text-xs font-semibold">Remove</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -371,7 +373,7 @@ export default function GroupDetailScreen() {
                   if (lookupQuery !== undefined) setLookupQuery(undefined);
                 }}
                 placeholder="@username or email"
-                placeholderTextColor={colors.placeholderGroup}
+                placeholderTextColor={activeTheme.colors.placeholderGroup}
                 className="bg-brand-700 rounded-xl px-4 py-3 text-brand-100 text-sm flex-1"
                 autoCapitalize="none"
                 autoCorrect={false}

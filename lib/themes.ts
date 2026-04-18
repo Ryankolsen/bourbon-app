@@ -219,8 +219,8 @@ const navyFlax: Theme = {
     spinnerAmber:   "#2a4470",
     placeholderDark:   "#4a6080",
     placeholderMuted:  "#5a7090",
-    // Darkened from #4a6080 — medium blue was invisible on brand-700 #6a84aa (also medium blue)
-    placeholderGroup:  "#1c2e54",
+    // Light — needs to be near-white on brand-700 #6a84aa (medium steel blue)
+    placeholderGroup:  "#dce8f8",
     placeholderSearch: "#3a5070",
     // Dark navy — readable on brand-700 #6a84aa medium-blue bg (3.8:1 contrast)
     surfaceText: "#0a1624",
