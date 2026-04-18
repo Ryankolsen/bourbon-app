@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { StarRating } from "@/components/StarRating";
 import type { FeedItem } from "@/hooks/use-following-feed";
 import { useIsLiked, useLikeCount, useLikeTasting, useUnlikeTasting } from "@/hooks/use-tasting-likes";
+import { useCommentCount } from "@/hooks/use-tasting-comments";
+import { CommentSheet } from "@/components/CommentSheet";
 
 export interface FeedCardProps {
   item: FeedItem;
@@ -30,8 +32,11 @@ function formatDate(iso: string): string {
 export function FeedCard({ item, currentUserId }: FeedCardProps) {
   const router = useRouter();
 
+  const [commentSheetOpen, setCommentSheetOpen] = useState(false);
+
   const { data: isLiked = false } = useIsLiked(currentUserId, item.id);
   const { data: likeCount = item.like_count } = useLikeCount(item.id);
+  const { data: commentCount = item.comment_count } = useCommentCount(item.id);
   const likeMutation = useLikeTasting();
   const unlikeMutation = useUnlikeTasting();
 
@@ -113,17 +118,18 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
           <Text className="text-brand-400 text-xs">{optimisticLikeCount}</Text>
         </TouchableOpacity>
 
-        {/* Comment button (stub — wired in Slice 5) */}
+        {/* Comment button */}
         <TouchableOpacity
           className="flex-row items-center gap-1"
           onPress={(e) => {
             e.stopPropagation();
+            setCommentSheetOpen(true);
           }}
           accessibilityLabel="Comment"
           testID="feed-card-comment"
         >
           <Text className="text-brand-400 text-base">💬</Text>
-          <Text className="text-brand-400 text-xs">{item.comment_count}</Text>
+          <Text className="text-brand-400 text-xs">{commentCount}</Text>
         </TouchableOpacity>
 
         {/* Share button (stub — wired in Slice 7) */}
@@ -138,6 +144,13 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
           <Text className="text-brand-400 text-base">↗</Text>
         </TouchableOpacity>
       </View>
+
+      <CommentSheet
+        tastingId={item.id}
+        currentUserId={currentUserId}
+        visible={commentSheetOpen}
+        onClose={() => setCommentSheetOpen(false)}
+      />
     </TouchableOpacity>
   );
 }
