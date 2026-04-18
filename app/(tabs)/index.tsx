@@ -45,7 +45,7 @@ function FeedSegment() {
       className="flex-1 bg-brand-900"
       data={feedItems}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <FeedCard item={item} />}
+      renderItem={({ item }) => <FeedCard item={item} currentUserId={user?.id} />}
       contentContainerStyle={{ paddingTop: 8, paddingBottom: 24 }}
     />
   );

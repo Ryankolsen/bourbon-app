@@ -3,9 +3,11 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { StarRating } from "@/components/StarRating";
 import type { FeedItem } from "@/hooks/use-following-feed";
+import { useIsLiked, useLikeCount, useLikeTasting, useUnlikeTasting } from "@/hooks/use-tasting-likes";
 
 export interface FeedCardProps {
   item: FeedItem;
+  currentUserId: string | undefined;
 }
 
 function getInitials(displayName: string | null, username: string | null): string {
@@ -25,10 +27,33 @@ function formatDate(iso: string): string {
   });
 }
 
-export function FeedCard({ item }: FeedCardProps) {
+export function FeedCard({ item, currentUserId }: FeedCardProps) {
   const router = useRouter();
 
+  const { data: isLiked = false } = useIsLiked(currentUserId, item.id);
+  const { data: likeCount = item.like_count } = useLikeCount(item.id);
+  const likeMutation = useLikeTasting();
+  const unlikeMutation = useUnlikeTasting();
+
+  // Optimistic state: reflect the in-flight mutation immediately
+  const optimisticIsLiked = likeMutation.isPending
+    ? true
+    : unlikeMutation.isPending
+      ? false
+      : isLiked;
+  const optimisticLikeCount =
+    likeCount + (likeMutation.isPending ? 1 : 0) - (unlikeMutation.isPending ? 1 : 0);
+
   const initials = getInitials(item.display_name, item.username);
+
+  function handleLikePress() {
+    if (!currentUserId) return;
+    if (optimisticIsLiked) {
+      unlikeMutation.mutate({ userId: currentUserId, tastingId: item.id });
+    } else {
+      likeMutation.mutate({ userId: currentUserId, tastingId: item.id });
+    }
+  }
 
   return (
     <TouchableOpacity
@@ -72,17 +97,20 @@ export function FeedCard({ item }: FeedCardProps) {
 
       {/* Action row: like / comment / share */}
       <View className="flex-row gap-4">
-        {/* Like button (stub — wired in Slice 4) */}
+        {/* Like button */}
         <TouchableOpacity
           className="flex-row items-center gap-1"
           onPress={(e) => {
             e.stopPropagation();
+            handleLikePress();
           }}
-          accessibilityLabel="Like"
+          accessibilityLabel={optimisticIsLiked ? "Unlike" : "Like"}
           testID="feed-card-like"
         >
-          <Text className="text-brand-400 text-base">♡</Text>
-          <Text className="text-brand-400 text-xs">{item.like_count}</Text>
+          <Text className={optimisticIsLiked ? "text-red-400 text-base" : "text-brand-400 text-base"}>
+            {optimisticIsLiked ? "♥" : "♡"}
+          </Text>
+          <Text className="text-brand-400 text-xs">{optimisticLikeCount}</Text>
         </TouchableOpacity>
 
         {/* Comment button (stub — wired in Slice 5) */}
