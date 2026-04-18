@@ -49,7 +49,7 @@ const SOCIAL_SORT_FIELD = { label: "Social activity", value: "social" };
 // Constants for slider bounds
 // ---------------------------------------------------------------------------
 
-const PROOF_MIN = 0;
+const PROOF_MIN = 50;
 const PROOF_MAX = 200;
 const AGE_MIN = 0;
 const AGE_MAX = 30;
