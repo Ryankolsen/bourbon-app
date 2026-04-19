@@ -60,7 +60,7 @@ export function ActiveFilterChips({
     chips.push(
       <Chip
         key="nas"
-        label="NAS only"
+        label="No Age Statement"
         clearTestId="clear-age"
         onClear={onClearAge}
       />

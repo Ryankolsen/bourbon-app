@@ -231,7 +231,7 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
             {/* ---- Age ---- */}
             <Section label="Age">
               <View className="flex-row items-center justify-between mb-2">
-                <Text className="text-brand-300 text-sm">NAS only</Text>
+                <Text className="text-brand-300 text-sm">No Age Statement</Text>
                 <Switch
                   value={draft.nasOnly}
                   onValueChange={(v) => setDraft((d) => ({ ...d, nasOnly: v }))}
