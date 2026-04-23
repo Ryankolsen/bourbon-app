@@ -551,6 +551,37 @@ export interface Database {
           },
         ];
       };
+      user_xp: {
+        Row: {
+          user_id: string;
+          total_xp: number;
+          current_belt: number;
+          streak_days: number;
+          last_checkin_date: string | null;
+        };
+        Insert: {
+          user_id: string;
+          total_xp?: number;
+          current_belt?: number;
+          streak_days?: number;
+          last_checkin_date?: string | null;
+        };
+        Update: {
+          total_xp?: number;
+          current_belt?: number;
+          streak_days?: number;
+          last_checkin_date?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_xp_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       bourbon_rating_stats: {
@@ -580,7 +611,34 @@ export interface Database {
         Args: { p_query: string };
         Returns: Database["public"]["Tables"]["profiles"]["Row"][];
       };
+      award_xp: {
+        Args: {
+          p_user_id: string;
+          p_event_type: Database["public"]["Enums"]["xp_event_type"];
+          p_xp_amount: number;
+          p_reference_id?: string | null;
+        };
+        Returns: { xp_awarded: number; promoted: boolean; new_belt: number }[];
+      };
     };
-    Enums: Record<string, never>;
+    Enums: {
+      xp_event_type:
+        | 'tasting_logged'
+        | 'first_tasting_bonus'
+        | 'collection_add'
+        | 'wishlist_add'
+        | 'group_share'
+        | 'group_create'
+        | 'group_join'
+        | 'comment_posted'
+        | 'comment_received'
+        | 'like_received'
+        | 'follow_sent'
+        | 'follower_gained'
+        | 'daily_checkin'
+        | 'streak_bonus'
+        | 'profile_complete'
+        | 'first_bourbon_add';
+    };
   };
 }
