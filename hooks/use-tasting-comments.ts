@@ -10,6 +10,7 @@ export interface TastingComment extends CommentRow {
   display_name: string | null;
   username: string | null;
   avatar_url: string | null;
+  current_belt: number | null;
 }
 
 /** All comments for a tasting, ordered oldest-first, with profile data joined */
@@ -20,7 +21,7 @@ export function useTastingComments(tastingId: string | undefined) {
       if (!tastingId) return [];
       const { data, error } = await supabase
         .from('tasting_comments')
-        .select('*, profiles!tasting_comments_user_id_fkey(display_name, username, avatar_url)')
+        .select('*, profiles!tasting_comments_user_id_fkey(display_name, username, avatar_url, current_belt)')
         .eq('tasting_id', tastingId)
         .order('created_at', { ascending: true });
       if (error) throw error;
@@ -34,6 +35,7 @@ export function useTastingComments(tastingId: string | undefined) {
         display_name: row.profiles?.display_name ?? null,
         username: row.profiles?.username ?? null,
         avatar_url: row.profiles?.avatar_url ?? null,
+        current_belt: row.profiles?.current_belt ?? null,
       }));
     },
     enabled: !!tastingId,

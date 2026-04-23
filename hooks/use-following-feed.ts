@@ -17,6 +17,7 @@ export interface FeedItem {
   display_name: string | null;
   username: string | null;
   avatar_url: string | null;
+  current_belt: number | null;
   like_count: number;
   comment_count: number;
 }
@@ -43,7 +44,7 @@ export function useFollowingFeed(userId: string | undefined) {
       const { data, error } = await supabase
         .from("tastings")
         .select(
-          `*, profiles!tastings_user_id_fkey(avatar_url, display_name, username), bourbons!tastings_bourbon_id_fkey(name), tasting_likes(count), tasting_comments(count)`
+          `*, profiles!tastings_user_id_fkey(avatar_url, display_name, username, current_belt), bourbons!tastings_bourbon_id_fkey(name), tasting_likes(count), tasting_comments(count)`
         )
         .in("user_id", followedIds)
         .order("tasted_at", { ascending: false });
@@ -66,6 +67,7 @@ export function useFollowingFeed(userId: string | undefined) {
         display_name: item.profiles?.display_name ?? null,
         username: item.profiles?.username ?? null,
         avatar_url: item.profiles?.avatar_url ?? null,
+        current_belt: item.profiles?.current_belt ?? null,
         like_count: Number(item.tasting_likes?.[0]?.count ?? 0),
         comment_count: Number(item.tasting_comments?.[0]?.count ?? 0),
       }));

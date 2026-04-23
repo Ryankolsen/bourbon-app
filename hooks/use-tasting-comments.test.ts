@@ -41,6 +41,26 @@ function createWrapper() {
 describe('useTastingComments', () => {
   beforeEach(() => jest.clearAllMocks());
 
+  it('select string includes current_belt in profiles join', async () => {
+    const builder: Record<string, jest.Mock> = {};
+    for (const m of ['select', 'eq', 'order']) {
+      builder[m] = jest.fn().mockReturnThis();
+    }
+    builder['then'] = jest.fn((resolve: (v: unknown) => void) =>
+      Promise.resolve({ data: [], error: null }).then(resolve)
+    );
+    mockFrom.mockReturnValue(builder);
+
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useTastingComments('tasting-1'), {
+      wrapper: Wrapper,
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const selectArg: string = builder['select'].mock.calls[0][0];
+    expect(selectArg).toContain('current_belt');
+  });
+
   it('returns empty array when mock returns no rows', async () => {
     const builder: Record<string, jest.Mock> = {};
     for (const m of ['select', 'eq', 'order']) {

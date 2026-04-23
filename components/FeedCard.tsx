@@ -8,6 +8,7 @@ import { useIsLiked, useLikeCount, useLikeTasting, useUnlikeTasting } from "@/ho
 import { useCommentCount } from "@/hooks/use-tasting-comments";
 import { CommentSheet } from "@/components/CommentSheet";
 import { ShareToGroupSheet } from "@/components/ShareToGroupSheet";
+import { BeltBadge } from "@/components/BeltBadge";
 
 export interface FeedCardProps {
   item: FeedItem;
@@ -79,6 +80,8 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
         >
           <Text style={{ color: activeTheme.colors.avatarText }} className="text-sm font-bold">{initials}</Text>
         </View>
+
+        <BeltBadge level={item.current_belt ?? 1} />
 
         {/* Name/username */}
         <View className="flex-1">

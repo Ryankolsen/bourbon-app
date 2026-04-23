@@ -19,6 +19,7 @@ import {
 } from '@/hooks/use-tasting-comments';
 import { Database } from '@/types/database';
 import { useTheme } from '@/lib/theme-provider';
+import { BeltBadge } from '@/components/BeltBadge';
 
 type CommentRow = Database['public']['Tables']['tasting_comments']['Row'];
 
@@ -53,7 +54,8 @@ function CommentRow({ comment }: { comment: TastingComment }) {
       <View className="w-8 h-8 rounded-full bg-brand-600 items-center justify-center mr-3 flex-shrink-0">
         <Text style={{ color: activeTheme.colors.avatarText }} className="text-xs font-bold">{initials}</Text>
       </View>
-      <View className="flex-1">
+      <BeltBadge level={comment.current_belt ?? 1} />
+      <View className="flex-1 ml-2">
         <View className="flex-row items-center gap-2 mb-0.5">
           <Text className="text-brand-100 font-semibold text-sm">
             {comment.display_name ?? comment.username ?? 'Unknown'}
@@ -91,6 +93,7 @@ export function CommentSheet({
             display_name: null,
             username: null,
             avatar_url: null,
+            current_belt: null,
           },
         ];
       });
