@@ -53,6 +53,7 @@ function getInitials(displayName: string | null, username: string | null): strin
 
 function GroupFeedCard({ item }: { item: GroupFeedItem }) {
   const router = useRouter();
+  const { activeTheme } = useTheme();
 
   const isShared =
     item.taster_user_id !== item.shared_by_user_id;
@@ -83,7 +84,7 @@ function GroupFeedCard({ item }: { item: GroupFeedItem }) {
       {/* Header: avatar + name + date */}
       <View className="flex-row items-center mb-3">
         <View className="w-9 h-9 rounded-full bg-brand-600 items-center justify-center mr-3">
-          <Text className="text-brand-100 text-sm font-bold">{posterInitials}</Text>
+          <Text style={{ color: activeTheme.colors.avatarText }} className="text-sm font-bold">{posterInitials}</Text>
         </View>
         <View className="flex-1">
           <Text className="text-brand-100 font-semibold text-sm" numberOfLines={1}>

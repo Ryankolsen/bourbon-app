@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
+import { useTheme } from "@/lib/theme-provider";
 import { StarRating } from "@/components/StarRating";
 import type { FeedItem } from "@/hooks/use-following-feed";
 import { useIsLiked, useLikeCount, useLikeTasting, useUnlikeTasting } from "@/hooks/use-tasting-likes";
@@ -32,6 +33,7 @@ function formatDate(iso: string): string {
 
 export function FeedCard({ item, currentUserId }: FeedCardProps) {
   const router = useRouter();
+  const { activeTheme } = useTheme();
 
   const [commentSheetOpen, setCommentSheetOpen] = useState(false);
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
@@ -75,7 +77,7 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
           className="w-9 h-9 rounded-full bg-brand-600 items-center justify-center mr-3"
           testID="feed-card-avatar"
         >
-          <Text className="text-brand-100 text-sm font-bold">{initials}</Text>
+          <Text style={{ color: activeTheme.colors.avatarText }} className="text-sm font-bold">{initials}</Text>
         </View>
 
         {/* Name/username */}

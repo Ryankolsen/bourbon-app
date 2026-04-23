@@ -18,6 +18,7 @@ import {
   TastingComment,
 } from '@/hooks/use-tasting-comments';
 import { Database } from '@/types/database';
+import { useTheme } from '@/lib/theme-provider';
 
 type CommentRow = Database['public']['Tables']['tasting_comments']['Row'];
 
@@ -46,10 +47,11 @@ function formatDate(iso: string): string {
 
 function CommentRow({ comment }: { comment: TastingComment }) {
   const initials = getInitials(comment.display_name, comment.username);
+  const { activeTheme } = useTheme();
   return (
     <View className="flex-row px-4 py-3 border-b border-brand-700" testID="comment-row">
       <View className="w-8 h-8 rounded-full bg-brand-600 items-center justify-center mr-3 flex-shrink-0">
-        <Text className="text-brand-100 text-xs font-bold">{initials}</Text>
+        <Text style={{ color: activeTheme.colors.avatarText }} className="text-xs font-bold">{initials}</Text>
       </View>
       <View className="flex-1">
         <View className="flex-row items-center gap-2 mb-0.5">

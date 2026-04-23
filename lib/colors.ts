@@ -51,6 +51,9 @@ export const colors = {
   pickerBg:     "#0a0a0a",
   pickerBorder: "#0369a1",
 
+  // Avatar circles (text on bg-brand-600) — mirrors Charcoal
+  avatarText: "#e0f2fe",
+
   // Basics
   white: "#ffffff",
   black: "#000000",

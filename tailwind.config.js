@@ -49,6 +49,8 @@ module.exports = {
         "placeholder-search":   "var(--placeholder-search)",
         // Readable text/label color for interactive elements on brand-700 surfaces
         "surface-text":         "var(--surface-text)",
+        // Text color for user avatar circles (on bg-brand-600 backgrounds)
+        "avatar-text":          "var(--avatar-text)",
         // Semantic tokens — picker overlay
         "picker-bg":     "var(--picker-bg)",
         "picker-border": "var(--picker-border)",

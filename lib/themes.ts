@@ -65,6 +65,9 @@ export type ThemeColors = {
   pickerBg: string;
   pickerBorder: string;
 
+  /** Text color for user avatar circles (on bg-brand-600 backgrounds) */
+  avatarText: string;
+
   white: string;
   black: string;
 };
@@ -121,6 +124,7 @@ const charcoal: Theme = {
     surfaceText: "#bae6fd",
     pickerBg:     "#0a0a0a",
     pickerBorder: "#0369a1",
+    avatarText: "#e0f2fe",
     white: "#ffffff",
     black: "#000000",
   },
@@ -168,6 +172,7 @@ const highContrast: Theme = {
     surfaceText: "#000000",
     pickerBg:     "#000000",
     pickerBorder: "#1a1a1a",
+    avatarText: "#fffd80",
     white: "#ffffff",
     black: "#000000",
   },
@@ -226,6 +231,8 @@ const navyFlax: Theme = {
     surfaceText: "#0a1624",
     pickerBg:     "#eae6de",
     pickerBorder: "#d0cac0",
+    // White text on brand-600 #1e4080 (dark navy): ~8:1 contrast ✓
+    avatarText: "#ffffff",
     white: "#ffffff",
     black: "#000000",
   },
