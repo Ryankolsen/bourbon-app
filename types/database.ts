@@ -620,6 +620,10 @@ export interface Database {
         };
         Returns: { xp_awarded: number; promoted: boolean; new_belt: number }[];
       };
+      check_in: {
+        Args: Record<string, never>;
+        Returns: { xp_awarded: number; streak_days: number; promoted: boolean; new_belt: number }[];
+      };
     };
     Enums: {
       xp_event_type:
@@ -636,7 +640,8 @@ export interface Database {
         | 'follow_sent'
         | 'follower_gained'
         | 'daily_checkin'
-        | 'streak_bonus'
+        | 'streak_milestone_7'
+        | 'streak_milestone_30'
         | 'profile_complete'
         | 'first_bourbon_add';
     };
