@@ -2394,3 +2394,54 @@ FROM (VALUES
    'The white whale. If you find it at retail, grab it without hesitation.')
 ) AS t(group_id, bourbon_name, recommended_by, note)
 JOIN public.bourbons b ON b.name = t.bourbon_name;
+
+-- ── 8. Gamification — seed user_xp and sync profiles.current_belt ──────────
+--
+-- One user per belt level so every badge, progress bar, and BeltUpModal
+-- state is exercisable without grinding actions manually.
+--
+-- Belt thresholds (mirrors lib/belt-config.ts and award_xp v_thresholds):
+--   1 White Dog    0      2 Corn Whiskey  200    3 New Oak      600
+--   4 Bonded    1500      5 Single Barrel 3500   6 Small Batch  8000
+--   7 Barrel Proof (Senpai) 16000         8 Wheated         30000
+--   9 Single Malt 50000  10 Pappy (Sensei) 80000
+
+INSERT INTO public.user_xp (user_id, total_xp, current_belt, streak_days, last_checkin_date)
+VALUES
+  -- Belt 3 — New Oak (mid-belt, good starting point for manual testing)
+  ('10000000-0000-0000-0000-000000000001'::uuid,  800,  3,  7, CURRENT_DATE),
+  -- Belt 5 — Single Barrel
+  ('10000000-0000-0000-0000-000000000002'::uuid, 4200,  5, 14, CURRENT_DATE),
+  -- Belt 1 — White Dog (fresh start)
+  ('10000000-0000-0000-0000-000000000003'::uuid,   75,  1,  1, CURRENT_DATE - 1),
+  -- Belt 4 — Bonded
+  ('10000000-0000-0000-0000-000000000004'::uuid, 1900,  4,  5, CURRENT_DATE),
+  -- Belt 2 — Corn Whiskey
+  ('10000000-0000-0000-0000-000000000005'::uuid,  380,  2,  3, CURRENT_DATE),
+  -- Belt 7 — Barrel Proof (first Senpai belt)
+  ('10000000-0000-0000-0000-000000000006'::uuid,19500,  7, 21, CURRENT_DATE),
+  -- Belt 6 — Small Batch
+  ('10000000-0000-0000-0000-000000000007'::uuid, 9500,  6, 10, CURRENT_DATE),
+  -- Belt 8 — Wheated
+  ('10000000-0000-0000-0000-000000000008'::uuid,38000,  8, 30, CURRENT_DATE),
+  -- Belt 9 — Single Malt
+  ('10000000-0000-0000-0000-000000000009'::uuid,55000,  9, 45, CURRENT_DATE),
+  -- Belt 10 — Pappy (Sensei)
+  ('10000000-0000-0000-0000-000000000010'::uuid,85000, 10, 60, CURRENT_DATE)
+ON CONFLICT (user_id) DO UPDATE SET
+  total_xp         = EXCLUDED.total_xp,
+  current_belt     = EXCLUDED.current_belt,
+  streak_days      = EXCLUDED.streak_days,
+  last_checkin_date = EXCLUDED.last_checkin_date;
+
+-- Sync the denormalised belt column on profiles
+UPDATE public.profiles SET current_belt = 3  WHERE id = '10000000-0000-0000-0000-000000000001';
+UPDATE public.profiles SET current_belt = 5  WHERE id = '10000000-0000-0000-0000-000000000002';
+UPDATE public.profiles SET current_belt = 1  WHERE id = '10000000-0000-0000-0000-000000000003';
+UPDATE public.profiles SET current_belt = 4  WHERE id = '10000000-0000-0000-0000-000000000004';
+UPDATE public.profiles SET current_belt = 2  WHERE id = '10000000-0000-0000-0000-000000000005';
+UPDATE public.profiles SET current_belt = 7  WHERE id = '10000000-0000-0000-0000-000000000006';
+UPDATE public.profiles SET current_belt = 6  WHERE id = '10000000-0000-0000-0000-000000000007';
+UPDATE public.profiles SET current_belt = 8  WHERE id = '10000000-0000-0000-0000-000000000008';
+UPDATE public.profiles SET current_belt = 9  WHERE id = '10000000-0000-0000-0000-000000000009';
+UPDATE public.profiles SET current_belt = 10 WHERE id = '10000000-0000-0000-0000-000000000010';
