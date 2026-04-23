@@ -5,6 +5,7 @@ import { isAdmin } from "@/lib/admin";
 import { useGroupNotifications } from "@/hooks/use-group-notifications";
 import { useSocialNotifications } from "@/hooks/use-social-notifications";
 import { useTheme } from "@/lib/theme-provider";
+import { useCheckIn } from "@/hooks/use-check-in";
 
 function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
   return (
@@ -77,6 +78,11 @@ export default function TabsLayout() {
   const { user } = useAuth();
   const { activeTheme } = useTheme();
   const adminUser = !!(user?.email && isAdmin(user.email));
+
+  // Fire the daily check-in RPC once per app session. The RPC is idempotent —
+  // same-day calls are no-ops. XP awarded flows through Supabase Realtime →
+  // XpContext → XpToast automatically.
+  useCheckIn();
   const c = activeTheme.colors;
 
   return (
