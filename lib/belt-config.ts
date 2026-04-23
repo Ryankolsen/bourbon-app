@@ -13,6 +13,12 @@ export interface BeltConfig {
   senpai: boolean;
   /** True for belt 10 (Sensei tier) */
   sensei: boolean;
+  /** Background hex color for the belt badge */
+  bgColor: string;
+  /** Icon/text hex color for contrast on bgColor */
+  iconColor: string;
+  /** Short unicode character used as the belt badge icon */
+  icon: string;
 }
 
 /** Ordered list of all 10 belts, level 1 first. */
@@ -24,6 +30,9 @@ export const BELTS: BeltConfig[] = [
     minXp: 0,
     senpai: false,
     sensei: false,
+    bgColor: '#E5E7EB',
+    iconColor: '#6B7280',
+    icon: '○',
   },
   {
     level: 2,
@@ -32,6 +41,9 @@ export const BELTS: BeltConfig[] = [
     minXp: 200,
     senpai: false,
     sensei: false,
+    bgColor: '#FCD34D',
+    iconColor: '#92400E',
+    icon: '◐',
   },
   {
     level: 3,
@@ -40,6 +52,9 @@ export const BELTS: BeltConfig[] = [
     minXp: 600,
     senpai: false,
     sensei: false,
+    bgColor: '#FB923C',
+    iconColor: '#FFFFFF',
+    icon: '▲',
   },
   {
     level: 4,
@@ -48,6 +63,9 @@ export const BELTS: BeltConfig[] = [
     minXp: 1500,
     senpai: false,
     sensei: false,
+    bgColor: '#22C55E',
+    iconColor: '#FFFFFF',
+    icon: '◆',
   },
   {
     level: 5,
@@ -56,6 +74,9 @@ export const BELTS: BeltConfig[] = [
     minXp: 3500,
     senpai: false,
     sensei: false,
+    bgColor: '#3B82F6',
+    iconColor: '#FFFFFF',
+    icon: '★',
   },
   {
     level: 6,
@@ -64,6 +85,9 @@ export const BELTS: BeltConfig[] = [
     minXp: 8000,
     senpai: false,
     sensei: false,
+    bgColor: '#A855F7',
+    iconColor: '#FFFFFF',
+    icon: '✦',
   },
   {
     level: 7,
@@ -72,6 +96,9 @@ export const BELTS: BeltConfig[] = [
     minXp: 16000,
     senpai: true,
     sensei: false,
+    bgColor: '#92400E',
+    iconColor: '#FFFFFF',
+    icon: '✸',
   },
   {
     level: 8,
@@ -80,6 +107,9 @@ export const BELTS: BeltConfig[] = [
     minXp: 30000,
     senpai: true,
     sensei: false,
+    bgColor: '#EF4444',
+    iconColor: '#FFFFFF',
+    icon: '❋',
   },
   {
     level: 9,
@@ -88,6 +118,9 @@ export const BELTS: BeltConfig[] = [
     minXp: 50000,
     senpai: true,
     sensei: false,
+    bgColor: '#374151',
+    iconColor: '#FFFFFF',
+    icon: '✺',
   },
   {
     level: 10,
@@ -96,6 +129,9 @@ export const BELTS: BeltConfig[] = [
     minXp: 80000,
     senpai: false,
     sensei: true,
+    bgColor: '#F59E0B',
+    iconColor: '#78350F',
+    icon: '⭐',
   },
 ];
 
