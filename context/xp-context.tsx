@@ -89,8 +89,8 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
             xpAwarded: row.xp_awarded as number,
             eventType: row.event_type as string,
             label: getXpEventLabel(row.event_type as string),
-            promoted: false,
-            newBelt: 1,
+            promoted: (row.promoted as boolean) ?? false,
+            newBelt: (row.new_belt as number) ?? 1,
           };
 
           setQueue((prev) => [...prev, notification]);

@@ -135,6 +135,28 @@ export const BELTS: BeltConfig[] = [
   },
 ];
 
+/**
+ * Promotion copy shown in BeltUpModal when the user reaches a new belt.
+ * Belts 7–9 use Senpai copy; belt 10 uses Sensei copy.
+ */
+export const BELT_PROMOTION_COPY: Record<number, string> = {
+  1: "Raw potential awaits. Welcome to the Dojo.",
+  2: "You've found your grain. The craft begins.",
+  3: "First time in the barrel — keep aging, distiller.",
+  4: "Bottled in bond. You're meeting the standard.",
+  5: "Standing on your own — a distinct voice emerging.",
+  6: "Refined, curated, intentional. Excellence calls.",
+  7: "Full strength, Senpai. No water added.",
+  8: "A rare mash, Senpai. Few reach this grain.",
+  9: "Revered by all, Senpai. The craft is yours.",
+  10: "The Sensei has arrived. Legendary.",
+};
+
+/** Returns the promotion copy for the given belt level. */
+export function getBeltPromotionCopy(level: number): string {
+  return BELT_PROMOTION_COPY[level] ?? BELT_PROMOTION_COPY[1];
+}
+
 /** Human-readable labels for each XP event type. */
 export const XP_EVENT_LABELS: Record<string, string> = {
   tasting_logged: 'Tasting logged',

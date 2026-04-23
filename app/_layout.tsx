@@ -11,6 +11,7 @@ import { DevUserSwitcher } from "@/components/DevUserSwitcher";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { XpProvider } from "@/context/xp-context";
 import { XpToast } from "@/components/XpToast";
+import { BeltUpModal } from "@/components/BeltUpModal";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
@@ -44,6 +45,7 @@ export default function RootLayout() {
               {__DEV__ && <DevUserSwitcher />}
             </AuthGuard>
             <XpToast />
+            <BeltUpModal />
           </XpProvider>
         </ToastProvider>
       </ThemeProvider>
