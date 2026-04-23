@@ -135,6 +135,32 @@ export const BELTS: BeltConfig[] = [
   },
 ];
 
+/** Human-readable labels for each XP event type. */
+export const XP_EVENT_LABELS: Record<string, string> = {
+  tasting_logged: 'Tasting logged',
+  first_tasting_bonus: 'First tasting of this bourbon',
+  collection_add: 'Added to collection',
+  wishlist_add: 'Added to wishlist',
+  group_share: 'Shared to group',
+  group_create: 'Group created',
+  group_join: 'Joined a group',
+  comment_posted: 'Comment posted',
+  comment_received: 'Comment received',
+  like_received: 'Tasting liked',
+  follow_sent: 'Followed someone',
+  follower_gained: 'New follower',
+  daily_checkin: 'Daily check-in',
+  streak_milestone_7: '7-day streak',
+  streak_milestone_30: '30-day streak',
+  profile_complete: 'Profile completed',
+  first_bourbon_add: 'First bourbon added',
+};
+
+/** Returns the human-readable label for a given XP event type, or the raw type as fallback. */
+export function getXpEventLabel(eventType: string): string {
+  return XP_EVENT_LABELS[eventType] ?? eventType;
+}
+
 /** Returns the belt config for the given level (1–10). */
 export function getBeltConfig(level: number): BeltConfig {
   const belt = BELTS.find((b) => b.level === level);

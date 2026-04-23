@@ -9,6 +9,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { ToastProvider } from "@/lib/toast-provider";
 import { DevUserSwitcher } from "@/components/DevUserSwitcher";
 import { ThemeProvider } from "@/lib/theme-provider";
+import { XpProvider } from "@/context/xp-context";
+import { XpToast } from "@/components/XpToast";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
@@ -35,11 +37,14 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <ToastProvider>
-          <AuthGuard>
-            <Stack screenOptions={{ headerShown: false }} />
-            <StatusBar style="auto" />
-            {__DEV__ && <DevUserSwitcher />}
-          </AuthGuard>
+          <XpProvider>
+            <AuthGuard>
+              <Stack screenOptions={{ headerShown: false }} />
+              <StatusBar style="auto" />
+              {__DEV__ && <DevUserSwitcher />}
+            </AuthGuard>
+            <XpToast />
+          </XpProvider>
         </ToastProvider>
       </ThemeProvider>
     </QueryClientProvider>
