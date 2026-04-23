@@ -17,10 +17,13 @@ import {
   useUploadAvatar,
 } from "@/hooks/use-profile";
 import { useFollowerCount, useFollowingCount } from "@/hooks/use-follows";
+import { useUserXp } from "@/hooks/use-user-xp";
 import { colors } from "@/lib/colors";
 import { useTheme } from "@/lib/theme-provider";
 import { type ThemeMode } from "@/lib/themes";
 import { useToast } from "@/lib/toast-provider";
+import { BeltBadge } from "@/components/BeltBadge";
+import { XpProgressBar } from "@/components/XpProgressBar";
 
 const THEME_OPTIONS: { label: string; value: ThemeMode }[] = [
   { label: "System", value: "system" },
@@ -38,6 +41,7 @@ export default function ProfileScreen() {
   const { data: followingCount } = useFollowingCount(user?.id);
   const { themeMode, setThemeMode } = useTheme();
   const { showToast } = useToast();
+  const xp = useUserXp(user?.id);
 
   const [editing, setEditing] = useState(false);
   const [displayName, setDisplayName] = useState("");
@@ -126,6 +130,29 @@ export default function ProfileScreen() {
             </View>
           </TouchableOpacity>
           <Text className="text-brand-400 text-xs mt-2">Tap to change photo</Text>
+        </View>
+
+        {/* Bourbon Dojo */}
+        <View className="bg-brand-800 rounded-2xl p-4 mb-4">
+          <Text className="text-brand-400 text-xs uppercase tracking-widest mb-3">
+            Bourbon Dojo
+          </Text>
+          {xp.isLoading ? (
+            <ActivityIndicator color={colors.spinnerAmber} />
+          ) : (
+            <>
+              <View className="flex-row items-center gap-2 mb-3">
+                <BeltBadge level={xp.currentBelt} size={36} />
+                <Text className="text-brand-100 font-bold text-base">
+                  {xp.beltName}
+                </Text>
+              </View>
+              <XpProgressBar totalXp={xp.totalXp} currentBelt={xp.currentBelt} />
+              <Text className="text-brand-400 text-sm mt-3">
+                {"🔥"} {xp.streakDays}-day streak
+              </Text>
+            </>
+          )}
         </View>
 
         {/* Follower / following counts */}

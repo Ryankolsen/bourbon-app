@@ -20,7 +20,10 @@ import {
 import { useSharesGroup } from "@/hooks/use-groups";
 import { useCollection } from "@/hooks/use-collection";
 import { useTastings } from "@/hooks/use-tastings";
+import { useUserXp } from "@/hooks/use-user-xp";
 import { colors } from "@/lib/colors";
+import { BeltBadge } from "@/components/BeltBadge";
+import { XpProgressBar } from "@/components/XpProgressBar";
 
 export default function PublicProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -34,6 +37,8 @@ export default function PublicProfileScreen() {
   const { data: publicStats } = useUserPublicStats(id);
   const followUser = useFollowUser();
   const unfollowUser = useUnfollowUser();
+
+  const xp = useUserXp(id);
 
   const { data: sharesGroup } = useSharesGroup(user?.id, id);
   const { data: memberCollection = [] } = useCollection(sharesGroup ? id : undefined);
@@ -108,6 +113,23 @@ export default function PublicProfileScreen() {
             <Text className="text-brand-400 text-sm mt-0.5">
               @{profile.username}
             </Text>
+          )}
+        </View>
+
+        {/* Bourbon Dojo belt + XP progress */}
+        <View className="bg-brand-800 rounded-2xl p-4 mb-4">
+          {xp.isLoading ? (
+            <ActivityIndicator color={colors.spinnerDefault} />
+          ) : (
+            <>
+              <View className="flex-row items-center gap-2 mb-3">
+                <BeltBadge level={xp.currentBelt} size={36} />
+                <Text className="text-brand-100 font-bold text-base">
+                  {xp.beltName}
+                </Text>
+              </View>
+              <XpProgressBar totalXp={xp.totalXp} currentBelt={xp.currentBelt} />
+            </>
           )}
         </View>
 
