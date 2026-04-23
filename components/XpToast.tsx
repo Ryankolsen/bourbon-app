@@ -3,11 +3,14 @@
  *
  * Reads from XpContext, renders "+{n} Barrel Points · {label}", auto-dismisses
  * after 2500ms, then advances the queue. Non-blocking via pointerEvents="none".
+ *
+ * Also triggers XpBurst (sparkle animation) at the moment the toast appears.
  */
 
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text } from "react-native";
 import { useXpNotification } from "@/context/xp-context";
+import { XpBurst, XpBurstHandle } from "@/components/XpBurst";
 
 const AUTO_DISMISS_MS = 2500;
 
@@ -16,9 +19,12 @@ export function XpToast() {
   const translateY = useRef(new Animated.Value(80)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const burstRef = useRef<XpBurstHandle>(null);
 
   useEffect(() => {
     if (!current || current.xpAwarded === 0) return;
+
+    burstRef.current?.trigger();
 
     // Slide in
     Animated.parallel([
@@ -61,14 +67,17 @@ export function XpToast() {
   if (!current || current.xpAwarded === 0) return null;
 
   return (
-    <Animated.View
-      style={[styles.container, { transform: [{ translateY }], opacity }]}
-      pointerEvents="none"
-    >
-      <Text style={styles.text}>
-        +{current.xpAwarded} Barrel Points · {current.label}
-      </Text>
-    </Animated.View>
+    <>
+      <XpBurst ref={burstRef} />
+      <Animated.View
+        style={[styles.container, { transform: [{ translateY }], opacity }]}
+        pointerEvents="none"
+      >
+        <Text style={styles.text}>
+          +{current.xpAwarded} Barrel Points · {current.label}
+        </Text>
+      </Animated.View>
+    </>
   );
 }
 

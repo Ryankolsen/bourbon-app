@@ -8,6 +8,12 @@
 import React from "react";
 import { render, act } from "@testing-library/react-native";
 
+// ── Mock XpBurst (uses react-native-reanimated native module) ────────────────
+
+jest.mock("@/components/XpBurst", () => ({
+  XpBurst: jest.fn().mockReturnValue(null),
+}));
+
 // ── Mock XpContext ────────────────────────────────────────────────────────────
 
 const mockAdvance = jest.fn();
