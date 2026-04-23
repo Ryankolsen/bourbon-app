@@ -51,7 +51,7 @@ CREATE OR REPLACE FUNCTION public.bourbon_user_update_allowed(
   p_mashbill       text,
   p_age_statement  integer,
   p_proof          numeric,
-  p_type           text,
+  p_type           bourbon_type,
   p_msrp           numeric,
   p_image_url      text,
   p_description    text
