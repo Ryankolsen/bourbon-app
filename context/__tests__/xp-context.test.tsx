@@ -9,7 +9,7 @@
 import React from "react";
 import { Text, TouchableOpacity } from "react-native";
 import { render, act, waitFor, fireEvent } from "@testing-library/react-native";
-import { XpProvider, useXpNotification } from "../xp-context";
+import { XpProvider, useXpNotification, XpNotification } from "../xp-context";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -56,6 +56,9 @@ function Consumer() {
       <Text testID="xp-awarded">{current.xpAwarded}</Text>
       <Text testID="event-type">{current.eventType}</Text>
       <Text testID="label">{current.label}</Text>
+      {current.streakDays !== undefined && (
+        <Text testID="streak-days">{current.streakDays}</Text>
+      )}
       <TouchableOpacity testID="advance-btn" onPress={advance}>
         <Text>advance</Text>
       </TouchableOpacity>
@@ -147,5 +150,235 @@ describe("XpContext", () => {
     const { unmount } = renderWithProvider();
     unmount();
     expect(mockRemoveChannel).toHaveBeenCalledTimes(1);
+  });
+
+  // ── enqueue() tests ───────────────────────────────────────────────────────
+
+  // 4 — core wiring: calling enqueue() adds notification to queue
+  it("enqueue: adds a notification to the queue when xpAwarded > 0", async () => {
+    let capturedEnqueue: ((n: XpNotification) => void) | null = null;
+
+    function CoreWiringConsumer() {
+      const { current, enqueue } = useXpNotification();
+      capturedEnqueue = enqueue;
+      if (!current) return <Text testID="no-notif">none</Text>;
+      return (
+        <>
+          <Text testID="xp-awarded">{current.xpAwarded}</Text>
+          <Text testID="event-type">{current.eventType}</Text>
+        </>
+      );
+    }
+
+    const { getByTestId } = render(
+      <XpProvider>
+        <CoreWiringConsumer />
+      </XpProvider>
+    );
+
+    expect(getByTestId("no-notif")).toBeTruthy();
+
+    act(() => {
+      capturedEnqueue?.({
+        id: "direct-1",
+        xpAwarded: 4,
+        eventType: "daily_checkin",
+        label: "Daily check-in",
+        promoted: false,
+        newBelt: 1,
+      });
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("xp-awarded").props.children).toBe(4);
+      expect(getByTestId("event-type").props.children).toBe("daily_checkin");
+    });
+  });
+
+  // 5 — content details: daily_checkin with streakDays is preserved
+  it("enqueue: preserves streakDays on a daily_checkin notification", async () => {
+    function StreakConsumer() {
+      const { current, enqueue } = useXpNotification();
+      if (!current)
+        return (
+          <TouchableOpacity
+            testID="enqueue-streak-btn"
+            onPress={() =>
+              enqueue({
+                id: "checkin-today",
+                xpAwarded: 4,
+                eventType: "daily_checkin",
+                label: "Daily check-in",
+                promoted: false,
+                newBelt: 1,
+                streakDays: 4,
+              })
+            }
+          >
+            <Text testID="no-notif">none</Text>
+          </TouchableOpacity>
+        );
+      return (
+        <>
+          <Text testID="xp-awarded">{current.xpAwarded}</Text>
+          <Text testID="streak-days">{current.streakDays}</Text>
+        </>
+      );
+    }
+
+    const { getByTestId } = render(
+      <XpProvider>
+        <StreakConsumer />
+      </XpProvider>
+    );
+
+    act(() => {
+      fireEvent.press(getByTestId("enqueue-streak-btn"));
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("xp-awarded").props.children).toBe(4);
+      expect(getByTestId("streak-days").props.children).toBe(4);
+    });
+  });
+
+  // 6 — edge case: same id enqueued twice only appears once (deduplication)
+  it("enqueue: deduplicates notifications with the same id", async () => {
+    let capturedEnqueue: ((n: XpNotification) => void) | null = null;
+    let queueLength = 0;
+
+    function DedupConsumer() {
+      const { current, advance, enqueue } = useXpNotification();
+      capturedEnqueue = enqueue;
+      queueLength = current ? 1 : 0;
+      if (!current) return <Text testID="no-notif">none</Text>;
+      return (
+        <>
+          <Text testID="xp-awarded">{current.xpAwarded}</Text>
+          <TouchableOpacity testID="advance-btn" onPress={advance}>
+            <Text>advance</Text>
+          </TouchableOpacity>
+        </>
+      );
+    }
+
+    const { getByTestId, queryByTestId } = render(
+      <XpProvider>
+        <DedupConsumer />
+      </XpProvider>
+    );
+
+    const notif: XpNotification = {
+      id: "dedup-id",
+      xpAwarded: 10,
+      eventType: "daily_checkin",
+      label: "Daily check-in",
+      promoted: false,
+      newBelt: 1,
+    };
+
+    act(() => {
+      capturedEnqueue?.(notif);
+      capturedEnqueue?.(notif); // same id — should be dropped
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("xp-awarded").props.children).toBe(10);
+    });
+
+    // Advance should reveal "none" (queue has only 1 item)
+    fireEvent.press(getByTestId("advance-btn"));
+    await waitFor(() => {
+      expect(getByTestId("no-notif")).toBeTruthy();
+    });
+  });
+
+  // 7 — edge case: xpAwarded: 0 is ignored
+  it("enqueue: ignores notifications with xpAwarded === 0", async () => {
+    let capturedEnqueue: ((n: XpNotification) => void) | null = null;
+
+    function ZeroConsumer() {
+      const { current, enqueue } = useXpNotification();
+      capturedEnqueue = enqueue;
+      if (!current) return <Text testID="no-notif">none</Text>;
+      return <Text testID="xp-awarded">{current.xpAwarded}</Text>;
+    }
+
+    const { getByTestId } = render(
+      <XpProvider>
+        <ZeroConsumer />
+      </XpProvider>
+    );
+
+    act(() => {
+      capturedEnqueue?.({
+        id: "zero-xp",
+        xpAwarded: 0,
+        eventType: "daily_checkin",
+        label: "Daily check-in",
+        promoted: false,
+        newBelt: 1,
+      });
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("no-notif")).toBeTruthy();
+    });
+  });
+
+  // 8 — edge case: Realtime INSERT with same id as direct enqueue is dropped
+  it("Realtime duplicate of a directly-enqueued notification is dropped", async () => {
+    let capturedEnqueue: ((n: XpNotification) => void) | null = null;
+
+    function RealtimeDedupConsumer() {
+      const { current, advance, enqueue } = useXpNotification();
+      capturedEnqueue = enqueue;
+      if (!current) return <Text testID="no-notif">none</Text>;
+      return (
+        <>
+          <Text testID="xp-awarded">{current.xpAwarded}</Text>
+          <TouchableOpacity testID="advance-btn" onPress={advance}>
+            <Text>advance</Text>
+          </TouchableOpacity>
+        </>
+      );
+    }
+
+    const { getByTestId } = render(
+      <XpProvider>
+        <RealtimeDedupConsumer />
+      </XpProvider>
+    );
+
+    const sharedId = "shared-event-uuid";
+
+    act(() => {
+      // Direct enqueue first
+      capturedEnqueue?.({
+        id: sharedId,
+        xpAwarded: 5,
+        eventType: "daily_checkin",
+        label: "Daily check-in",
+        promoted: false,
+        newBelt: 1,
+      });
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("xp-awarded").props.children).toBe(5);
+    });
+
+    act(() => {
+      // Realtime arrives with the same row id — should be deduplicated
+      capturedCallback?.({
+        new: { id: sharedId, xp_awarded: 5, event_type: "daily_checkin" },
+      });
+    });
+
+    // Advance: if Realtime was not deduplicated there would be a second item
+    fireEvent.press(getByTestId("advance-btn"));
+    await waitFor(() => {
+      expect(getByTestId("no-notif")).toBeTruthy();
+    });
   });
 });

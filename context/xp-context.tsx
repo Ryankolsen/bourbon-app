@@ -5,6 +5,11 @@
  * user). Each INSERT dispatches a notification into a queue; XpToast reads
  * the queue and shows toasts sequentially. TanStack Query's user-xp cache is
  * invalidated on each event so profile displays update automatically.
+ *
+ * Also exposes `enqueue` so callers can push a notification directly (e.g.
+ * from the check-in RPC result) without waiting for the Realtime channel to
+ * establish. A seen-IDs set deduplicates notifications that arrive via both
+ * paths.
  */
 
 import React, {
@@ -29,6 +34,8 @@ export interface XpNotification {
   label: string;
   promoted: boolean;
   newBelt: number;
+  /** Streak day count at time of the event (populated for daily_checkin). */
+  streakDays?: number;
 }
 
 interface XpContextValue {
@@ -36,6 +43,11 @@ interface XpContextValue {
   current: XpNotification | null;
   /** Advance the queue — called by XpToast after the toast auto-dismisses. */
   advance: () => void;
+  /**
+   * Imperatively push a notification into the queue (bypasses Realtime).
+   * Ignored when xpAwarded is 0 or when the same `id` was already enqueued.
+   */
+  enqueue: (notification: XpNotification) => void;
 }
 
 // ── Context ──────────────────────────────────────────────────────────────────
@@ -43,6 +55,7 @@ interface XpContextValue {
 const XpContext = createContext<XpContextValue>({
   current: null,
   advance: () => {},
+  enqueue: () => {},
 });
 
 export function useXpNotification(): XpContextValue {
@@ -60,10 +73,30 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [queue, setQueue] = useState<XpNotification[]>([]);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  /** Tracks notification IDs already added to the queue (deduplication). */
+  const seenIds = useRef<Set<string>>(new Set());
 
   const advance = useCallback(() => {
     setQueue((prev) => prev.slice(1));
   }, []);
+
+  /**
+   * Push a notification directly into the queue, bypassing Realtime.
+   * Deduplicates by `notification.id` so a subsequent Realtime event for the
+   * same logical event is silently dropped.
+   */
+  const enqueue = useCallback(
+    (notification: XpNotification) => {
+      if (notification.xpAwarded === 0) return;
+      if (seenIds.current.has(notification.id)) return;
+      seenIds.current.add(notification.id);
+      setQueue((prev) => [...prev, notification]);
+      if (user?.id) {
+        queryClient.invalidateQueries({ queryKey: ["user-xp", user.id] });
+      }
+    },
+    [user?.id]
+  );
 
   useEffect(() => {
     if (!user?.id) return;
@@ -84,8 +117,14 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
           const row = payload.new;
           if (!row || row.xp_awarded === 0) return;
 
+          // Use the DB row UUID for deduplication when present; otherwise
+          // fall back to a locally-generated ID (should not happen in practice).
+          const notifId: string = (row.id as string) ?? nextNotifId();
+          if (seenIds.current.has(notifId)) return;
+          seenIds.current.add(notifId);
+
           const notification: XpNotification = {
-            id: nextNotifId(),
+            id: notifId,
             xpAwarded: row.xp_awarded as number,
             eventType: row.event_type as string,
             label: getXpEventLabel(row.event_type as string),
@@ -114,7 +153,7 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
   const current = queue[0] ?? null;
 
   return (
-    <XpContext.Provider value={{ current, advance }}>
+    <XpContext.Provider value={{ current, advance, enqueue }}>
       {children}
     </XpContext.Provider>
   );
