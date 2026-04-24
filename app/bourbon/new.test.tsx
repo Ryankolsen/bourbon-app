@@ -42,6 +42,10 @@ jest.mock('@/lib/bourbons', () => ({
   ],
 }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
+
 // Testable Dropdown mock: renders all options as pressable items
 jest.mock('react-native-element-dropdown', () => {
   const { View, Text, TouchableOpacity } = require('react-native');

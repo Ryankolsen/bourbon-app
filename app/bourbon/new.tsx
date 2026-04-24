@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -53,6 +54,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function NewBourbonScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -118,6 +120,7 @@ export default function NewBourbonScreen() {
     >
       <ScrollView
         contentContainerClassName="px-4 py-6 gap-4"
+        contentContainerStyle={{ paddingTop: insets.top + 8 }}
         keyboardShouldPersistTaps="handled"
       >
         <Text className="text-brand-100 text-2xl font-bold mb-2">Add a Bourbon</Text>

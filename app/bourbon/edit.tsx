@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useForm, Controller, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -71,6 +72,7 @@ const schema = adminSchema;
 type FormValues = z.infer<typeof adminSchema>;
 
 export default function EditBourbonScreen() {
+  const insets = useSafeAreaInsets();
   const { id, mode: modeParam } = useLocalSearchParams<{ id: string; mode?: string }>();
   const mode = modeParam === "user" ? "user" : "admin";
   const router = useRouter();
@@ -206,6 +208,7 @@ export default function EditBourbonScreen() {
     >
       <ScrollView
         contentContainerClassName="px-4 py-6 gap-4"
+        contentContainerStyle={{ paddingTop: insets.top + 8 }}
         keyboardShouldPersistTaps="handled"
       >
         <Text className="text-brand-100 text-2xl font-bold mb-2">

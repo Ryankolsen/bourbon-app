@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, Platform, ActivityIndicator, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import * as Device from "expo-device";
@@ -11,6 +12,7 @@ import { colors } from "@/lib/colors";
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -97,6 +99,7 @@ export default function LoginScreen() {
     <ScrollView
       className="flex-1 bg-brand-900"
       contentContainerClassName="items-center justify-center px-8 py-16"
+      contentContainerStyle={{ paddingTop: insets.top + 16 }}
       keyboardShouldPersistTaps="handled"
     >
       <View className="mb-12 items-center">
