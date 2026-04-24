@@ -9,6 +9,10 @@ import React from "react";
 import { render } from "@testing-library/react-native";
 import { StreakCard } from "../StreakCard";
 
+jest.mock("@/lib/theme-provider", () => ({
+  useTheme: () => ({ activeTheme: { colors: { brand100: "#e0f2fe", brand400: "#38bdf8" } } }),
+}));
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function todayIso(): string {

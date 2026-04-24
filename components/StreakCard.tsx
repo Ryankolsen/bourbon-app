@@ -15,6 +15,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { TomorrowXp } from "@/lib/streak-utils";
+import { useTheme } from "@/lib/theme-provider";
 
 export interface StreakCardProps {
   streakDays: number;
@@ -38,8 +39,10 @@ function computeCalendarCells(streakDays: number, lastCheckinDate: string | null
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
 
-  const checkin = new Date(lastCheckinDate);
-  checkin.setHours(0, 0, 0, 0);
+  // Parse as local midnight — bare "YYYY-MM-DD" strings are interpreted as UTC
+  // by the Date constructor, which shifts the date by the local UTC offset.
+  const [cy, cm, cd] = lastCheckinDate.split("-").map(Number);
+  const checkin = new Date(cy, cm - 1, cd);
 
   const todayTime = today.getTime();
   const yesterdayTime = yesterday.getTime();
@@ -69,11 +72,12 @@ function buildTomorrowLine(tomorrowXp: TomorrowXp): string {
 export function StreakCard({ streakDays, lastCheckinDate, tomorrowXp, isReset }: StreakCardProps) {
   const cells = computeCalendarCells(streakDays, lastCheckinDate);
   const headline = isReset ? "Streak reset" : `${streakDays}-day streak`;
+  const { activeTheme } = useTheme();
 
   return (
     <View style={styles.card}>
       {/* Headline */}
-      <Text style={styles.headline} testID="streak-headline">
+      <Text style={[styles.headline, { color: activeTheme.colors.brand100 }]} testID="streak-headline">
         {"🔥"} {headline}
       </Text>
 
@@ -89,7 +93,7 @@ export function StreakCard({ streakDays, lastCheckinDate, tomorrowXp, isReset }:
       </View>
 
       {/* Tomorrow's XP preview */}
-      <Text style={styles.tomorrow} testID="streak-tomorrow">
+      <Text style={[styles.tomorrow, { color: activeTheme.colors.brand400 }]} testID="streak-tomorrow">
         {buildTomorrowLine(tomorrowXp)}
       </Text>
     </View>
@@ -102,7 +106,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   headline: {
-    color: "#F3F4F6",
     fontSize: 16,
     fontWeight: "700",
     marginBottom: 10,
@@ -124,7 +127,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#374151",
   },
   tomorrow: {
-    color: "#9CA3AF",
     fontSize: 13,
     textAlign: "center",
   },
