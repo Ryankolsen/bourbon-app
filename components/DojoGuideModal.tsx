@@ -21,6 +21,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { BELTS, getBeltForXp, XP_AWARD_AMOUNTS, STREAK_MILESTONE_BONUSES } from "@/lib/belt-config";
 import { useTheme } from "@/lib/theme-provider";
 
@@ -57,7 +58,7 @@ export function DojoGuideModal({ totalXp, visible, onClose }: DojoGuideModalProp
       onRequestClose={onClose}
       testID="dojo-guide-modal"
     >
-      <View style={[styles.container, { backgroundColor: c.brand900 }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: c.brand900 }]}>
         {/* ── Header ── */}
         <View style={[styles.header, { borderBottomColor: c.brand700 }]}>
           <Text style={[styles.headerTitle, { color: c.brand100 }]}>
@@ -111,7 +112,7 @@ export function DojoGuideModal({ totalXp, visible, onClose }: DojoGuideModalProp
         ) : (
           <HowToEarnTab c={c} />
         )}
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 }
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 56,
+    paddingTop: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
   },
