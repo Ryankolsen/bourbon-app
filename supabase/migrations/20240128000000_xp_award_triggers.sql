@@ -14,6 +14,10 @@
 --   tasting_comments     → comment_posted (10 XP, 5/day cap) + comment_received (5 XP)
 --   tasting_likes        → like_received (5 XP) to tasting owner
 --   user_follows         → user_followed (5 XP) + follower_gained (10 XP)
+--
+-- IMPORTANT: XP award amounts are the canonical source of truth in
+--   lib/belt-config.ts → XP_AWARD_AMOUNTS
+-- If you change an XP value here, update that constant too (and vice versa).
 -- ─────────────────────────────────────────────────────────────────────────────
 
 -- ─────────────────────────────────────────────────────────────────────────────

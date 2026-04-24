@@ -3,6 +3,8 @@ import {
   getBeltConfig,
   getXpToNextBelt,
   getBeltProgressPercent,
+  XP_AWARD_AMOUNTS,
+  STREAK_MILESTONE_BONUSES,
 } from './belt-config';
 
 // ---------------------------------------------------------------------------
@@ -105,6 +107,61 @@ describe('getBeltProgressPercent', () => {
 // ---------------------------------------------------------------------------
 // Slice 4: exact threshold boundaries promote correctly
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Slice 5: XP_AWARD_AMOUNTS constant
+// ---------------------------------------------------------------------------
+
+const EXPECTED_EVENT_TYPES = [
+  'tasting_logged',
+  'first_tasting_bonus',
+  'collection_add',
+  'wishlist_add',
+  'group_share',
+  'group_create',
+  'group_join',
+  'comment_posted',
+  'comment_received',
+  'like_received',
+  'follow_sent',
+  'follower_gained',
+] as const;
+
+describe('XP_AWARD_AMOUNTS', () => {
+  it('has an entry for every xp_event_type value', () => {
+    expect(Object.keys(XP_AWARD_AMOUNTS).length).toBe(EXPECTED_EVENT_TYPES.length);
+    for (const type of EXPECTED_EVENT_TYPES) {
+      expect(XP_AWARD_AMOUNTS).toHaveProperty(type);
+    }
+  });
+
+  it('contains correct values for known event types', () => {
+    expect(XP_AWARD_AMOUNTS.tasting_logged).toBe(25);
+    expect(XP_AWARD_AMOUNTS.collection_add).toBe(10);
+    expect(XP_AWARD_AMOUNTS.group_create).toBe(50);
+  });
+
+  it('has no zero or negative values', () => {
+    for (const [key, value] of Object.entries(XP_AWARD_AMOUNTS)) {
+      expect(value).toBeGreaterThan(0);
+      expect(Number.isInteger(value)).toBe(true);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Slice 6: STREAK_MILESTONE_BONUSES constant
+// ---------------------------------------------------------------------------
+
+describe('STREAK_MILESTONE_BONUSES', () => {
+  it('has 20 XP bonus for a 7-day streak', () => {
+    expect(STREAK_MILESTONE_BONUSES[7]).toBe(20);
+  });
+
+  it('has 75 XP bonus for a 30-day streak', () => {
+    expect(STREAK_MILESTONE_BONUSES[30]).toBe(75);
+  });
+});
 
 describe('threshold boundary promotions', () => {
   const thresholds: [number, number][] = [

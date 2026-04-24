@@ -5,6 +5,12 @@
 -- Idempotent: calling it multiple times on the same calendar day awards XP once.
 --
 -- Returns: { xp_awarded int, streak_days int, promoted bool, new_belt int }
+--
+-- IMPORTANT: Streak milestone bonus amounts (7-day: +20 XP, 30-day: +75 XP)
+-- are the canonical source of truth in:
+--   lib/belt-config.ts → STREAK_MILESTONE_BONUSES
+-- Base daily_checkin XP formula: day N = N XP (no constant needed).
+-- If you change milestone bonuses here, update STREAK_MILESTONE_BONUSES too.
 -- ─────────────────────────────────────────────────────────────────────────────
 
 create or replace function public.check_in()

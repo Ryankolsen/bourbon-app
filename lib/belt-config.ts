@@ -157,6 +157,40 @@ export function getBeltPromotionCopy(level: number): string {
   return BELT_PROMOTION_COPY[level] ?? BELT_PROMOTION_COPY[1];
 }
 
+/**
+ * XP award amounts for every fixed-value event type.
+ * This is the single source of truth for XP values — the UI reads from here
+ * and the SQL award triggers must be kept in sync with these values.
+ * See supabase/migrations/20240128000000_xp_award_triggers.sql.
+ *
+ * Note: daily_checkin XP is dynamic (day N = N XP); see STREAK_MILESTONE_BONUSES
+ * for milestone bonus amounts.
+ */
+export const XP_AWARD_AMOUNTS: Record<string, number> = {
+  tasting_logged: 25,
+  first_tasting_bonus: 15,
+  collection_add: 10,
+  wishlist_add: 5,
+  group_share: 15,
+  group_create: 50,
+  group_join: 20,
+  comment_posted: 10,
+  comment_received: 5,
+  like_received: 5,
+  follow_sent: 5,
+  follower_gained: 10,
+};
+
+/**
+ * Bonus XP awarded at streak milestones, keyed by streak day count.
+ * Formula for base streak XP: day N = N XP.
+ * See supabase/migrations/20240127000000_check_in_function.sql.
+ */
+export const STREAK_MILESTONE_BONUSES: Record<number, number> = {
+  7: 20,
+  30: 75,
+};
+
 /** Human-readable labels for each XP event type. */
 export const XP_EVENT_LABELS: Record<string, string> = {
   tasting_logged: 'Tasting logged',
