@@ -24,6 +24,8 @@ import { type ThemeMode } from "@/lib/themes";
 import { useToast } from "@/lib/toast-provider";
 import { BeltBadge } from "@/components/BeltBadge";
 import { XpProgressBar } from "@/components/XpProgressBar";
+import { StreakCard } from "@/components/StreakCard";
+import { getTomorrowXp } from "@/lib/streak-utils";
 
 const THEME_OPTIONS: { label: string; value: ThemeMode }[] = [
   { label: "System", value: "system" },
@@ -148,9 +150,14 @@ export default function ProfileScreen() {
                 </Text>
               </View>
               <XpProgressBar totalXp={xp.totalXp} currentBelt={xp.currentBelt} />
-              <Text className="text-brand-400 text-sm mt-3">
-                {"🔥"} {xp.streakDays}-day streak
-              </Text>
+              <View className="mt-3">
+                <StreakCard
+                  streakDays={xp.streakDays}
+                  lastCheckinDate={xp.lastCheckinDate}
+                  tomorrowXp={getTomorrowXp(xp.streakDays)}
+                  isReset={false}
+                />
+              </View>
             </>
           )}
         </View>
