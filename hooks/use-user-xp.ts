@@ -14,6 +14,7 @@ export interface UserXpState {
   xpToNextBelt: number;
   progressPercent: number;
   streakDays: number;
+  lastCheckinDate: string | null;
   isLoading: boolean;
   error: Error | null;
 }
@@ -25,12 +26,14 @@ const DEFAULT_XP_STATE: Omit<UserXpState, "isLoading" | "error"> = {
   xpToNextBelt: 200,
   progressPercent: 0,
   streakDays: 0,
+  lastCheckinDate: null,
 };
 
 function deriveXpState(row: {
   total_xp: number;
   current_belt: number;
   streak_days: number;
+  last_checkin_date: string | null;
 } | null): Omit<UserXpState, "isLoading" | "error"> {
   if (!row) return DEFAULT_XP_STATE;
 
@@ -47,6 +50,7 @@ function deriveXpState(row: {
     xpToNextBelt,
     progressPercent,
     streakDays: row.streak_days,
+    lastCheckinDate: row.last_checkin_date ?? null,
   };
 }
 

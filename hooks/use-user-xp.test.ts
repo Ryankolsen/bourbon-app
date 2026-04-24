@@ -178,4 +178,93 @@ describe("useUserXp", () => {
     expect(result.current.totalXp).toBe(0);
     expect(result.current.currentBelt).toBe(1);
   });
+
+  // 4 — lastCheckinDate core wiring
+  it("returns lastCheckinDate from last_checkin_date column", async () => {
+    mockSingle.mockResolvedValueOnce({
+      data: {
+        user_id: "user-1",
+        total_xp: 100,
+        current_belt: 1,
+        streak_days: 3,
+        last_checkin_date: "2026-04-23",
+      },
+      error: null,
+    });
+
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useUserXp("user-1"), {
+      wrapper: Wrapper,
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.lastCheckinDate).toBe("2026-04-23");
+  });
+
+  // 5 — content details: full return shape includes lastCheckinDate alongside other fields
+  it("returns full shape with totalXp, currentBelt, streakDays, and lastCheckinDate together", async () => {
+    mockSingle.mockResolvedValueOnce({
+      data: {
+        user_id: "user-1",
+        total_xp: 500,
+        current_belt: 2,
+        streak_days: 7,
+        last_checkin_date: "2026-04-24",
+      },
+      error: null,
+    });
+
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useUserXp("user-1"), {
+      wrapper: Wrapper,
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.totalXp).toBe(500);
+    expect(result.current.currentBelt).toBeDefined();
+    expect(result.current.streakDays).toBe(7);
+    expect(result.current.lastCheckinDate).toBe("2026-04-24");
+  });
+
+  // 6a — edge case: PGRST116 (no row) → lastCheckinDate is null
+  it("returns lastCheckinDate: null when Supabase returns no row (PGRST116)", async () => {
+    mockSingle.mockResolvedValueOnce({
+      data: null,
+      error: { code: "PGRST116", message: "no rows", details: "", hint: "" },
+    });
+
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useUserXp("new-user"), {
+      wrapper: Wrapper,
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.lastCheckinDate).toBeNull();
+  });
+
+  // 6b — edge case: row exists but last_checkin_date is null → lastCheckinDate is null
+  it("returns lastCheckinDate: null when row has last_checkin_date: null", async () => {
+    mockSingle.mockResolvedValueOnce({
+      data: {
+        user_id: "user-1",
+        total_xp: 50,
+        current_belt: 1,
+        streak_days: 0,
+        last_checkin_date: null,
+      },
+      error: null,
+    });
+
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useUserXp("user-1"), {
+      wrapper: Wrapper,
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.lastCheckinDate).toBeNull();
+  });
 });
