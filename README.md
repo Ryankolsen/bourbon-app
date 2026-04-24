@@ -83,37 +83,7 @@ supabase db push
 
 > **Note:** The app uses `expo-apple-authentication`, a native module that requires a custom dev build. **Expo Go is not supported.**
 
-**iOS Simulator** — `npm run ios` (`expo run:ios`) is broken under Xcode 26 due to a devicectl detection bug. Build and install manually:
-
-```bash
-# One-time native build (re-run only when native code changes)
-xcodebuild \
-  -workspace ios/bourbonapp.xcworkspace \
-  -scheme bourbonapp \
-  -configuration Debug \
-  -destination "platform=iOS Simulator,id=01DF1BA4-0491-44C5-980C-5479D7D04C25" \
-  build 2>&1 | grep -E "error:|BUILD"
-
-xcrun simctl install booted \
-  ~/Library/Developer/Xcode/DerivedData/bourbonapp-fjaxpkiknmklivghbnzbagithrcv/Build/Products/Debug-iphonesimulator/bourbonapp.app
-
-xcrun simctl launch booted com.ryankolsen.bourbonvault
-
-# Start Metro (handles all JS changes without a rebuild)
-npx expo start --port 8081
-```
-
-**Android emulator**
-
-```bash
-npm run android  # expo run:android
-```
-
-**Finding your Simulator UDID** (if the above ID doesn't match your machine):
-
-```bash
-xcrun simctl list devices available | grep -i iphone
-```
+See the [Local Development on macOS → Start the app](#4-start-the-app) section below for full iOS and Android instructions.
 
 ## Database Schema
 
@@ -177,37 +147,55 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=<Publishable key from supabase start output>
 
 > **Note:** Expo Go is not supported — the app requires a custom native build due to `expo-apple-authentication`.
 
-**iOS Simulator** — `npx expo run:ios` is broken under Xcode 26 (devicectl detection bug). Use xcodebuild instead:
+#### iOS Simulator
+
+`npx expo run:ios` is broken under Xcode 26 (devicectl detection bug). Use the manual steps below.
+
+**Step 1 — Find your simulator UDID and boot it**
 
 ```bash
-# One-time native build (re-run only when native code changes)
-xcodebuild \
-  -workspace ios/bourbonapp.xcworkspace \
-  -scheme bourbonapp \
-  -configuration Debug \
-  -destination "platform=iOS Simulator,id=01DF1BA4-0491-44C5-980C-5479D7D04C25" \
-  build 2>&1 | grep -E "error:|BUILD"
+xcrun simctl list devices available | grep -i iphone
+# Pick a UDID from the output, e.g. iPhone 17 Pro
+xcrun simctl boot <UDID>
+```
 
-xcrun simctl install booted \
-  ~/Library/Developer/Xcode/DerivedData/bourbonapp-fjaxpkiknmklivghbnzbagithrcv/Build/Products/Debug-iphonesimulator/bourbonapp.app
+**Step 2 — Install native pods** (required on first setup and after any `npm install` that adds native modules)
 
+```bash
+cd ios && pod install && cd ..
+```
+
+**Step 3 — Build the native app** (re-run only when native code or pods change; JS-only changes hot-reload via Metro)
+
+```bash
+xcodebuild -workspace ios/bourbonapp.xcworkspace -scheme bourbonapp -configuration Debug -destination "platform=iOS Simulator,id=<UDID>" build 2>&1 | grep -E "error:|BUILD SUCCEEDED|BUILD FAILED"
+```
+
+**Step 4 — Install and launch**
+
+```bash
+APP=$(find ~/Library/Developer/Xcode/DerivedData -name "bourbonapp.app" -path "*iphonesimulator*" | head -1)
+xcrun simctl install booted "$APP"
 xcrun simctl launch booted com.ryankolsen.bourbonvault
+```
 
-# Then start Metro for JS hot-reload
+**Step 5 — Start Metro** (handles all JS changes without a rebuild)
+
+```bash
 npx expo start --port 8081
 ```
 
-**Android emulator**
+On subsequent runs (no native changes), only steps 4 and 5 are needed.
+
+#### Android emulator
+
+Ensure an emulator is booted in Android Studio first, then:
 
 ```bash
 npx expo run:android
 ```
 
-**Finding your Simulator UDID** (if the above ID doesn't match your machine):
-
-```bash
-xcrun simctl list devices available | grep -i iphone
-```
+Metro starts automatically.
 
 ### Supabase Studio
 
