@@ -105,6 +105,8 @@ export default function TabsLayout() {
       promoted: checkIn.promoted,
       newBelt: checkIn.newBelt,
       streakDays: checkIn.streakDays,
+      isReset: checkIn.isReset,
+      tomorrowXp: checkIn.tomorrowXp,
     });
   }, [checkIn.lastXpAwarded, checkIn.isLoading, enqueue]);
 

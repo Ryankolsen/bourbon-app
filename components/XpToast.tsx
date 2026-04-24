@@ -4,15 +4,36 @@
  * Reads from XpContext, renders "+{n} Barrel Points · {label}", auto-dismisses
  * after 2500ms, then advances the queue. Non-blocking via pointerEvents="none".
  *
+ * For daily_checkin events, renders a secondary streak context line below the
+ * points line showing current streak and tomorrow's XP preview.
+ *
  * Also triggers XpBurst (sparkle animation) at the moment the toast appears.
  */
 
 import React, { useEffect, useRef } from "react";
-import { Animated, StyleSheet, Text } from "react-native";
+import { Animated, StyleSheet, Text, View } from "react-native";
 import { useXpNotification } from "@/context/xp-context";
 import { XpBurst, XpBurstHandle } from "@/components/XpBurst";
+import { TomorrowXp } from "@/lib/streak-utils";
 
 const AUTO_DISMISS_MS = 2500;
+
+function buildStreakLine(
+  streakDays: number | undefined,
+  isReset: boolean | undefined,
+  tomorrowXp: TomorrowXp | null | undefined
+): string | null {
+  if (isReset) {
+    return "Streak reset — back to Day 1 · Tomorrow: +1 pt";
+  }
+  if (streakDays === undefined || streakDays === null || !tomorrowXp) return null;
+
+  const base = `Day ${streakDays} streak · Tomorrow: +${tomorrowXp.base} pts`;
+  if (tomorrowXp.milestoneLabel && tomorrowXp.bonusXp > 0) {
+    return `${base} + ${tomorrowXp.bonusXp} bonus — ${tomorrowXp.milestoneLabel}!`;
+  }
+  return base;
+}
 
 export function XpToast() {
   const { current, advance } = useXpNotification();
@@ -66,6 +87,11 @@ export function XpToast() {
 
   if (!current || current.xpAwarded === 0) return null;
 
+  const streakLine =
+    current.eventType === "daily_checkin"
+      ? buildStreakLine(current.streakDays, current.isReset, current.tomorrowXp)
+      : null;
+
   return (
     <>
       <XpBurst ref={burstRef} />
@@ -73,9 +99,16 @@ export function XpToast() {
         style={[styles.container, { transform: [{ translateY }], opacity }]}
         pointerEvents="none"
       >
-        <Text style={styles.text}>
-          +{current.xpAwarded} Barrel Points · {current.label}
-        </Text>
+        <View style={styles.toastBubble}>
+          <Text style={styles.text}>
+            +{current.xpAwarded} Barrel Points · {current.label}
+          </Text>
+          {streakLine && (
+            <Text style={styles.streakText} testID="streak-line">
+              {streakLine}
+            </Text>
+          )}
+        </View>
       </Animated.View>
     </>
   );
@@ -90,15 +123,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 10000,
   },
-  text: {
+  toastBubble: {
     backgroundColor: "#1e4080",
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "600",
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 20,
     overflow: "hidden",
+    alignItems: "center",
+  },
+  text: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
     textAlign: "center",
+  },
+  streakText: {
+    color: "rgba(255, 255, 255, 0.85)",
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: 4,
   },
 });

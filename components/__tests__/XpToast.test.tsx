@@ -24,6 +24,9 @@ let mockCurrent: {
   label: string;
   promoted: boolean;
   newBelt: number;
+  streakDays?: number;
+  isReset?: boolean;
+  tomorrowXp?: { base: number; bonusXp: number; milestoneLabel: string | null } | null;
 } | null = null;
 
 jest.mock("@/context/xp-context", () => ({
@@ -47,6 +50,17 @@ function makeNotification(overrides: Partial<typeof mockCurrent> = {}) {
     newBelt: 1,
     ...overrides,
   };
+}
+
+function makeCheckinNotification(overrides: Partial<typeof mockCurrent> = {}) {
+  return makeNotification({
+    eventType: "daily_checkin",
+    label: "Daily check-in",
+    streakDays: 4,
+    isReset: false,
+    tomorrowXp: { base: 5, bonusXp: 0, milestoneLabel: null },
+    ...overrides,
+  });
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -100,5 +114,48 @@ describe("XpToast", () => {
     mockCurrent = makeNotification({ xpAwarded: 0 });
     const { queryByText } = render(<XpToast />);
     expect(queryByText(/Barrel Points/)).toBeNull();
+  });
+
+  // ── Streak line tests ──────────────────────────────────────────────────────
+
+  // 4 — core wiring: daily_checkin renders streak context line
+  it("renders streak line for daily_checkin with streakDays=4 and tomorrowXp base=5", () => {
+    mockCurrent = makeCheckinNotification();
+    const { getByText } = render(<XpToast />);
+    expect(getByText("Day 4 streak · Tomorrow: +5 pts")).toBeTruthy();
+  });
+
+  // 5 — milestone bonus in streak line
+  it("renders milestone bonus text when milestoneLabel is set", () => {
+    mockCurrent = makeCheckinNotification({
+      tomorrowXp: { base: 7, bonusXp: 20, milestoneLabel: "7-day streak" },
+    });
+    const { getByText } = render(<XpToast />);
+    expect(
+      getByText("Day 4 streak · Tomorrow: +7 pts + 20 bonus — 7-day streak!")
+    ).toBeTruthy();
+  });
+
+  // 6 — isReset: shows reset message
+  it("renders streak reset message when isReset is true", () => {
+    mockCurrent = makeCheckinNotification({ isReset: true });
+    const { getByText } = render(<XpToast />);
+    expect(
+      getByText("Streak reset — back to Day 1 · Tomorrow: +1 pt")
+    ).toBeTruthy();
+  });
+
+  // 7 — non-daily_checkin event: no streak line
+  it("does not render streak line for non-daily_checkin events", () => {
+    mockCurrent = makeNotification({ eventType: "tasting_complete" });
+    const { queryByTestId } = render(<XpToast />);
+    expect(queryByTestId("streak-line")).toBeNull();
+  });
+
+  // 8 — daily_checkin without tomorrowXp: no streak line rendered
+  it("does not render streak line when tomorrowXp is null", () => {
+    mockCurrent = makeCheckinNotification({ tomorrowXp: null, streakDays: 2 });
+    const { queryByTestId } = render(<XpToast />);
+    expect(queryByTestId("streak-line")).toBeNull();
   });
 });

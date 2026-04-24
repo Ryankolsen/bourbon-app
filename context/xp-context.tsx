@@ -24,6 +24,7 @@ import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/query-client";
 import { getXpEventLabel } from "@/lib/belt-config";
 import { useAuth } from "@/hooks/use-auth";
+import { TomorrowXp } from "@/lib/streak-utils";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,6 +37,10 @@ export interface XpNotification {
   newBelt: number;
   /** Streak day count at time of the event (populated for daily_checkin). */
   streakDays?: number;
+  /** True when the streak was broken and reset to Day 1 (populated for daily_checkin). */
+  isReset?: boolean;
+  /** Tomorrow's XP breakdown (populated for daily_checkin). */
+  tomorrowXp?: TomorrowXp | null;
 }
 
 interface XpContextValue {
