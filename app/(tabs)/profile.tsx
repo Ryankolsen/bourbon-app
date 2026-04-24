@@ -25,6 +25,7 @@ import { useToast } from "@/lib/toast-provider";
 import { BeltBadge } from "@/components/BeltBadge";
 import { XpProgressBar } from "@/components/XpProgressBar";
 import { StreakCard } from "@/components/StreakCard";
+import { DojoGuideModal } from "@/components/DojoGuideModal";
 import { getTomorrowXp } from "@/lib/streak-utils";
 
 const THEME_OPTIONS: { label: string; value: ThemeMode }[] = [
@@ -46,6 +47,7 @@ export default function ProfileScreen() {
   const xp = useUserXp(user?.id);
 
   const [editing, setEditing] = useState(false);
+  const [dojoGuideVisible, setDojoGuideVisible] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
 
@@ -136,9 +138,19 @@ export default function ProfileScreen() {
 
         {/* Bourbon Dojo */}
         <View className="bg-brand-800 rounded-2xl p-4 mb-4">
-          <Text className="text-brand-400 text-xs uppercase tracking-widest mb-3">
-            Bourbon Dojo
-          </Text>
+          <View className="flex-row items-center justify-between mb-3">
+            <Text className="text-brand-400 text-xs uppercase tracking-widest">
+              Bourbon Dojo
+            </Text>
+            <TouchableOpacity
+              testID="dojo-guide-trigger"
+              onPress={() => setDojoGuideVisible(true)}
+              accessibilityLabel="Bourbon Dojo Guide"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text className="text-brand-400 text-base">ⓘ</Text>
+            </TouchableOpacity>
+          </View>
           {xp.isLoading ? (
             <ActivityIndicator color={colors.spinnerAmber} />
           ) : (
@@ -296,6 +308,12 @@ export default function ProfileScreen() {
           <Text className="text-red-300 font-semibold">Sign Out</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <DojoGuideModal
+        visible={dojoGuideVisible}
+        totalXp={xp.totalXp}
+        onClose={() => setDojoGuideVisible(false)}
+      />
     </KeyboardAvoidingView>
   );
 }
