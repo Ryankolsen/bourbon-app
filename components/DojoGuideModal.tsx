@@ -21,7 +21,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { BELTS, getBeltForXp } from "@/lib/belt-config";
+import { BELTS, getBeltForXp, XP_AWARD_AMOUNTS, STREAK_MILESTONE_BONUSES } from "@/lib/belt-config";
 import { useTheme } from "@/lib/theme-provider";
 
 export interface DojoGuideModalProps {
@@ -109,7 +109,7 @@ export function DojoGuideModal({ totalXp, visible, onClose }: DojoGuideModalProp
             c={c}
           />
         ) : (
-          <HowToEarnStub c={c} />
+          <HowToEarnTab c={c} />
         )}
       </View>
     </Modal>
@@ -219,15 +219,86 @@ function BeltsTab({ totalXp, currentBeltLevel, scrollRef, c }: BeltsTabProps) {
   );
 }
 
-// ── How to Earn stub ──────────────────────────────────────────────────────────
+// ── How to Earn tab ───────────────────────────────────────────────────────────
 
-function HowToEarnStub({ c }: { c: Record<string, string> }) {
+interface EarnCategory {
+  title: string;
+  actions: { label: string; xp: number | null; note?: string }[];
+}
+
+const EARN_CATEGORIES: EarnCategory[] = [
+  {
+    title: "Tasting",
+    actions: [
+      { label: "Log a tasting", xp: XP_AWARD_AMOUNTS.tasting_logged },
+      { label: "First tasting of this bourbon", xp: XP_AWARD_AMOUNTS.first_tasting_bonus },
+      { label: "Add to collection", xp: XP_AWARD_AMOUNTS.collection_add },
+      { label: "Add to wishlist", xp: XP_AWARD_AMOUNTS.wishlist_add },
+    ],
+  },
+  {
+    title: "Social",
+    actions: [
+      { label: "Follow someone", xp: XP_AWARD_AMOUNTS.follow_sent },
+      { label: "Gain a follower", xp: XP_AWARD_AMOUNTS.follower_gained },
+      { label: "Post a comment", xp: XP_AWARD_AMOUNTS.comment_posted },
+      { label: "Receive a comment", xp: XP_AWARD_AMOUNTS.comment_received },
+      { label: "Tasting liked", xp: XP_AWARD_AMOUNTS.like_received },
+    ],
+  },
+  {
+    title: "Community",
+    actions: [
+      { label: "Create a group", xp: XP_AWARD_AMOUNTS.group_create },
+      { label: "Join a group", xp: XP_AWARD_AMOUNTS.group_join },
+      { label: "Share to group", xp: XP_AWARD_AMOUNTS.group_share },
+    ],
+  },
+  {
+    title: "Streaks",
+    actions: [
+      {
+        label: "Daily check-in (streak day N)",
+        xp: null,
+        note: "Earn N XP on streak day N — the longer your streak, the more you earn each day.",
+      },
+      { label: "7-day streak milestone", xp: STREAK_MILESTONE_BONUSES[7] },
+      { label: "30-day streak milestone", xp: STREAK_MILESTONE_BONUSES[30] },
+    ],
+  },
+];
+
+function HowToEarnTab({ c }: { c: Record<string, string> }) {
   return (
-    <View style={styles.stubContainer}>
-      <Text style={[styles.stubText, { color: c.brand400 }]}>
-        Coming soon
-      </Text>
-    </View>
+    <ScrollView style={styles.scrollView} contentContainerStyle={styles.earnList}>
+      {EARN_CATEGORIES.map((category) => (
+        <View
+          key={category.title}
+          testID={`earn-category-${category.title.toLowerCase()}`}
+          style={styles.earnCategory}
+        >
+          <Text style={[styles.earnCategoryHeader, { color: c.brand100 }]}>
+            {category.title}
+          </Text>
+          {category.actions.map((action) => (
+            <View key={action.label} style={styles.earnRow}>
+              <Text style={[styles.earnLabel, { color: c.brand100 }]}>
+                {action.label}
+              </Text>
+              {action.xp !== null ? (
+                <Text style={[styles.earnXp, { color: c.brand400 }]}>
+                  +{action.xp} XP
+                </Text>
+              ) : (
+                <Text style={[styles.earnNote, { color: c.brand400 }]}>
+                  {action.note}
+                </Text>
+              )}
+            </View>
+          ))}
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
@@ -330,12 +401,39 @@ const styles = StyleSheet.create({
     height: 20,
     marginLeft: 42, // aligns with center of iconCircle (20 padding + 22 radius)
   },
-  stubContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+  earnList: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 24,
   },
-  stubText: {
-    fontSize: 16,
+  earnCategory: {
+    gap: 8,
+  },
+  earnCategoryHeader: {
+    fontSize: 13,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  earnRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  earnLabel: {
+    fontSize: 14,
+    flex: 1,
+  },
+  earnXp: {
+    fontSize: 14,
+    fontWeight: "600",
+    flexShrink: 0,
+  },
+  earnNote: {
+    fontSize: 13,
+    flex: 1,
+    flexShrink: 1,
   },
 });

@@ -113,4 +113,63 @@ describe("DojoGuideModal", () => {
     // Switch tabs — should not throw
     fireEvent.press(getByText("How to Earn"));
   });
+
+  // ── How to Earn tab tests ────────────────────────────────────────────────────
+
+  // 7 — Core wiring: category headers "Tasting" and "Social" appear on the tab
+  it("shows Tasting and Social category headers on the How to Earn tab", () => {
+    const { getByText } = render(
+      <DojoGuideModal visible totalXp={0} onClose={jest.fn()} />
+    );
+
+    fireEvent.press(getByText("How to Earn"));
+
+    expect(getByText("Tasting")).toBeTruthy();
+    expect(getByText("Social")).toBeTruthy();
+  });
+
+  // 8 — Content details: XP values are sourced from XP_AWARD_AMOUNTS
+  it("shows correct action labels and XP values from XP_AWARD_AMOUNTS", () => {
+    const { getByText } = render(
+      <DojoGuideModal visible totalXp={0} onClose={jest.fn()} />
+    );
+
+    fireEvent.press(getByText("How to Earn"));
+
+    expect(getByText("Log a tasting")).toBeTruthy();
+    expect(getByText("+25 XP")).toBeTruthy();
+
+    expect(getByText("Create a group")).toBeTruthy();
+    expect(getByText("+50 XP")).toBeTruthy();
+  });
+
+  // 9 — Streak formula: day-N explanation text is present
+  it("explains the streak day-N formula on the How to Earn tab", () => {
+    const { getByText, getAllByText } = render(
+      <DojoGuideModal visible totalXp={0} onClose={jest.fn()} />
+    );
+
+    fireEvent.press(getByText("How to Earn"));
+
+    // Both the action label and the explanatory note reference "streak day"
+    const matches = getAllByText(/streak day/i);
+    expect(matches.length).toBeGreaterThanOrEqual(1);
+  });
+
+  // 10 — Streak milestones: 7-day (+20 XP) and 30-day (+75 XP) bonuses listed
+  it("shows 7-day and 30-day streak milestone bonuses from STREAK_MILESTONE_BONUSES", () => {
+    const { getByText, getByTestId } = render(
+      <DojoGuideModal visible totalXp={0} onClose={jest.fn()} />
+    );
+
+    fireEvent.press(getByText("How to Earn"));
+
+    const streaksSection = getByTestId("earn-category-streaks");
+
+    expect(within(streaksSection).getByText(/7-day streak/i)).toBeTruthy();
+    expect(within(streaksSection).getByText("+20 XP")).toBeTruthy();
+
+    expect(within(streaksSection).getByText(/30-day streak/i)).toBeTruthy();
+    expect(within(streaksSection).getByText("+75 XP")).toBeTruthy();
+  });
 });
