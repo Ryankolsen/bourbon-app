@@ -79,10 +79,10 @@ export default function TabsLayout() {
   const { activeTheme } = useTheme();
   const adminUser = !!(user?.email && isAdmin(user.email));
 
-  // Fire the daily check-in RPC once per app session. The RPC is idempotent —
-  // same-day calls are no-ops. XP awarded flows through Supabase Realtime →
-  // XpContext → XpToast automatically.
-  useCheckIn();
+  // Fire the daily check-in RPC once per confirmed userId per session.
+  // Gated on userId so it never fires with a null auth state.
+  // The RPC is idempotent — same-day calls are no-ops.
+  useCheckIn(user?.id);
   const c = activeTheme.colors;
 
   return (
