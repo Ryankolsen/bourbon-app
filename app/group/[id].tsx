@@ -29,6 +29,8 @@ import { useToast } from "@/lib/toast-provider";
 import { useTheme } from "@/lib/theme-provider";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { StarRating } from "@/components/StarRating";
+import { SaleAlertCard } from "@/components/SaleAlertCard";
+import { useGroupSaleAlerts } from "@/hooks/use-sale-alerts";
 
 type Tab = "feed" | "recommendations" | "members";
 
@@ -124,6 +126,7 @@ export default function GroupDetailScreen() {
   const { data: members, isLoading: membersLoading } = useGroupMembers(id);
   const { data: recommendations = [] } = useGroupRecommendations(id);
   const { data: feedItems = [], isLoading: feedLoading } = useGroupFeed(id);
+  const { data: saleAlerts = [] } = useGroupSaleAlerts(id);
   const inviteToGroup = useInviteToGroup();
   const leaveGroup = useLeaveGroup();
   const updateGroup = useUpdateGroup();
@@ -348,6 +351,22 @@ export default function GroupDetailScreen() {
       {/* Tab content */}
       {activeTab === "feed" && (
         <>
+          {/* Sale Alerts — pinned above feed, hidden when empty */}
+          {saleAlerts.length > 0 && (
+            <View testID="sale-alerts-section">
+              <Text className="text-brand-400 text-xs font-semibold uppercase tracking-widest px-4 mb-2">
+                Sale Alerts
+              </Text>
+              {saleAlerts.map((alert) => (
+                <SaleAlertCard
+                  key={alert.id}
+                  alert={alert}
+                  currentUserId={user?.id}
+                />
+              ))}
+            </View>
+          )}
+
           {feedLoading ? (
             <View className="flex-1 items-center justify-center">
               <ActivityIndicator color={colors.spinnerDefault} size="large" />

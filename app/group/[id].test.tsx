@@ -115,6 +115,15 @@ jest.mock('@/components/ShareToGroupSheet', () => ({
   ShareToGroupSheet: () => null,
 }));
 
+jest.mock('@/hooks/use-sale-alerts', () => ({
+  useGroupSaleAlerts: () => ({ data: [], isLoading: false }),
+  useRemoveSaleAlert: () => ({ mutate: jest.fn(), isPending: false }),
+}));
+
+jest.mock('@/components/SaleAlertCard', () => ({
+  SaleAlertCard: () => null,
+}));
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('GroupDetailScreen — Remove Member (owner flow)', () => {
