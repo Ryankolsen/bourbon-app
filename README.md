@@ -27,187 +27,266 @@ bourbon-app/
 │       ├── explore.tsx          # Browse & search bourbons
 │       ├── tastings.tsx         # Tasting log
 │       └── profile.tsx          # User profile + sign out
-├── hooks/
-│   ├── use-auth.ts              # Session state
-│   ├── use-bourbons.ts          # TanStack Query: bourbon list
-│   └── use-collection.ts        # TanStack Query: user collection
-├── lib/
-│   ├── supabase.ts              # Supabase client (SecureStore)
-│   └── query-client.ts          # TanStack Query client config
+├── hooks/                       # TanStack Query hooks
+├── lib/                         # Pure business logic + Supabase client
 ├── types/
 │   └── database.ts              # Typed Supabase schema
 └── supabase/
-    └── migrations/
-        └── 20240101000000_initial_schema.sql
+    └── migrations/              # All schema migrations
 ```
+
+---
+
+## Environment Variables
+
+Create a `.env.local` file in the project root:
+
+```env
+# Local Supabase (Android emulator uses 10.0.2.2 to reach the host machine)
+EXPO_PUBLIC_SUPABASE_URL=http://10.0.2.2:54321
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon key from `npx supabase status`>
+
+# Production Supabase
+EXPO_PUBLIC_SUPABASE_URL_PROD=https://dmudeosnwcizorotxlrs.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY_PROD=<prod anon key>
+
+# Admin email(s) — comma-separated
+EXPO_PUBLIC_ADMIN_EMAILS=your-email@example.com
+
+# Google Places API — used for store autocomplete in Sale Alerts
+# Get from console.cloud.google.com → Bourbon Tracker project → Credentials
+EXPO_PUBLIC_GOOGLE_PLACES_API_KEY=AIza...
+
+# DB target toggle — see section below
+EXPO_PUBLIC_FORCE_PROD_DB=false
+```
+
+### EXPO_PUBLIC_FORCE_PROD_DB
+
+Controls which Supabase instance the app connects to:
+
+| Value | Behavior |
+|-------|----------|
+| `false` (default) | Emulator/simulator → local Supabase. Physical device → prod Supabase (via `Device.isDevice`). |
+| `true` | Always prod Supabase, regardless of device type. |
+
+**Set to `true` when:**
+- Testing on a physical device via USB so it gets prod data
+- Testing features that require real internet (e.g. Google Places autocomplete in Sale Alerts)
+
+**Set to `false` when:**
+- Running on the Android emulator or iOS simulator against local Supabase
+
+Restart Metro after changing this flag.
+
+---
 
 ## Local Setup
 
 ### 1. Install dependencies
 
 ```bash
-npm install --legacy-peer-deps
+pnpm install
 ```
 
-> `--legacy-peer-deps` is required due to a peer dependency conflict between expo-router and react-dom that doesn't affect runtime.
+### 2. Start local Supabase
 
-### 2. Configure environment
-
-Create a `.env.local` file in the project root:
-
-```env
-EXPO_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
-```
-
-Get these values from your Supabase project: **Settings → API Keys**.
-Use the **Publishable key** (not the Secret key).
-
-### 3. Set up the database
-
-Install the Supabase CLI and link the project:
-
-```bash
-brew install supabase/tap/supabase
-supabase login
-supabase link --project-ref your-project-ref
-```
-
-Apply migrations to the remote database:
-
-```bash
-supabase db push
-```
-
-### 4. Run the app
-
-> **Note:** The app uses `expo-apple-authentication`, a native module that requires a custom dev build. **Expo Go is not supported.**
-
-See the [Local Development on macOS → Start the app](#4-start-the-app) section below for full iOS and Android instructions.
-
-## Database Schema
-
-| Table | Description |
-|-------|-------------|
-| `profiles` | User profiles, auto-created on signup via trigger |
-| `bourbons` | Master list of bourbon bottles |
-| `user_collection` | Bottles a user owns (sealed / open / empty) |
-| `user_wishlist` | Bottles a user wants to acquire |
-| `tastings` | Tasting notes and ratings (0–100 scale) |
-
-All tables have Row Level Security enabled. Users can only access their own collection, wishlist, and tasting rows.
-
-## Adding a New Migration
-
-```bash
-supabase migration new your_migration_name
-# edit the generated file in supabase/migrations/
-supabase db push
-```
-
-## Local Development on macOS
-
-### Prerequisites
-
-Install [OrbStack](https://orbstack.dev/) as your container runtime (faster and lighter than Docker Desktop). Make sure it is running before proceeding.
-
-### 1. Start local Supabase
+Requires [OrbStack](https://orbstack.dev/) or Docker Desktop running.
 
 ```bash
 npx supabase start
+npx supabase db reset      # applies all migrations + seeds test personas
 ```
 
-This pulls and starts all Supabase containers (Postgres, Auth, Storage, Studio). The first run takes a few minutes while images download.
-
-### 2. Apply migrations and seed data
+### 3. Link to prod (one-time)
 
 ```bash
-npx supabase db reset
+supabase login
+supabase link --project-ref dmudeosnwcizorotxlrs
 ```
 
-Run this on first setup and any time the schema changes. It applies all migrations and seeds the 10 test personas.
+---
 
-### 3. Configure environment variables
+## Running the App
 
-Update `.env.local` to point at your local stack. Get the publishable key from the `supabase start` output (or run `npx supabase status`):
+> **Expo Go is not supported** — the app uses native modules (`expo-apple-authentication`, `expo-secure-store`) that require a custom build.
 
-**iOS simulator** (`127.0.0.1` works because the simulator shares the host network):
-```env
-EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-EXPO_PUBLIC_SUPABASE_ANON_KEY=<Publishable key from supabase start output>
-```
-
-**Android emulator** (`127.0.0.1` is the emulator's own loopback — use `10.0.2.2` to reach the host):
-```env
-EXPO_PUBLIC_SUPABASE_URL=http://10.0.2.2:54321
-EXPO_PUBLIC_SUPABASE_ANON_KEY=<Publishable key from supabase start output>
-```
-
-### 4. Start the app
-
-> **Note:** Expo Go is not supported — the app requires a custom native build due to `expo-apple-authentication`.
-
-#### iOS Simulator
-
-`npx expo run:ios` is broken under Xcode 26 (devicectl detection bug). Use the manual steps below.
-
-**Step 1 — Find your simulator UDID and boot it**
-
-```bash
-xcrun simctl list devices available | grep -i iphone
-# Pick a UDID from the output, e.g. iPhone 17 Pro
-xcrun simctl boot <UDID>
-```
-
-**Step 2 — Install native pods** (required on first setup and after any `npm install` that adds native modules)
-
-```bash
-cd ios && pod install && cd ..
-```
-
-**Step 3 — Build the native app** (re-run only when native code or pods change; JS-only changes hot-reload via Metro)
-
-```bash
-xcodebuild -workspace ios/bourbonapp.xcworkspace -scheme bourbonapp -configuration Debug -destination "platform=iOS Simulator,id=<UDID>" build 2>&1 | grep -E "error:|BUILD SUCCEEDED|BUILD FAILED"
-```
-
-**Step 4 — Install and launch**
-
-```bash
-APP=$(find ~/Library/Developer/Xcode/DerivedData -name "bourbonapp.app" -path "*iphonesimulator*" | head -1)
-xcrun simctl install booted "$APP"
-xcrun simctl launch booted com.ryankolsen.bourbonvault
-```
-
-**Step 5 — Start Metro** (handles all JS changes without a rebuild)
-
-```bash
-npx expo start --port 8081
-```
-
-On subsequent runs (no native changes), only steps 4 and 5 are needed.
-
-#### Android emulator
-
-Ensure an emulator is booted in Android Studio first, then:
+### Android Emulator
 
 ```bash
 npx expo run:android
 ```
 
-Metro starts automatically.
+Builds, installs, and starts Metro. Connects to local Supabase by default (`EXPO_PUBLIC_FORCE_PROD_DB=false`).
 
-### Supabase Studio
+### Android — Physical Device (USB)
+
+Use this when you want to test on a real phone (e.g. to test Google Places autocomplete or prod data).
+
+1. Enable **Developer Options** on your phone (Settings → About phone → tap Build Number 7 times)
+2. Enable **USB debugging** in Developer Options
+3. Connect via USB and tap **Allow** on the "Allow USB debugging?" prompt
+4. **Uninstall any production BourbonVault build** from your phone first (debug and release APKs have different signing certificates and can't coexist)
+5. Set `EXPO_PUBLIC_FORCE_PROD_DB=true` in `.env.local`
+
+```bash
+npx expo run:android --device
+```
+
+After the dev build is installed once, you can scan the Metro QR code wirelessly on the same WiFi network without plugging in again — until native code changes require a rebuild.
+
+### iOS Simulator
+
+`npx expo run:ios` is broken under Xcode 26 (devicectl detection bug). Use the manual steps:
+
+```bash
+# 1. Find and boot a simulator
+xcrun simctl list devices available | grep -i iphone
+xcrun simctl boot <UDID>
+
+# 2. Install pods (first time + after any npm install that adds native modules)
+cd ios && pod install && cd ..
+
+# 3. Build the native app
+xcodebuild -workspace ios/bourbonapp.xcworkspace \
+  -scheme bourbonapp \
+  -configuration Debug \
+  -destination "platform=iOS Simulator,id=<UDID>" \
+  build 2>&1 | grep -E "error:|BUILD SUCCEEDED|BUILD FAILED"
+
+# 4. Install and launch
+APP=$(find ~/Library/Developer/Xcode/DerivedData -name "bourbonapp.app" -path "*iphonesimulator*" | head -1)
+xcrun simctl install booted "$APP"
+xcrun simctl launch booted com.ryankolsen.bourbonvault
+
+# 5. Start Metro
+npx expo start --port 8081
+```
+
+On subsequent runs with no native changes, only steps 4 and 5 are needed.
+
+---
+
+## EAS Builds (Cloud)
+
+EAS Build compiles the native shell in the cloud. Use it when native dependencies change or you need a distributable build.
+
+### Build profiles
+
+| Profile | Command | Output | Use for |
+|---------|---------|--------|---------|
+| `development` | `eas build --profile development --platform android` | Internal APK | Dev client install |
+| `preview` | `eas build --profile preview --platform android` | Downloadable APK | QA testing without USB |
+| `production` | `eas build --profile production --platform android` | AAB | Google Play Store |
+| `production` | `eas build --profile production --platform ios` | IPA | App Store |
+
+### Install a preview build on your phone (avoids USB for future testing)
+
+Build a preview APK once and install it. After that, scanning the Metro QR code delivers the latest JS without another build:
+
+```bash
+eas build --profile preview --platform android
+# Download the APK from expo.dev and install it on your phone
+```
+
+---
+
+## OTA Updates (EAS Update)
+
+Push JS-only changes to installed builds without using build credits. The native shell stays the same; only the JS bundle is updated.
+
+```bash
+# Android only
+eas update --branch production --message "your message" --platform android
+
+# Both platforms
+eas update --branch production --message "your message" --platform all
+```
+
+`EXPO_PUBLIC_*` env vars from `.env.local` are baked into the bundle at update time — the Places API key and `FORCE_PROD_DB` flag are included automatically.
+
+> OTA updates only reach installed production/preview builds. Dev builds running via Metro are not affected.
+
+---
+
+## Store Deployment
+
+### Android → Google Play Store
+
+```bash
+# 1. Build the AAB
+eas build --profile production --platform android
+
+# 2. Submit
+eas submit --platform android
+```
+
+Or download the AAB from expo.dev and upload manually in Google Play Console.
+
+### iOS → App Store
+
+```bash
+# 1. Build the IPA
+eas build --profile production --platform ios
+
+# 2. Submit
+eas submit --platform ios
+```
+
+Requires Apple credentials and an App Store Connect app record for `com.ryankolsen.bourbonvault`.
+
+---
+
+## Database
+
+### Apply migrations to prod
+
+```bash
+npx supabase db push --linked
+```
+
+### Add a new migration
+
+```bash
+npx supabase migration new your_migration_name
+# edit supabase/migrations/<timestamp>_your_migration_name.sql
+npx supabase db push --linked
+```
+
+### Schema
+
+| Table | Description |
+|-------|-------------|
+| `profiles` | User profiles, auto-created on signup via trigger |
+| `bourbons` | Master bourbon catalog (~1,860 bottles) |
+| `user_collection` | Bottles a user owns |
+| `user_wishlist` | Bottles a user wants |
+| `tastings` | Tasting notes and ratings (0–100 scale) |
+| `groups` | Bourbon groups |
+| `group_members` | Group membership (owner / member, pending / accepted) |
+| `group_sale_alerts` | Sale alerts posted to a group (soft-deleted via `removed_at`) |
+| `user_push_tokens` | Push notification tokens per device |
+
+All tables have Row Level Security enabled.
+
+### Supabase Studio (local)
 
 Browse your local database at **http://127.0.0.1:54323** while `supabase start` is running.
 
-### Test personas
+### Production reset (pre-launch only)
 
-`supabase db reset` seeds 11 users for development — a local admin account and 10 named test personas. All share the same password:
+```bash
+npx supabase db reset --linked --no-seed
+npx supabase db query --linked --file supabase/seeds/catalog.sql
+```
 
-```
-BourbonDev2024!
-```
+> Never run `supabase db reset` without `--linked` — that targets your local database.
+
+---
+
+## Test Personas
+
+`supabase db reset` seeds 11 users. All share password `BourbonDev2024!`.
 
 | Name | Email | Group | Role |
 |------|-------|-------|------|
@@ -223,55 +302,15 @@ BourbonDev2024!
 | Jonah Rivera | jonah.rivera@bourbonvault.dev | _(solo)_ | — |
 | Sadie Okafor | sadie.okafor@bourbonvault.dev | _(solo)_ | — |
 
-The **dev login screen** (visible only in `__DEV__` builds) lists all users — tap any row to sign in instantly. Google OAuth is disabled locally; use the email list instead.
+The **dev login screen** (`__DEV__` only) lists all users — tap any row to sign in instantly. The **dev user switcher** (floating button, `__DEV__` only) lets you switch personas without returning to the login screen.
 
-The **dev user switcher** (floating button, `__DEV__` only) lets you switch personas without returning to the login screen. It is guarded inside the component itself so it renders nothing in production builds even if accidentally left in the layout.
-
-### Local environment variables
-
-For local Supabase development, use these values in `.env.local`:
-
-```env
-EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon key from `npx supabase status`>
-EXPO_PUBLIC_ADMIN_EMAILS=your-real-email@example.com
-```
-
-## Production Database
-
-The production project is `dmudeosnwcizorotxlrs`.
-
-### Apply schema migrations
-
-```bash
-npx supabase db push --linked
-```
-
-### Seed the bourbon catalog (no test users)
-
-The seed file at `supabase/seeds/catalog.sql` contains only the 1,860 bourbon rows — no fake accounts or dev passwords. Run it against prod after a fresh reset:
-
-```bash
-npx supabase db query --linked --file supabase/seeds/catalog.sql
-```
-
-### Full prod reset (pre-launch only)
-
-Wipes all data and re-applies migrations from scratch. Only use before launch when no real users exist.
-
-```bash
-npx supabase db reset --linked --no-seed
-npx supabase db query --linked --file supabase/seeds/catalog.sql
-```
-
-> **Never run `supabase db reset` (without `--linked`) against prod** — that targets your local database. Never run `seed.sql` against prod — it contains fake test accounts with a shared dev password.
+---
 
 ## Auth Setup (Supabase Dashboard)
 
-In your Supabase project go to **Authentication → Providers** and enable:
+Go to **Authentication → Providers** and enable:
+
 - **Google** — requires a Google Cloud OAuth client ID + secret
-- **Apple** — set **Client ID** to `com.ryankolsen.bourbonvault` and **Secret Key** to the JWT generated from the Apple private key (Team ID: `T6DGD6WGY`, Key ID: `6AB877VMLT`). The JWT expires every 6 months and must be regenerated.
+- **Apple** — set **Client ID** to `com.ryankolsen.bourbonvault` and **Secret Key** to the JWT from the Apple private key (Team ID: `T6DGD6WGY`, Key ID: `6AB877VMLT`). The JWT expires every 6 months and must be regenerated.
 
-Sign In with Apple uses the native iOS sheet (`expo-apple-authentication` + `signInWithIdToken`) — not a web OAuth redirect. No Services ID or redirect URL is required.
-
-Google OAuth is intentionally disabled in local dev builds. The login screen shows a greyed-out button when not on a real device — use the email list instead.
+Sign In with Apple uses the native iOS sheet — not a web OAuth redirect. No Services ID or redirect URL required. Google OAuth is disabled in local dev builds.
