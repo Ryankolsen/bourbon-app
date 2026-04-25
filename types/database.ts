@@ -582,6 +582,98 @@ export interface Database {
           },
         ];
       };
+      group_sale_alerts: {
+        Row: {
+          id: string;
+          group_id: string;
+          bourbon_id: string;
+          posted_by: string;
+          price: string;
+          place_id: string;
+          place_name: string;
+          place_address: string;
+          note: string | null;
+          created_at: string;
+          removed_at: string | null;
+          removed_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          group_id: string;
+          bourbon_id: string;
+          posted_by: string;
+          price: string;
+          place_id: string;
+          place_name: string;
+          place_address: string;
+          note?: string | null;
+          created_at?: string;
+          removed_at?: string | null;
+          removed_by?: string | null;
+        };
+        Update: {
+          removed_at?: string | null;
+          removed_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "group_sale_alerts_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_sale_alerts_bourbon_id_fkey";
+            columns: ["bourbon_id"];
+            isOneToOne: false;
+            referencedRelation: "bourbons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_sale_alerts_posted_by_fkey";
+            columns: ["posted_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_sale_alerts_removed_by_fkey";
+            columns: ["removed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      user_push_tokens: {
+        Row: {
+          user_id: string;
+          token: string;
+          platform: 'ios' | 'android';
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          token: string;
+          platform: 'ios' | 'android';
+          updated_at?: string;
+        };
+        Update: {
+          token?: string;
+          platform?: 'ios' | 'android';
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_push_tokens_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       bourbon_rating_stats: {
