@@ -56,11 +56,14 @@ function localUrl(base: string) {
   return base;
 }
 
-const url = Device.isDevice
+const useProd =
+  Device.isDevice || process.env.EXPO_PUBLIC_FORCE_PROD_DB === "true";
+
+const url = useProd
   ? process.env.EXPO_PUBLIC_SUPABASE_URL_PROD!
   : localUrl(process.env.EXPO_PUBLIC_SUPABASE_URL!);
 
-const anonKey = Device.isDevice
+const anonKey = useProd
   ? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY_PROD!
   : process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
