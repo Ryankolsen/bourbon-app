@@ -30,6 +30,7 @@ import { useTheme } from "@/lib/theme-provider";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { StarRating } from "@/components/StarRating";
 import { SaleAlertCard } from "@/components/SaleAlertCard";
+import { SaleAlertForm } from "@/components/SaleAlertForm";
 import { useGroupSaleAlerts } from "@/hooks/use-sale-alerts";
 
 type Tab = "feed" | "recommendations" | "members";
@@ -143,6 +144,7 @@ export default function GroupDetailScreen() {
   // Confirmation modal state
   const [confirmRemoveMember, setConfirmRemoveMember] = useState<{ userId: string; name: string } | null>(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showSaleAlertForm, setShowSaleAlertForm] = useState(false);
 
   const { data: searchResults, isFetching: profileFetching } =
     useSearchProfiles(lookupQuery);
@@ -351,12 +353,23 @@ export default function GroupDetailScreen() {
       {/* Tab content */}
       {activeTab === "feed" && (
         <>
-          {/* Sale Alerts — pinned above feed, hidden when empty */}
-          {saleAlerts.length > 0 && (
+          {/* Sale Alerts — pinned above feed; header always visible to accepted members */}
+          {(saleAlerts.length > 0 || currentMember?.status === "accepted") && (
             <View testID="sale-alerts-section">
-              <Text className="text-brand-400 text-xs font-semibold uppercase tracking-widest px-4 mb-2">
-                Sale Alerts
-              </Text>
+              <View className="flex-row items-center px-4 mb-2">
+                <Text className="text-brand-400 text-xs font-semibold uppercase tracking-widest flex-1">
+                  Sale Alerts
+                </Text>
+                {currentMember?.status === "accepted" && user?.id && (
+                  <TouchableOpacity
+                    onPress={() => setShowSaleAlertForm(true)}
+                    className="bg-amber-700/30 rounded-lg px-3 py-1"
+                    testID="add-sale-alert-button"
+                  >
+                    <Text className="text-amber-500 text-xs font-semibold">+ Add</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
               {saleAlerts.map((alert) => (
                 <SaleAlertCard
                   key={alert.id}
@@ -784,6 +797,16 @@ export default function GroupDetailScreen() {
         onConfirm={confirmLeaveAction}
         onCancel={() => setShowLeaveConfirm(false)}
       />
+
+      {/* Sale Alert form modal */}
+      {user?.id && (
+        <SaleAlertForm
+          groupId={id ?? ""}
+          userId={user.id}
+          visible={showSaleAlertForm}
+          onClose={() => setShowSaleAlertForm(false)}
+        />
+      )}
     </View>
   );
 }

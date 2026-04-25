@@ -124,6 +124,10 @@ jest.mock('@/components/SaleAlertCard', () => ({
   SaleAlertCard: () => null,
 }));
 
+jest.mock('@/components/SaleAlertForm', () => ({
+  SaleAlertForm: () => null,
+}));
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('GroupDetailScreen — Remove Member (owner flow)', () => {

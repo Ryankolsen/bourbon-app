@@ -15,15 +15,21 @@ jest.mock("@/lib/theme-provider", () => ({
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function localDateIso(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 function todayIso(): string {
-  const d = new Date();
-  return d.toISOString().slice(0, 10);
+  return localDateIso(new Date());
 }
 
 function yesterdayIso(): string {
   const d = new Date();
   d.setDate(d.getDate() - 1);
-  return d.toISOString().slice(0, 10);
+  return localDateIso(d);
 }
 
 const baseTomorrowXp = { base: 5, bonusXp: 0, milestoneLabel: null };
