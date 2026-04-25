@@ -36,7 +36,8 @@
       "expo-router",
       "expo-secure-store",
       "expo-web-browser",
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      "./plugins/withAdiRegistration"
     ],
     "extra": {
       "router": {},
