@@ -237,6 +237,14 @@ Requires Apple credentials and an App Store Connect app record for `com.ryankols
 
 ---
 
+## Legal
+
+| Document | URL |
+|----------|-----|
+| Privacy Policy | https://ryankolsen.github.io/bourbonvault-privacy/ |
+
+---
+
 ## Database
 
 ### Apply migrations to prod
