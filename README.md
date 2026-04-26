@@ -180,6 +180,14 @@ EAS Build compiles the native shell in the cloud. Use it when native dependencie
 | `production` | `eas build --profile production --platform android` | AAB | Google Play Store |
 | `production` | `eas build --profile production --platform ios` | IPA | App Store |
 
+### iOS builds — Apple account locked error
+
+If EAS throws `Apple Service Error -20209` (account locked), **always answer No** when asked "Do you want to log in to your Apple account?" — use the App Store Connect API key instead.
+
+The API key is configured in EAS credentials (Key ID: `CJF35VD4VU`, Issuer ID: `83f2cf71-005e-4e5f-bdf5-8f355ddeaf01`). The `.p8` file is at `~/Downloads/AuthKey_CJF35VD4VU.p8` — keep it safe, it can only be downloaded once.
+
+To unlock the Apple Developer Portal account if needed: call 1-800-275-2273 or chat at developer.apple.com/contact.
+
 ### Install a preview build on your phone (avoids USB for future testing)
 
 Build a preview APK once and install it. After that, scanning the Metro QR code delivers the latest JS without another build:
