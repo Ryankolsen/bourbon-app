@@ -7,6 +7,8 @@ import {
   TextInput,
   Modal,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -323,68 +325,79 @@ export default function GroupsScreen() {
         animationType="slide"
         onRequestClose={() => setModalVisible(false)}
       >
-        <View className="flex-1 justify-end bg-black/60">
-          <View className="bg-brand-900 rounded-t-3xl px-6 pt-6 pb-10">
-            <Text className="text-brand-100 text-xl font-bold mb-5">
-              Create Group
-            </Text>
-
-            <Text className="text-brand-300 text-sm mb-1">Name *</Text>
-            <TextInput
-              value={groupName}
-              onChangeText={setGroupName}
-              placeholder="e.g. Friday Night Pours"
-              placeholderTextColor={colors.placeholderGroup}
-              className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-4"
-              maxLength={100}
-            />
-
-            <Text className="text-brand-300 text-sm mb-1">
-              Description (optional)
-            </Text>
-            <TextInput
-              value={groupDescription}
-              onChangeText={setGroupDescription}
-              placeholder="A short description of your group"
-              placeholderTextColor={colors.placeholderGroup}
-              className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-6"
-              multiline
-              numberOfLines={3}
-              maxLength={500}
-            />
-
-            <TouchableOpacity
-              onPress={handleCreate}
-              disabled={!groupName.trim() || createGroup.isPending}
-              className={`rounded-2xl py-4 items-center ${
-                groupName.trim() ? "bg-brand-600" : "bg-brand-800"
-              }`}
+        <KeyboardAvoidingView
+          testID="create-group-kav"
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <View className="flex-1 justify-end bg-black/60">
+            <ScrollView
+              testID="create-group-scroll"
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40 }}
+              className="bg-brand-900 rounded-t-3xl"
             >
-              {createGroup.isPending ? (
-                <ActivityIndicator size="small" color={colors.white} />
-              ) : (
-                <Text
-                  className={`font-bold text-base ${
-                    groupName.trim() ? "text-white" : "text-brand-600"
-                  }`}
-                >
-                  Create Group
-                </Text>
-              )}
-            </TouchableOpacity>
+              <Text className="text-brand-100 text-xl font-bold mb-5">
+                Create Group
+              </Text>
 
-            <TouchableOpacity
-              onPress={() => {
-                setModalVisible(false);
-                setGroupName("");
-                setGroupDescription("");
-              }}
-              className="mt-3 py-3 items-center"
-            >
-              <Text className="text-brand-400 text-base">Cancel</Text>
-            </TouchableOpacity>
+              <Text className="text-brand-300 text-sm mb-1">Name *</Text>
+              <TextInput
+                value={groupName}
+                onChangeText={setGroupName}
+                placeholder="e.g. Friday Night Pours"
+                placeholderTextColor={colors.placeholderGroup}
+                className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-4"
+                maxLength={100}
+              />
+
+              <Text className="text-brand-300 text-sm mb-1">
+                Description (optional)
+              </Text>
+              <TextInput
+                value={groupDescription}
+                onChangeText={setGroupDescription}
+                placeholder="A short description of your group"
+                placeholderTextColor={colors.placeholderGroup}
+                className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-6"
+                multiline
+                numberOfLines={3}
+                maxLength={500}
+              />
+
+              <TouchableOpacity
+                onPress={handleCreate}
+                disabled={!groupName.trim() || createGroup.isPending}
+                className={`rounded-2xl py-4 items-center ${
+                  groupName.trim() ? "bg-brand-600" : "bg-brand-800"
+                }`}
+              >
+                {createGroup.isPending ? (
+                  <ActivityIndicator size="small" color={colors.white} />
+                ) : (
+                  <Text
+                    className={`font-bold text-base ${
+                      groupName.trim() ? "text-white" : "text-brand-600"
+                    }`}
+                  >
+                    Create Group
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setModalVisible(false);
+                  setGroupName("");
+                  setGroupDescription("");
+                }}
+                className="mt-3 py-3 items-center"
+              >
+                <Text className="text-brand-400 text-base">Cancel</Text>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );

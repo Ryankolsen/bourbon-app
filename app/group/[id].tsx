@@ -9,6 +9,8 @@ import {
   FlatList,
   Image,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -703,77 +705,88 @@ export default function GroupDetailScreen() {
         animationType="slide"
         onRequestClose={() => setEditModalVisible(false)}
       >
-        <View className="flex-1 justify-end bg-black/60">
-          <View className="bg-gray-950 rounded-t-2xl px-4 pt-4 pb-8">
-            <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-white font-bold text-base">Edit Group</Text>
-              <TouchableOpacity
-                onPress={() => setEditModalVisible(false)}
-                className="p-1"
-                accessibilityLabel="Close edit modal"
-              >
-                <Text className="text-gray-400 text-xl leading-none">✕</Text>
-              </TouchableOpacity>
-            </View>
+        <KeyboardAvoidingView
+          testID="edit-group-kav"
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <View className="flex-1 justify-end bg-black/60">
+            <ScrollView
+              testID="edit-group-scroll"
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+              className="bg-gray-950 rounded-t-2xl"
+            >
+              <View className="flex-row items-center justify-between mb-4 pt-4">
+                <Text className="text-white font-bold text-base">Edit Group</Text>
+                <TouchableOpacity
+                  onPress={() => setEditModalVisible(false)}
+                  className="p-1"
+                  accessibilityLabel="Close edit modal"
+                >
+                  <Text className="text-gray-400 text-xl leading-none">✕</Text>
+                </TouchableOpacity>
+              </View>
 
-            <Text className="text-brand-300 text-sm font-semibold mb-1">
-              Group Name *
-            </Text>
-            <TextInput
-              value={editName}
-              onChangeText={setEditName}
-              placeholder="Group name"
-              placeholderTextColor={colors.placeholderGroup}
-              maxLength={100}
-              className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-4"
-            />
+              <Text className="text-brand-300 text-sm font-semibold mb-1">
+                Group Name *
+              </Text>
+              <TextInput
+                value={editName}
+                onChangeText={setEditName}
+                placeholder="Group name"
+                placeholderTextColor={colors.placeholderGroup}
+                maxLength={100}
+                className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-4"
+              />
 
-            <Text className="text-brand-300 text-sm font-semibold mb-1">
-              Description
-            </Text>
-            <TextInput
-              value={editDescription}
-              onChangeText={setEditDescription}
-              placeholder="Optional description"
-              placeholderTextColor={colors.placeholderGroup}
-              maxLength={500}
-              multiline
-              numberOfLines={3}
-              className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-6"
-              style={{ textAlignVertical: "top" }}
-            />
+              <Text className="text-brand-300 text-sm font-semibold mb-1">
+                Description
+              </Text>
+              <TextInput
+                value={editDescription}
+                onChangeText={setEditDescription}
+                placeholder="Optional description"
+                placeholderTextColor={colors.placeholderGroup}
+                maxLength={500}
+                multiline
+                numberOfLines={3}
+                className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-6"
+                style={{ textAlignVertical: "top" }}
+              />
 
-            <View className="flex-row gap-3">
-              <TouchableOpacity
-                onPress={() => setEditModalVisible(false)}
-                className="flex-1 border border-brand-700 rounded-xl py-3 items-center"
-              >
-                <Text className="text-brand-300 font-semibold text-sm">Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleSaveEdit}
-                disabled={!editName.trim() || updateGroup.isPending}
-                className={`flex-1 rounded-xl py-3 items-center ${
-                  editName.trim() && !updateGroup.isPending
-                    ? "bg-brand-600"
-                    : "bg-brand-800"
-                }`}
-              >
-                {updateGroup.isPending ? (
-                  <ActivityIndicator size="small" color={colors.white} />
-                ) : (
-                  <Text
-                    className={`font-semibold text-sm ${
-                      editName.trim() ? "text-white" : "text-brand-600"
-                    }`}
-                  >
-                    Save
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
+              <View className="flex-row gap-3">
+                <TouchableOpacity
+                  onPress={() => setEditModalVisible(false)}
+                  className="flex-1 border border-brand-700 rounded-xl py-3 items-center"
+                >
+                  <Text className="text-brand-300 font-semibold text-sm">Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleSaveEdit}
+                  disabled={!editName.trim() || updateGroup.isPending}
+                  className={`flex-1 rounded-xl py-3 items-center ${
+                    editName.trim() && !updateGroup.isPending
+                      ? "bg-brand-600"
+                      : "bg-brand-800"
+                  }`}
+                >
+                  {updateGroup.isPending ? (
+                    <ActivityIndicator size="small" color={colors.white} />
+                  ) : (
+                    <Text
+                      className={`font-semibold text-sm ${
+                        editName.trim() ? "text-white" : "text-brand-600"
+                      }`}
+                    >
+                      Save
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Remove Member confirmation */}

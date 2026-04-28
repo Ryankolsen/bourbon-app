@@ -130,6 +130,42 @@ jest.mock('@/components/SaleAlertForm', () => ({
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
+describe('GroupDetailScreen — Edit Group modal keyboard avoidance', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCurrentUserId = mockOwnerUserId;
+    mockProfileSearchResults = [];
+  });
+
+  it('renders KeyboardAvoidingView with testID when edit modal opens', () => {
+    render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByLabelText('Edit group'));
+    expect(screen.getByTestId('edit-group-kav')).toBeTruthy();
+  });
+
+  it('renders ScrollView with keyboardShouldPersistTaps=handled when edit modal opens', () => {
+    render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByLabelText('Edit group'));
+    const scroll = screen.getByTestId('edit-group-scroll');
+    expect(scroll).toBeTruthy();
+    expect(scroll.props.keyboardShouldPersistTaps).toBe('handled');
+  });
+
+  it('renders Group Name and Description inputs inside the open modal', () => {
+    render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByLabelText('Edit group'));
+    expect(screen.getByPlaceholderText('Group name')).toBeTruthy();
+    expect(screen.getByPlaceholderText('Optional description')).toBeTruthy();
+  });
+
+  it('renders Cancel and Save buttons inside the open modal', () => {
+    render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByLabelText('Edit group'));
+    expect(screen.getByText('Cancel')).toBeTruthy();
+    expect(screen.getByText('Save')).toBeTruthy();
+  });
+});
+
 describe('GroupDetailScreen — Remove Member (owner flow)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
