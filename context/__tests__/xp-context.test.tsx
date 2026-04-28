@@ -97,23 +97,23 @@ describe("XpContext", () => {
 
     act(() => {
       capturedCallback?.({
-        new: { xp_awarded: 25, event_type: "tasting_logged" },
+        new: { xp_awarded: 25, event_type: "tasting_complete" },
       });
     });
 
     await waitFor(() => {
       expect(getByTestId("xp-awarded").props.children).toBe(25);
-      expect(getByTestId("event-type").props.children).toBe("tasting_logged");
+      expect(getByTestId("event-type").props.children).toBe("tasting_complete");
     });
   });
 
   // 2 — content details: eventType maps to human-readable label
-  it("maps tasting_logged event_type to 'Tasting logged' label", async () => {
+  it("maps tasting_complete event_type to 'Tasting logged' label", async () => {
     const { getByTestId } = renderWithProvider();
 
     act(() => {
       capturedCallback?.({
-        new: { xp_awarded: 25, event_type: "tasting_logged" },
+        new: { xp_awarded: 25, event_type: "tasting_complete" },
       });
     });
 
@@ -127,8 +127,8 @@ describe("XpContext", () => {
     const { getByTestId } = renderWithProvider();
 
     act(() => {
-      capturedCallback?.({ new: { xp_awarded: 10, event_type: "collection_add" } });
-      capturedCallback?.({ new: { xp_awarded: 5, event_type: "wishlist_add" } });
+      capturedCallback?.({ new: { xp_awarded: 10, event_type: "bourbon_added_to_collection" } });
+      capturedCallback?.({ new: { xp_awarded: 5, event_type: "bourbon_added_to_wishlist" } });
     });
 
     // First notification shown
@@ -141,7 +141,7 @@ describe("XpContext", () => {
 
     await waitFor(() => {
       expect(getByTestId("xp-awarded").props.children).toBe(5);
-      expect(getByTestId("event-type").props.children).toBe("wishlist_add");
+      expect(getByTestId("event-type").props.children).toBe("bourbon_added_to_wishlist");
     });
   });
 
