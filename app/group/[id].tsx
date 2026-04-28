@@ -366,7 +366,7 @@ export default function GroupDetailScreen() {
                     className="bg-amber-700/30 rounded-lg px-3 py-1"
                     testID="add-sale-alert-button"
                   >
-                    <Text className="text-amber-500 text-xs font-semibold">+ Add</Text>
+                    <Text style={{ color: activeTheme.colors.saleAlertAddText }} className="text-xs font-semibold">+ Add</Text>
                   </TouchableOpacity>
                 )}
               </View>

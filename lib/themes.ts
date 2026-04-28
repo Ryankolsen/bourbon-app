@@ -68,6 +68,13 @@ export type ThemeColors = {
   /** Text color for user avatar circles (on bg-brand-600 backgrounds) */
   avatarText: string;
 
+  /** Sale alert card — Directions button text */
+  saleAlertDirectionsText: string;
+  /** Sale alert card — +Add button text */
+  saleAlertAddText: string;
+  /** Sale alert card — Remove button text */
+  saleAlertRemoveText: string;
+
   white: string;
   black: string;
 };
@@ -125,6 +132,9 @@ const charcoal: Theme = {
     pickerBg:     "#0a0a0a",
     pickerBorder: "#0369a1",
     avatarText: "#e0f2fe",
+    saleAlertDirectionsText: "#bae6fd",
+    saleAlertAddText: "#f59e0b",
+    saleAlertRemoveText: "#f87171",
     white: "#ffffff",
     black: "#000000",
   },
@@ -173,6 +183,9 @@ const highContrast: Theme = {
     pickerBg:     "#000000",
     pickerBorder: "#1a1a1a",
     avatarText: "#fffd80",
+    saleAlertDirectionsText: "#000000",
+    saleAlertAddText: "#ffd700",
+    saleAlertRemoveText: "#ff6666",
     white: "#ffffff",
     black: "#000000",
   },
@@ -227,12 +240,15 @@ const navyFlax: Theme = {
     // Light — needs to be near-white on brand-700 #6a84aa (medium steel blue)
     placeholderGroup:  "#dce8f8",
     placeholderSearch: "#3a5070",
-    // Dark navy — readable on brand-700 #6a84aa medium-blue bg (3.8:1 contrast)
-    surfaceText: "#0a1624",
+    // White — readable on brand-700 #6a84aa medium-blue bg (3.5:1 contrast)
+    surfaceText: "#ffffff",
     pickerBg:     "#eae6de",
     pickerBorder: "#d0cac0",
     // White text on brand-600 #1e4080 (dark navy): ~8:1 contrast ✓
     avatarText: "#ffffff",
+    saleAlertDirectionsText: "#ffffff",
+    saleAlertAddText: "#000000",
+    saleAlertRemoveText: "#ffffff",
     white: "#ffffff",
     black: "#000000",
   },

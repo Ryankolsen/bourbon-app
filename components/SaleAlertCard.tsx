@@ -122,7 +122,7 @@ export function SaleAlertCard({ alert, currentUserId }: SaleAlertCardProps) {
           accessibilityLabel="Get directions"
           testID="sale-alert-directions"
         >
-          <Text style={{ color: activeTheme.colors.surfaceText }} className="text-xs font-semibold">
+          <Text style={{ color: activeTheme.colors.saleAlertDirectionsText }} className="text-xs font-semibold">
             Directions
           </Text>
         </TouchableOpacity>
@@ -138,7 +138,7 @@ export function SaleAlertCard({ alert, currentUserId }: SaleAlertCardProps) {
             accessibilityLabel="Remove sale alert"
             testID="sale-alert-remove"
           >
-            <Text className="text-red-400 text-xs font-semibold">Remove</Text>
+            <Text style={{ color: activeTheme.colors.saleAlertRemoveText }} className="text-xs font-semibold">Remove</Text>
           </TouchableOpacity>
         ) : null}
       </View>

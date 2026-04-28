@@ -54,6 +54,11 @@ export const colors = {
   // Avatar circles (text on bg-brand-600) — mirrors Charcoal
   avatarText: "#e0f2fe",
 
+  // Sale alert card button text — mirrors Charcoal values
+  saleAlertDirectionsText: "#bae6fd",
+  saleAlertAddText:        "#f59e0b",
+  saleAlertRemoveText:     "#f87171",
+
   // Basics
   white: "#ffffff",
   black: "#000000",
