@@ -1,8 +1,12 @@
-# BourbonVault — Store Deployment Plan
+# BourbonDojo — Store Deployment Plan
 
+**App name:** BourbonDojo (bourbon + martial arts dojo theme — matches belt/XP progression in app)  
 **App version:** 1.0.0  
 **Bundle ID:** `com.ryankolsen.bourbonvault`  
 **EAS project:** `3e15eee4-f1d6-49f2-8e6d-3f8ebc6223f4`
+
+> **Name must match across both stores.** Whatever name is approved on iOS, use the exact same name on Google Play.  
+> "Bourbon Vault" is already taken on the App Store. Top candidate: **BourbonDojo**.
 
 ---
 
@@ -10,9 +14,9 @@
 
 | Platform | Status |
 |----------|--------|
-| iOS (App Store Connect) | App record exists, v1.0 in "Prepare for Submission" — needs screenshots + metadata |
-| Android (Google Play) | **Account closed** Mar 20, 2024 — cannot reactivate, must create new account |
-| Expo EAS | Development build expired, no production builds yet |
+| iOS (App Store Connect) | App record exists, v1.0 in "Prepare for Submission" — needs name, screenshots + metadata |
+| Android (Google Play) | New account created (RKO Design, rkolsen.design@gmail.com) — app not yet created |
+| Expo EAS | No production builds yet |
 
 ---
 
@@ -97,23 +101,24 @@ Prepare these before submitting:
 
 | Field | Value |
 |-------|-------|
-| Name | BourbonVault |
-| Subtitle | Track your bourbon collection |
+| Name | BourbonDojo (confirm availability first — try in App Store Connect name field) |
+| Subtitle | Rank up your bourbon game |
 | Category | Food & Drink |
 | Description | (see below) |
-| Keywords | bourbon, whiskey, collection, tasting, tracker |
+| Keywords | bourbon, whiskey, dojo, collection, tasting, tracker, spirits, ranking |
 | Support URL | (your site or GitHub) |
-| Privacy Policy URL | Required — must exist |
+| Privacy Policy URL | https://ryankolsen.github.io/bourbonvault-privacy/ |
 
 **Suggested description:**
 ```
-BourbonVault is your personal bourbon companion. Track every bottle in your collection, log tasting notes with a 100-point scale, and build a wishlist of bottles you're hunting. Join groups with fellow bourbon lovers to share sale alerts and discoveries.
+BourbonDojo is your personal bourbon training ground. Build your collection, sharpen your palate with tasting notes, and climb the belt ranks as your bourbon knowledge grows.
 
 Features:
+• Belt progression — earn ranks as you taste and collect
 • Collection tracker — catalog every bottle you own
-• Tasting log — rate and review with detailed notes
-• Wishlist — keep a running list of bottles to acquire
-• Groups — connect with friends and share sale alerts
+• Tasting log — rate and review with a 100-point scale
+• Wishlist — track bottles you're hunting
+• Groups — connect with fellow enthusiasts and share sale alerts
 • Fast, offline-capable with automatic sync
 ```
 
