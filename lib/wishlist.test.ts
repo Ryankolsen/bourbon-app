@@ -16,9 +16,9 @@ describe('buildAddToWishlistPayload', () => {
   });
 
   // slice 2: default field values
-  it('defaults priority to 0 and notes to null when no options provided', () => {
+  it('defaults priority to 5 and notes to null when no options provided', () => {
     const payload = buildAddToWishlistPayload(userId, bourbonId);
-    expect(payload.priority).toBe(0);
+    expect(payload.priority).toBe(5);
     expect(payload.notes).toBeNull();
   });
 

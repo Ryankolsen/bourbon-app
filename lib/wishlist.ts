@@ -24,7 +24,7 @@ export function buildAddToWishlistPayload(
   return {
     user_id: userId,
     bourbon_id: bourbonId,
-    priority: opts.priority ?? 0,
+    priority: opts.priority ?? 5,
     notes: opts.notes ?? null,
   };
 }
