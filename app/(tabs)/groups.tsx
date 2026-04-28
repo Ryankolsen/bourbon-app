@@ -298,7 +298,7 @@ export default function GroupsScreen() {
                   </Text>
                   {item.role === "owner" && (
                     <View className="bg-brand-600 rounded-full px-2 py-0.5">
-                      <Text className="text-brand-100 text-xs">Owner</Text>
+                      <Text className="text-white text-xs">Owner</Text>
                     </View>
                   )}
                 </View>
