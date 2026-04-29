@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Platform, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, Platform, ActivityIndicator, ScrollView, TextInput, LayoutAnimation } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import * as WebBrowser from "expo-web-browser";
@@ -16,6 +16,34 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [emailExpanded, setEmailExpanded] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [emailSignInLoading, setEmailSignInLoading] = useState(false);
+  const [emailSignInError, setEmailSignInError] = useState<string | null>(null);
+
+  function toggleEmailExpanded() {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setEmailExpanded((v) => !v);
+    setEmailSignInError(null);
+  }
+
+  async function signInWithEmailPassword() {
+    try {
+      setEmailSignInLoading(true);
+      setEmailSignInError(null);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: emailInput.trim(),
+        password: passwordInput,
+      });
+      if (error) throw error;
+    } catch (e: any) {
+      setEmailSignInError(e.message ?? "Sign in failed");
+    } finally {
+      setEmailSignInLoading(false);
+    }
+  }
 
   async function signInWithEmail(email: string) {
     try {
@@ -149,6 +177,60 @@ export default function LoginScreen() {
               </Text>
             )}
           </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Email / password sign-in — always visible for Apple reviewers */}
+      <View className="w-full mt-6">
+        <View className="flex-row items-center gap-3 mb-3">
+          <View className="flex-1 h-px bg-brand-700" />
+          <Text className="text-brand-500 text-xs">or</Text>
+          <View className="flex-1 h-px bg-brand-700" />
+        </View>
+
+        <TouchableOpacity onPress={toggleEmailExpanded}>
+          <Text className="text-brand-400 text-sm text-center">
+            {emailExpanded ? "Hide email sign-in" : "Sign in with email"}
+          </Text>
+        </TouchableOpacity>
+
+        {emailExpanded && (
+          <View className="mt-4 gap-3">
+            <TextInput
+              className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-base"
+              placeholder="Email"
+              placeholderTextColor={colors.brand500}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              value={emailInput}
+              onChangeText={setEmailInput}
+            />
+            <TextInput
+              className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-base"
+              placeholder="Password"
+              placeholderTextColor={colors.brand500}
+              secureTextEntry
+              value={passwordInput}
+              onChangeText={setPasswordInput}
+            />
+
+            {emailSignInError && (
+              <Text className="text-red-400 text-xs text-center">{emailSignInError}</Text>
+            )}
+
+            <TouchableOpacity
+              onPress={signInWithEmailPassword}
+              disabled={emailSignInLoading}
+              className="bg-brand-700 rounded-xl py-4 items-center justify-center"
+            >
+              {emailSignInLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-brand-100 font-semibold text-base">Sign In</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 
