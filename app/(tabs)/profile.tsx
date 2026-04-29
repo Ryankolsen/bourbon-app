@@ -9,12 +9,14 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { useAuth } from "@/hooks/use-auth";
 import {
   useProfile,
   useUpdateProfile,
   useUploadAvatar,
+  useDeleteAccount,
 } from "@/hooks/use-profile";
 import { useFollowerCount, useFollowingCount } from "@/hooks/use-follows";
 import { useUserXp } from "@/hooks/use-user-xp";
@@ -40,6 +42,7 @@ export default function ProfileScreen() {
   const { data: profile, isLoading } = useProfile(user?.id);
   const updateProfile = useUpdateProfile();
   const uploadAvatar = useUploadAvatar();
+  const deleteAccount = useDeleteAccount();
   const { data: followerCount } = useFollowerCount(user?.id);
   const { data: followingCount } = useFollowingCount(user?.id);
   const { themeMode, setThemeMode } = useTheme();
@@ -76,6 +79,21 @@ export default function ProfileScreen() {
       const message = err instanceof Error ? err.message : "Failed to save profile";
       showToast(message, "error");
     }
+  }
+
+  function handleDeleteAccount() {
+    Alert.alert(
+      "Delete Account?",
+      "Your account and all data will be permanently deleted after a 30-day grace period. You can cancel by signing back in within 30 days.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete Account",
+          style: "destructive",
+          onPress: () => deleteAccount.mutate(),
+        },
+      ]
+    );
   }
 
   async function handleAvatarPress() {
@@ -303,10 +321,28 @@ export default function ProfileScreen() {
         {/* Sign Out */}
         <TouchableOpacity
           onPress={signOut}
-          className="bg-red-900/60 border border-red-800 rounded-2xl py-4 items-center"
+          className="bg-red-900/60 border border-red-800 rounded-2xl py-4 items-center mb-4"
         >
           <Text className="text-red-300 font-semibold">Sign Out</Text>
         </TouchableOpacity>
+
+        {/* Danger Zone */}
+        <View className="bg-brand-800 rounded-2xl p-5 mb-8">
+          <Text className="text-red-400 text-xs uppercase tracking-widest mb-3">
+            Danger Zone
+          </Text>
+          <TouchableOpacity
+            onPress={handleDeleteAccount}
+            disabled={deleteAccount.isPending}
+            className="bg-red-900/60 border border-red-800 rounded-xl py-3 items-center"
+          >
+            {deleteAccount.isPending ? (
+              <ActivityIndicator size="small" color={colors.white} />
+            ) : (
+              <Text className="text-red-300 font-semibold">Delete Account</Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       <DojoGuideModal

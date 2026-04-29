@@ -27,6 +27,7 @@ jest.mock("@/hooks/use-profile", () => ({
   }),
   useUpdateProfile: () => ({ mutateAsync: jest.fn(), isPending: false }),
   useUploadAvatar: () => ({ mutateAsync: jest.fn(), isPending: false }),
+  useDeleteAccount: () => ({ mutate: jest.fn(), isPending: false }),
 }));
 
 jest.mock("@/hooks/use-follows", () => ({
