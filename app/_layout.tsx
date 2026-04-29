@@ -12,6 +12,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { XpProvider } from "@/context/xp-context";
 import { XpToast } from "@/components/XpToast";
 import { BeltUpModal } from "@/components/BeltUpModal";
+import { PendingDeletionModal } from "@/components/PendingDeletionModal";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
@@ -46,6 +47,7 @@ export default function RootLayout() {
             </AuthGuard>
             <XpToast />
             <BeltUpModal />
+            <PendingDeletionModal />
           </XpProvider>
         </ToastProvider>
       </ThemeProvider>
