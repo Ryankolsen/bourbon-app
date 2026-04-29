@@ -126,34 +126,36 @@ export function CommentSheet({
       onRequestClose={onClose}
       testID="comment-sheet"
     >
-      <SafeAreaView className="flex-1 bg-brand-900">
-        {/* Header */}
-        <View className="flex-row items-center justify-between px-4 py-3 border-b border-brand-700">
-          <Text className="text-brand-100 font-bold text-base">Comments</Text>
-          <TouchableOpacity onPress={onClose} testID="comment-sheet-close">
-            <Text className="text-brand-400 text-base">✕</Text>
-          </TouchableOpacity>
-        </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        testID="comment-sheet-kav"
+      >
+        <SafeAreaView className="flex-1 bg-brand-900">
+          {/* Header */}
+          <View className="flex-row items-center justify-between px-4 py-3 border-b border-brand-700">
+            <Text className="text-brand-100 font-bold text-base">Comments</Text>
+            <TouchableOpacity onPress={onClose} testID="comment-sheet-close">
+              <Text className="text-brand-400 text-base">✕</Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* Comments list */}
-        <FlatList
-          data={allComments}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <CommentRow comment={item} />}
-          ListEmptyComponent={
-            <View className="flex-1 items-center justify-center py-16">
-              <Text className="text-brand-400 text-sm" testID="comment-empty-state">
-                No comments yet. Be the first!
-              </Text>
-            </View>
-          }
-          className="flex-1"
-        />
+          {/* Comments list */}
+          <FlatList
+            data={allComments}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <CommentRow comment={item} />}
+            ListEmptyComponent={
+              <View className="flex-1 items-center justify-center py-16">
+                <Text className="text-brand-400 text-sm" testID="comment-empty-state">
+                  No comments yet. Be the first!
+                </Text>
+              </View>
+            }
+            className="flex-1"
+          />
 
-        {/* Input bar */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+          {/* Input bar */}
           <View className="flex-row items-center px-4 py-3 border-t border-brand-700 gap-2">
             <TextInput
               className="flex-1 bg-brand-800 text-brand-100 rounded-xl px-3 py-2 text-sm"
@@ -174,8 +176,8 @@ export function CommentSheet({
               <Text className="text-brand-100 text-sm font-semibold">Send</Text>
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
