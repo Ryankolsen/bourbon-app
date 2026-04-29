@@ -65,6 +65,7 @@ export function profileFactory(overrides: Partial<Profile> = {}): Profile {
     is_admin: false,
     created_at: now(),
     updated_at: now(),
+    pending_deletion_at: null,
     ...overrides,
   };
 }

@@ -17,6 +17,7 @@ export interface Database {
           is_admin: boolean;
           created_at: string;
           updated_at: string;
+          pending_deletion_at: string | null;
         };
         Insert: {
           id: string;
@@ -26,6 +27,7 @@ export interface Database {
           is_admin?: boolean;
           created_at?: string;
           updated_at?: string;
+          pending_deletion_at?: string | null;
         };
         Update: {
           id?: string;
@@ -34,6 +36,7 @@ export interface Database {
           avatar_url?: string | null;
           is_admin?: boolean;
           updated_at?: string;
+          pending_deletion_at?: string | null;
         };
         Relationships: [];
       };

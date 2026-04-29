@@ -191,6 +191,55 @@ export function useProfileByUsername(username: string | undefined) {
   });
 }
 
+export function useDeleteAccount() {
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.functions.invoke("delete-account");
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      await supabase.auth.signOut();
+    },
+  });
+}
+
+export function usePendingDeletion(userId: string | undefined) {
+  const qc = useQueryClient();
+
+  const query = useQuery({
+    queryKey: ["profile-pending-deletion", userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("pending_deletion_at")
+        .eq("id", userId)
+        .single();
+      if (error) throw error;
+      return data?.pending_deletion_at ?? null;
+    },
+    enabled: !!userId,
+  });
+
+  const cancelDeletion = async () => {
+    if (!userId) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ pending_deletion_at: null })
+      .eq("id", userId);
+    if (error) throw error;
+    qc.invalidateQueries({ queryKey: ["profile-pending-deletion", userId] });
+  };
+
+  const raw = query.data ?? null;
+  return {
+    ...query,
+    isPendingDeletion: raw !== null,
+    pendingDeletionAt: raw ? new Date(raw) : null,
+    cancelDeletion,
+  };
+}
+
 /** Decode base64 string to Uint8Array for Supabase upload */
 function decode(base64: string): Uint8Array {
   const binaryString = atob(base64);
