@@ -192,12 +192,16 @@ export function useProfileByUsername(username: string | undefined) {
 }
 
 export function useDeleteAccount() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: async () => {
       const { error } = await supabase.functions.invoke("delete-account");
       if (error) throw error;
     },
     onSuccess: async () => {
+      // Bust the pending-deletion cache so the intercept modal appears
+      // immediately on next sign-in rather than waiting for a stale refetch.
+      await qc.invalidateQueries({ queryKey: ["profile-pending-deletion"] });
       await supabase.auth.signOut();
     },
   });
