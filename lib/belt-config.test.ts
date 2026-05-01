@@ -5,6 +5,7 @@ import {
   getBeltProgressPercent,
   XP_AWARD_AMOUNTS,
   STREAK_MILESTONE_BONUSES,
+  BELT_SHARE_COPY,
 } from './belt-config';
 
 // ---------------------------------------------------------------------------
@@ -125,6 +126,7 @@ const EXPECTED_EVENT_TYPES = [
   'like_received',
   'follow_sent',
   'follower_gained',
+  'achievement_shared',
 ] as const;
 
 describe('XP_AWARD_AMOUNTS', () => {
@@ -160,6 +162,36 @@ describe('STREAK_MILESTONE_BONUSES', () => {
 
   it('has 75 XP bonus for a 30-day streak', () => {
     expect(STREAK_MILESTONE_BONUSES[30]).toBe(75);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Slice 7: BELT_SHARE_COPY constant
+// ---------------------------------------------------------------------------
+
+describe('BELT_SHARE_COPY', () => {
+  it('has exactly 10 entries (one per belt level)', () => {
+    expect(Object.keys(BELT_SHARE_COPY).length).toBe(10);
+  });
+
+  it('XP_AWARD_AMOUNTS.achievement_shared equals 100', () => {
+    expect(XP_AWARD_AMOUNTS.achievement_shared).toBe(100);
+  });
+
+  it('Pappy (level 10) caption is non-empty and distinct from all others', () => {
+    const pappyCopy = BELT_SHARE_COPY[10];
+    expect(pappyCopy).toBeTruthy();
+    expect(pappyCopy.length).toBeGreaterThan(0);
+    for (let level = 1; level <= 9; level++) {
+      expect(BELT_SHARE_COPY[level]).not.toBe(pappyCopy);
+    }
+  });
+
+  it('every entry is a non-empty string', () => {
+    for (let level = 1; level <= 10; level++) {
+      expect(typeof BELT_SHARE_COPY[level]).toBe('string');
+      expect(BELT_SHARE_COPY[level].length).toBeGreaterThan(0);
+    }
   });
 });
 

@@ -179,6 +179,7 @@ export const XP_AWARD_AMOUNTS: Record<string, number> = {
   like_received: 5,
   follow_sent: 5,
   follower_gained: 10,
+  achievement_shared: 100,
 };
 
 /**
@@ -209,6 +210,33 @@ export const XP_EVENT_LABELS: Record<string, string> = {
   daily_checkin: 'Daily check-in',
   streak_milestone_7: '7-day streak',
   streak_milestone_30: '30-day streak',
+  achievement_shared: 'Achievement shared',
+};
+
+/**
+ * App store URLs for the BourbonVault app.
+ * Placeholders until the app is published — update before going live.
+ */
+export const APP_STORE_URLS = {
+  ios: 'https://apps.apple.com/app/bourbonvault/id0000000000',
+  android: 'https://play.google.com/store/apps/details?id=com.bourbonvault',
+} as const;
+
+/**
+ * Belt-specific share copy shown on the AchievementShareCard.
+ * One caption per belt level (1–10). Each caption is designed for social sharing.
+ */
+export const BELT_SHARE_COPY: Record<number, string> = {
+  1: "Just earning my stripes in the Bourbon Dojo 🥃 Every master starts as a White Dog. Join me on BourbonVault!",
+  2: "Leveled up to Corn Whiskey in the Bourbon Dojo 🌽 I've got the grain — now I'm learning the craft. Join me on BourbonVault!",
+  3: "First time in the barrel as a New Oak in the Bourbon Dojo 🪵 The journey begins. Join me on BourbonVault!",
+  4: "Bottled in Bond and loving it 🔖 Earned my Bonded belt in the Bourbon Dojo. Join me on BourbonVault!",
+  5: "Standing on my own as a Single Barrel in the Bourbon Dojo ⭐ A distinct voice is emerging. Join me on BourbonVault!",
+  6: "Refined, curated, and intentional — I've reached Small Batch in the Bourbon Dojo ✦ Join me on BourbonVault!",
+  7: "Full strength, Senpai 💪 Earned my Barrel Proof belt in the Bourbon Dojo. No water added. Join me on BourbonVault!",
+  8: "Rare and distinguished — I've reached the Wheated belt in the Bourbon Dojo ❋ Few reach this mash. Join me on BourbonVault!",
+  9: "The pinnacle of craft — Single Malt Senpai in the Bourbon Dojo ✺ Revered by all. Join me on BourbonVault!",
+  10: "LEGENDARY. The Sensei has arrived 👑 Earned Pappy status in the Bourbon Dojo. The ultimate bourbon achievement. Join me on BourbonVault!",
 };
 
 /** Returns the human-readable label for a given XP event type, or the raw type as fallback. */
