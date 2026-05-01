@@ -46,7 +46,7 @@ describe('useShareAchievement', () => {
 
   // 1 — core wiring: initial state before share() is called
   it('returns initial state: isSharing false, xpAwarded 0, alreadyClaimed false, error null', () => {
-    const { result } = renderHook(() => useShareAchievement(1));
+    const { result } = renderHook(() => useShareAchievement('1'));
 
     expect(result.current.isSharing).toBe(false);
     expect(result.current.xpAwarded).toBe(0);
@@ -72,7 +72,7 @@ describe('useShareAchievement', () => {
       callOrder.push('shareAsync');
     });
 
-    const { result } = renderHook(() => useShareAchievement(2));
+    const { result } = renderHook(() => useShareAchievement('2'));
 
     await act(async () => {
       await result.current.share();
@@ -81,13 +81,13 @@ describe('useShareAchievement', () => {
     expect(callOrder).toEqual(['captureRef', 'rpc', 'shareAsync']);
   });
 
-  // 3 — content details: rpc called with correct key (string of beltLevel)
-  it('calls rpc("award_achievement_share_xp", { key: "3" }) for beltLevel 3', async () => {
+  // 3 — content details: rpc called with correct key (the referenceKey string)
+  it('calls rpc("award_achievement_share_xp", { key: "3" }) for referenceKey "3"', async () => {
     mockCaptureRef.mockResolvedValue('file:///tmp/share.png');
     mockRpc.mockResolvedValue(rpcResponse(100, false));
     mockShareAsync.mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => useShareAchievement(3));
+    const { result } = renderHook(() => useShareAchievement('3'));
 
     await act(async () => {
       await result.current.share();
@@ -103,7 +103,7 @@ describe('useShareAchievement', () => {
     mockRpc.mockResolvedValue(rpcResponse(100, false));
     mockShareAsync.mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => useShareAchievement(5));
+    const { result } = renderHook(() => useShareAchievement('5'));
 
     await act(async () => {
       await result.current.share();
@@ -118,7 +118,7 @@ describe('useShareAchievement', () => {
     mockRpc.mockResolvedValue(rpcResponse(100, false));
     mockShareAsync.mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => useShareAchievement(1));
+    const { result } = renderHook(() => useShareAchievement('1'));
 
     await act(async () => {
       await result.current.share();
@@ -135,7 +135,7 @@ describe('useShareAchievement', () => {
     mockRpc.mockResolvedValue(rpcResponse(0, true));
     mockShareAsync.mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => useShareAchievement(1));
+    const { result } = renderHook(() => useShareAchievement('1'));
 
     await act(async () => {
       await result.current.share();
@@ -152,7 +152,7 @@ describe('useShareAchievement', () => {
     mockRpc.mockResolvedValue(rpcResponse(100, false));
     mockShareAsync.mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => useShareAchievement(1));
+    const { result } = renderHook(() => useShareAchievement('1'));
 
     // Start share — don't await yet
     let sharePromise: Promise<void>;
@@ -176,7 +176,7 @@ describe('useShareAchievement', () => {
   it('sets error and skips rpc/shareAsync when captureRef throws', async () => {
     mockCaptureRef.mockRejectedValue(new Error('capture failed'));
 
-    const { result } = renderHook(() => useShareAchievement(1));
+    const { result } = renderHook(() => useShareAchievement('1'));
 
     await act(async () => {
       await result.current.share();
@@ -194,7 +194,7 @@ describe('useShareAchievement', () => {
     mockCaptureRef.mockResolvedValue('file:///tmp/share.png');
     mockRpc.mockResolvedValue({ data: null, error: { message: 'db error', code: '500' } });
 
-    const { result } = renderHook(() => useShareAchievement(1));
+    const { result } = renderHook(() => useShareAchievement('1'));
 
     await act(async () => {
       await result.current.share();
@@ -211,7 +211,7 @@ describe('useShareAchievement', () => {
     mockRpc.mockResolvedValue(rpcResponse(100, false));
     mockShareAsync.mockRejectedValue(new Error('sharing cancelled'));
 
-    const { result } = renderHook(() => useShareAchievement(1));
+    const { result } = renderHook(() => useShareAchievement('1'));
 
     await act(async () => {
       await result.current.share();
@@ -230,7 +230,7 @@ describe('useShareAchievement', () => {
     mockRpc.mockResolvedValue(rpcResponse(100, false));
     mockShareAsync.mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => useShareAchievement(1));
+    const { result } = renderHook(() => useShareAchievement('1'));
 
     // Start first share (don't await)
     let sharePromise1: Promise<void>;

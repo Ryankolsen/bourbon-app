@@ -1,9 +1,11 @@
 import {
-  View,
+  Modal,
+  StyleSheet,
   Text,
+  TouchableOpacity,
+  View,
   ScrollView,
   TextInput,
-  TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -12,9 +14,12 @@ import { useState } from "react";
 import { useBourbon } from "@/hooks/use-bourbons";
 import { useLogTasting } from "@/hooks/use-tastings";
 import { useAuth } from "@/hooks/use-auth";
+import { useHasSharedAchievement } from "@/hooks/use-has-shared-achievement";
 import { buildTastingPayload } from "@/lib/tastings";
 import { colors } from "@/lib/colors";
 import { useToast } from "@/lib/toast-provider";
+import { AchievementShareSheet } from "@/components/AchievementShareSheet";
+import { BELTS } from "@/lib/belt-config";
 
 const RATING_STEPS = [1, 2, 3, 4, 5];
 const STAR_LABELS: Record<number, string> = {
@@ -25,6 +30,9 @@ const STAR_LABELS: Record<number, string> = {
   5: "Exceptional",
 };
 
+// White Dog belt used as the display config for the first-tasting share card.
+const FIRST_TASTING_BELT = BELTS[0];
+
 export default function NewTastingScreen() {
   const { bourbonId } = useLocalSearchParams<{ bourbonId: string }>();
   const router = useRouter();
@@ -33,12 +41,15 @@ export default function NewTastingScreen() {
   const { data: bourbon, isLoading } = useBourbon(bourbonId);
   const logTasting = useLogTasting();
   const { showToast } = useToast();
+  const { data: hasShared } = useHasSharedAchievement('first_tasting', user?.id);
 
   const [rating, setRating] = useState<number | null>(null);
   const [nose, setNose] = useState("");
   const [palate, setPalate] = useState("");
   const [finish, setFinish] = useState("");
   const [overallNotes, setOverallNotes] = useState("");
+  const [showSharePrompt, setShowSharePrompt] = useState(false);
+  const [showShareSheet, setShowShareSheet] = useState(false);
 
   function handleSubmit() {
     if (!user || !bourbonId) return;
@@ -46,7 +57,11 @@ export default function NewTastingScreen() {
       buildTastingPayload(user.id, bourbonId, { rating, nose, palate, finish, overallNotes }),
       {
         onSuccess: () => {
-          router.back();
+          if (hasShared) {
+            router.back();
+          } else {
+            setShowSharePrompt(true);
+          }
         },
         onError: (err) => {
           showToast("Failed to save tasting. Please try again.", "error");
@@ -54,6 +69,16 @@ export default function NewTastingScreen() {
         },
       }
     );
+  }
+
+  function handleSkip() {
+    setShowSharePrompt(false);
+    router.back();
+  }
+
+  function handleShareSheetClose() {
+    setShowShareSheet(false);
+    router.back();
   }
 
   if (isLoading) {
@@ -154,6 +179,50 @@ export default function NewTastingScreen() {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* First Tasting Share Prompt */}
+      <Modal
+        visible={showSharePrompt}
+        transparent
+        animationType="fade"
+        onRequestClose={handleSkip}
+        testID="first-tasting-share-prompt"
+      >
+        <View style={styles.backdrop}>
+          <View style={styles.card}>
+            <Text style={styles.headline}>Share Your First Tasting</Text>
+            <Text style={styles.body}>
+              You&apos;ve logged your first bourbon! Celebrate and invite friends
+              to join the Bourbon Dojo.
+            </Text>
+
+            <TouchableOpacity
+              style={styles.shareButton}
+              onPress={() => setShowShareSheet(true)}
+              testID="first-tasting-share-cta"
+              activeOpacity={0.85}
+            >
+              <Text style={styles.shareButtonText}>Share</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.skipButton}
+              onPress={handleSkip}
+              testID="first-tasting-skip"
+              activeOpacity={0.75}
+            >
+              <Text style={styles.skipText}>Skip</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <AchievementShareSheet
+          visible={showShareSheet}
+          belt={FIRST_TASTING_BELT}
+          referenceKey="first_tasting"
+          onClose={handleShareSheetClose}
+        />
+      </Modal>
     </View>
   );
 }
@@ -190,3 +259,57 @@ function NoteField({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.72)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 32,
+    alignItems: "center",
+    width: "100%",
+    maxWidth: 360,
+    gap: 16,
+  },
+  headline: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#111827",
+    textAlign: "center",
+  },
+  body: {
+    fontSize: 15,
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  shareButton: {
+    marginTop: 8,
+    backgroundColor: "#374151",
+    paddingHorizontal: 40,
+    paddingVertical: 14,
+    borderRadius: 999,
+    width: "100%",
+    alignItems: "center",
+  },
+  shareButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#FFFFFF",
+  },
+  skipButton: {
+    paddingVertical: 8,
+  },
+  skipText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#6B7280",
+    textDecorationLine: "underline",
+  },
+});

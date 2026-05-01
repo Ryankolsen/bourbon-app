@@ -29,6 +29,8 @@ export interface AchievementShareSheetProps {
   visible: boolean;
   belt: BeltConfig;
   onClose: () => void;
+  /** When provided, overrides String(belt.level) as the XP reference key. */
+  referenceKey?: string;
 }
 
 const PLATFORMS: { key: string; label: string; emoji: string }[] = [
@@ -42,8 +44,10 @@ export function AchievementShareSheet({
   visible,
   belt,
   onClose,
+  referenceKey,
 }: AchievementShareSheetProps) {
-  const { cardRef, share, isSharing } = useShareAchievement(belt.level);
+  const key = referenceKey ?? String(belt.level);
+  const { cardRef, share, isSharing } = useShareAchievement(key);
 
   const cardPlatform: 'ios' | 'android' =
     Platform.OS === 'ios' ? 'ios' : 'android';

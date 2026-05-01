@@ -30,7 +30,7 @@ export interface ShareAchievementResult {
   error: Error | null;
 }
 
-export function useShareAchievement(beltLevel: number): ShareAchievementResult {
+export function useShareAchievement(referenceKey: string): ShareAchievementResult {
   const cardRef = useRef<View>(null);
   const [isSharing, setIsSharing] = useState(false);
   const [xpAwarded, setXpAwarded] = useState(0);
@@ -47,10 +47,10 @@ export function useShareAchievement(beltLevel: number): ShareAchievementResult {
       // Step 1: capture the card as a PNG
       const uri = await captureRef(cardRef, { format: 'png', quality: 1 });
 
-      // Step 2: award XP via idempotent RPC (once per belt level)
+      // Step 2: award XP via idempotent RPC (once per reference key)
       const { data, error: rpcError } = await supabase.rpc(
         'award_achievement_share_xp',
-        { key: String(beltLevel) },
+        { key: referenceKey },
       );
 
       if (rpcError) {
@@ -70,7 +70,7 @@ export function useShareAchievement(beltLevel: number): ShareAchievementResult {
     } finally {
       setIsSharing(false);
     }
-  }, [beltLevel, isSharing]);
+  }, [referenceKey, isSharing]);
 
   return { cardRef, share, isSharing, xpAwarded, alreadyClaimed, error };
 }

@@ -677,6 +677,30 @@ export interface Database {
           },
         ];
       };
+      xp_events: {
+        Row: {
+          id: string;
+          user_id: string;
+          event_type: Database["public"]["Enums"]["xp_event_type"];
+          xp_awarded: number;
+          reference_id: string | null;
+          reference_key: string | null;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          event_type: Database["public"]["Enums"]["xp_event_type"];
+          xp_awarded: number;
+          reference_id?: string | null;
+          reference_key?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          xp_awarded?: number;
+          reference_key?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       bourbon_rating_stats: {
