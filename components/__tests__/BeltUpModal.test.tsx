@@ -9,6 +9,28 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 
+// ── Mock AchievementShareSheet ────────────────────────────────────────────────
+
+jest.mock("../AchievementShareSheet", () => ({
+  AchievementShareSheet: ({
+    visible,
+    onClose,
+  }: {
+    visible: boolean;
+    onClose: () => void;
+  }) => {
+    const { View, TouchableOpacity, Text } = require("react-native");
+    if (!visible) return null;
+    return (
+      <View testID="mock-achievement-share-sheet">
+        <TouchableOpacity testID="mock-share-sheet-close" onPress={onClose}>
+          <Text>Close</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  },
+}));
+
 // ── Mock XpContext ────────────────────────────────────────────────────────────
 
 const mockAdvance = jest.fn();
@@ -138,6 +160,36 @@ describe("BeltUpModal", () => {
     mockCurrent = makePromotion(6, "promo-b");
     rerender(<BeltUpModal />);
 
+    expect(getByTestId("belt-up-modal")).toBeTruthy();
+  });
+
+  // 4a — share button: rendered in modal when promotion is active
+  it("renders the Share Your Achievement button", () => {
+    mockCurrent = makePromotion(5);
+    const { getByTestId } = render(<BeltUpModal />);
+    expect(getByTestId("belt-up-share")).toBeTruthy();
+  });
+
+  // 4b — share button: tapping opens AchievementShareSheet
+  it("opens AchievementShareSheet when share button is tapped", () => {
+    mockCurrent = makePromotion(5);
+    const { getByTestId } = render(<BeltUpModal />);
+
+    fireEvent.press(getByTestId("belt-up-share"));
+
+    expect(getByTestId("mock-achievement-share-sheet")).toBeTruthy();
+  });
+
+  // 4c — share sheet: closing the sheet dismisses it but keeps BeltUpModal open
+  it("closes AchievementShareSheet without dismissing BeltUpModal", () => {
+    mockCurrent = makePromotion(5);
+    const { getByTestId, queryByTestId } = render(<BeltUpModal />);
+
+    fireEvent.press(getByTestId("belt-up-share"));
+    expect(getByTestId("mock-achievement-share-sheet")).toBeTruthy();
+
+    fireEvent.press(getByTestId("mock-share-sheet-close"));
+    expect(queryByTestId("mock-achievement-share-sheet")).toBeNull();
     expect(getByTestId("belt-up-modal")).toBeTruthy();
   });
 });

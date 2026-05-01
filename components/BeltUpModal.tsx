@@ -22,11 +22,13 @@ import {
 import { useXpNotification, XpNotification } from "@/context/xp-context";
 import { BeltBadge } from "@/components/BeltBadge";
 import { getBeltConfig, getBeltPromotionCopy } from "@/lib/belt-config";
+import { AchievementShareSheet } from "@/components/AchievementShareSheet";
 
 export function BeltUpModal() {
   const { current } = useXpNotification();
   const [visible, setVisible] = useState(false);
   const [promotion, setPromotion] = useState<XpNotification | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
   // Track the last promotion ID we've shown so we don't re-show on re-renders
   const lastShownIdRef = useRef<string | null>(null);
 
@@ -42,7 +44,10 @@ export function BeltUpModal() {
     }
   }, [current?.id, current?.promoted]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const dismiss = () => setVisible(false);
+  const dismiss = () => {
+    setShareOpen(false);
+    setVisible(false);
+  };
 
   if (!visible || !promotion) return null;
 
@@ -90,10 +95,25 @@ export function BeltUpModal() {
                   Let&apos;s go!
                 </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.shareButton}
+                onPress={() => setShareOpen(true)}
+                testID="belt-up-share"
+                activeOpacity={0.75}
+              >
+                <Text style={styles.shareText}>Share Your Achievement</Text>
+              </TouchableOpacity>
             </View>
           </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
+
+      <AchievementShareSheet
+        visible={shareOpen}
+        belt={belt}
+        onClose={() => setShareOpen(false)}
+      />
     </Modal>
   );
 }
@@ -143,5 +163,14 @@ const styles = StyleSheet.create({
   ctaText: {
     fontSize: 16,
     fontWeight: "700",
+  },
+  shareButton: {
+    paddingVertical: 8,
+  },
+  shareText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#6B7280",
+    textDecorationLine: "underline",
   },
 });
