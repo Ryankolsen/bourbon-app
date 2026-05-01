@@ -20,7 +20,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BeltConfig } from '@/lib/belt-config';
+import { APP_STORE_URLS, BELT_SHARE_COPY, BeltConfig } from '@/lib/belt-config';
 import { useShareAchievement } from '@/hooks/use-share-achievement';
 import { AchievementShareCard } from '@/components/AchievementShareCard';
 import { colors } from '@/lib/colors';
@@ -47,7 +47,13 @@ export function AchievementShareSheet({
   referenceKey,
 }: AchievementShareSheetProps) {
   const key = referenceKey ?? String(belt.level);
-  const { cardRef, share, isSharing } = useShareAchievement(key);
+
+  // Build the Bluesky caption: belt copy + platform-appropriate store URL
+  const storeURL = APP_STORE_URLS[Platform.OS === 'ios' ? 'ios' : 'android'];
+  const beltCopy = BELT_SHARE_COPY[belt.level];
+  const shareText = beltCopy ? `${beltCopy} ${storeURL}` : undefined;
+
+  const { cardRef, share, isSharing } = useShareAchievement(key, shareText);
 
   const cardPlatform: 'ios' | 'android' =
     Platform.OS === 'ios' ? 'ios' : 'android';
@@ -86,14 +92,14 @@ export function AchievementShareSheet({
 
         {/* Platform buttons */}
         <View style={styles.buttonList}>
-          {PLATFORMS.map(({ key, label, emoji }) => (
+          {PLATFORMS.map(({ key: platformKey, label, emoji }) => (
             <TouchableOpacity
-              key={key}
+              key={platformKey}
               style={[styles.platformButton, isSharing && styles.platformButtonDisabled]}
-              onPress={share}
+              onPress={() => share(platformKey)}
               disabled={isSharing}
               accessibilityState={{ disabled: isSharing }}
-              testID={`share-platform-${key}`}
+              testID={`share-platform-${platformKey}`}
             >
               <Text style={styles.platformEmoji}>{emoji}</Text>
               <Text style={[styles.platformLabel, isSharing && styles.platformLabelDisabled]}>

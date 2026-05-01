@@ -6,6 +6,7 @@
  */
 
 import { act, renderHook, waitFor } from '@testing-library/react-native';
+import { Linking } from 'react-native';
 import { useShareAchievement } from './use-share-achievement';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
@@ -28,6 +29,7 @@ jest.mock('@/lib/supabase', () => ({
   },
 }));
 
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function rpcResponse(xp_awarded: number, already_claimed: boolean) {
@@ -42,6 +44,9 @@ function rpcResponse(xp_awarded: number, already_claimed: boolean) {
 describe('useShareAchievement', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default Linking spies (most tests don't exercise platform routing)
+    jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(false);
+    jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
   });
 
   // 1 — core wiring: initial state before share() is called
@@ -223,7 +228,82 @@ describe('useShareAchievement', () => {
     expect(result.current.isSharing).toBe(false);
   });
 
-  // 11 — edge case: share() is a no-op while already isSharing (no double-fire)
+  // 11 — platform routing: instagram — opens deep link when Instagram is installed
+  it('opens instagram-stories://share deep link when Instagram is installed', async () => {
+    mockCaptureRef.mockResolvedValue('file:///tmp/share.png');
+    mockRpc.mockResolvedValue(rpcResponse(100, false));
+    jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true);
+    const openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useShareAchievement('1'));
+
+    await act(async () => {
+      await result.current.share('instagram');
+    });
+
+    expect(Linking.canOpenURL).toHaveBeenCalledWith('instagram-stories://share');
+    expect(openURLSpy).toHaveBeenCalledWith(
+      expect.stringContaining('instagram-stories://share'),
+    );
+    expect(mockShareAsync).not.toHaveBeenCalled();
+  });
+
+  // 12 — platform routing: instagram — falls back to shareAsync when Instagram is not installed
+  it('falls back to shareAsync when Instagram is not installed', async () => {
+    mockCaptureRef.mockResolvedValue('file:///tmp/share.png');
+    mockRpc.mockResolvedValue(rpcResponse(100, false));
+    jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(false);
+    const openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    mockShareAsync.mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useShareAchievement('1'));
+
+    await act(async () => {
+      await result.current.share('instagram');
+    });
+
+    expect(Linking.canOpenURL).toHaveBeenCalledWith('instagram-stories://share');
+    expect(openURLSpy).not.toHaveBeenCalled();
+    expect(mockShareAsync).toHaveBeenCalledTimes(1);
+  });
+
+  // 13 — platform routing: bluesky — opens bsky.app intent URL with encoded text
+  it('opens bsky.app intent URL with encoded shareText for bluesky platform', async () => {
+    const shareText = 'Check out BourbonVault! https://example.com';
+    mockCaptureRef.mockResolvedValue('file:///tmp/share.png');
+    mockRpc.mockResolvedValue(rpcResponse(100, false));
+    const openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useShareAchievement('1', shareText));
+
+    await act(async () => {
+      await result.current.share('bluesky');
+    });
+
+    expect(openURLSpy).toHaveBeenCalledWith(
+      `https://bsky.app/intent/compose?text=${encodeURIComponent(shareText)}`,
+    );
+    expect(mockShareAsync).not.toHaveBeenCalled();
+  });
+
+  // 14 — platform routing: bluesky without shareText — falls back to shareAsync
+  it('falls back to shareAsync for bluesky when no shareText provided', async () => {
+    mockCaptureRef.mockResolvedValue('file:///tmp/share.png');
+    mockRpc.mockResolvedValue(rpcResponse(100, false));
+    const openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    mockShareAsync.mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useShareAchievement('1'));
+
+    await act(async () => {
+      await result.current.share('bluesky');
+    });
+
+    expect(openURLSpy).not.toHaveBeenCalled();
+    expect(mockShareAsync).toHaveBeenCalledTimes(1);
+  });
+
+  // 15 — edge case: share() is a no-op while already isSharing (no double-fire)
   it('does not start a second share while isSharing is true', async () => {
     let captureResolve!: (v: string) => void;
     mockCaptureRef.mockReturnValueOnce(new Promise<string>((res) => { captureResolve = res; }));
