@@ -719,6 +719,10 @@ export interface Database {
         Args: Record<string, never>;
         Returns: { xp_awarded: number; streak_days: number; promoted: boolean; new_belt: number }[];
       };
+      award_achievement_share_xp: {
+        Args: { key: string };
+        Returns: { xp_awarded: number; already_claimed: boolean }[];
+      };
     };
     Enums: {
       xp_event_type:
@@ -738,7 +742,8 @@ export interface Database {
         | 'streak_milestone_7'
         | 'streak_milestone_30'
         | 'profile_complete'
-        | 'first_bourbon_add';
+        | 'first_bourbon_add'
+        | 'achievement_shared';
     };
   };
 }
