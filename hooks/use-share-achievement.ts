@@ -62,14 +62,16 @@ export function useShareAchievement(
       setError(null);
 
       try {
-        // Step 1: capture the card as a PNG
+        console.log('[share] step 1: capturing card, platform=', platform);
         const uri = await captureRef(cardRef, { format: 'png', quality: 1 });
+        console.log('[share] step 1 done, uri=', uri);
 
-        // Step 2: award XP via idempotent RPC (once per reference key)
+        console.log('[share] step 2: awarding XP, key=', referenceKey);
         const { data, error: rpcError } = await supabase.rpc(
           'award_achievement_share_xp',
           { key: referenceKey },
         );
+        console.log('[share] step 2 done, data=', JSON.stringify(data), 'rpcError=', rpcError?.message);
 
         if (rpcError) {
           throw new Error(rpcError.message ?? 'Failed to award XP');
@@ -81,9 +83,11 @@ export function useShareAchievement(
         setXpAwarded(awarded);
         setAlreadyClaimed(claimed);
 
-        // Step 3: route to the selected platform
+        console.log('[share] step 3: routing to platform=', platform);
         await routeToPlatform(platform, uri, shareText);
+        console.log('[share] step 3 done');
       } catch (err) {
+        console.error('[share] error:', err);
         setError(err instanceof Error ? err : new Error(String(err)));
       } finally {
         setIsSharing(false);

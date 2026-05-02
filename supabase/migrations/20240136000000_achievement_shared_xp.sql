@@ -26,18 +26,12 @@ alter type public.xp_event_type add value if not exists 'achievement_shared';
 alter table public.xp_events
   add column if not exists reference_key text;
 
--- ─────────────────────────────────────────────────────────────────────────────
--- 3. Partial unique index — once-per-belt XP cap
---    Enforces that each user can earn achievement_shared XP at most once per
---    reference_key (e.g., one award per belt level).
--- ─────────────────────────────────────────────────────────────────────────────
-
-create unique index if not exists xp_events_achievement_shared_user_key_uniq
-  on public.xp_events (user_id, event_type, reference_key)
-  where event_type = 'achievement_shared';
+-- Note: the partial unique index on (user_id, event_type, reference_key) is in
+-- the next migration (20240137000000) because PostgreSQL does not allow using a
+-- newly added enum value in a CREATE INDEX WHERE clause within the same transaction.
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- 4. award_achievement_share_xp(key text) RPC
+-- 3. award_achievement_share_xp(key text) RPC
 --
 -- Idempotent: calling twice with the same key returns already_claimed = true
 -- on the second call without awarding duplicate XP.
