@@ -701,6 +701,111 @@ export interface Database {
         };
         Relationships: [];
       };
+      game_daily_sessions: {
+        Row: {
+          user_id: string;
+          game_type: 'dojo_duel' | 'sacred_pour';
+          date: string;
+          plays_used: number;
+          xp_earned: number;
+        };
+        Insert: {
+          user_id: string;
+          game_type: 'dojo_duel' | 'sacred_pour';
+          date: string;
+          plays_used?: number;
+          xp_earned?: number;
+        };
+        Update: {
+          plays_used?: number;
+          xp_earned?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "game_daily_sessions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      duel_ghost_runs: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          belt_level: number;
+          difficulty: 'training' | 'standard' | 'challenge';
+          round_results: {
+            round1: { correct: boolean; time_ms: number };
+            round2: { correct: boolean; time_ms: number };
+            round3: { correct: boolean; time_ms: number };
+          };
+          xp_earned: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          belt_level: number;
+          difficulty: 'training' | 'standard' | 'challenge';
+          round_results: {
+            round1: { correct: boolean; time_ms: number };
+            round2: { correct: boolean; time_ms: number };
+            round3: { correct: boolean; time_ms: number };
+          };
+          xp_earned?: number;
+          created_at?: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [
+          {
+            foreignKeyName: "duel_ghost_runs_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      duel_fake_notes: {
+        Row: {
+          id: string;
+          note: string;
+          difficulty_tier: 1 | 2 | 3;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          note: string;
+          difficulty_tier: 1 | 2 | 3;
+          created_at?: string;
+        };
+        Update: {
+          note?: string;
+          difficulty_tier?: 1 | 2 | 3;
+        };
+        Relationships: [];
+      };
+      sensei_quotes: {
+        Row: {
+          id: string;
+          outcome: 'duel_win' | 'duel_loss' | 'duel_sweep' | 'pour_perfect' | 'pour_partial' | 'pour_fail';
+          quote: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          outcome: 'duel_win' | 'duel_loss' | 'duel_sweep' | 'pour_perfect' | 'pour_partial' | 'pour_fail';
+          quote: string;
+          created_at?: string;
+        };
+        Update: {
+          outcome?: 'duel_win' | 'duel_loss' | 'duel_sweep' | 'pour_perfect' | 'pour_partial' | 'pour_fail';
+          quote?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       bourbon_rating_stats: {
@@ -767,7 +872,12 @@ export interface Database {
         | 'streak_milestone_30'
         | 'profile_complete'
         | 'first_bourbon_add'
-        | 'achievement_shared';
+        | 'achievement_shared'
+        | 'dojo_duel_win'
+        | 'dojo_duel_sweep'
+        | 'dojo_duel_loss'
+        | 'sacred_pour_perfect'
+        | 'sacred_pour_complete';
     };
   };
 }
