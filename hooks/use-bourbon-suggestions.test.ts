@@ -219,7 +219,8 @@ describe("useSubmitBourbonSuggestion", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error).toBe(supabaseError);
+    expect(result.current.error).toBeInstanceOf(Error);
+    expect((result.current.error as Error).message).toBe("RLS violation");
   });
 
   // Slice 3 — edge case: empty suggestions array → no insert calls

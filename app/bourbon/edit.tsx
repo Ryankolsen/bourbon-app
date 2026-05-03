@@ -148,10 +148,10 @@ export default function EditBourbonScreen() {
         {
           onSuccess: (updated) => {
             showToast(`${updated.name} updated`);
-            router.replace(`/bourbon/${updated.id}` as never);
+            router.back();
           },
           onError: (error) => {
-            const msg = error instanceof Error ? error.message : String(error);
+            const msg = error instanceof Error ? error.message : (error as any)?.message ?? String(error);
             showToast(`Failed to update: ${msg}`, "error");
           },
         }
@@ -215,9 +215,9 @@ export default function EditBourbonScreen() {
       if (tier2Count > 0)
         messages.push(`${tier2Count} change${tier2Count !== 1 ? "s" : ""} submitted for review`);
       showToast(messages.join(" • "));
-      router.replace(`/bourbon/${id}` as never);
+      router.back();
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = error instanceof Error ? error.message : (error as any)?.message ?? String(error);
       showToast(`Failed to update: ${msg}`, "error");
     }
   });
@@ -523,7 +523,7 @@ export default function EditBourbonScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => { reset(); router.back(); }}
           className="py-3 items-center"
         >
           <Text className="text-brand-400 text-sm">Cancel</Text>

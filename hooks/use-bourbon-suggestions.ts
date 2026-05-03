@@ -74,7 +74,7 @@ export function useSubmitBourbonSuggestion() {
           .from("bourbon_edit_suggestions")
           .insert(row);
 
-        if (error) throw error;
+        if (error) throw new Error(error.message);
       }
     },
   });
