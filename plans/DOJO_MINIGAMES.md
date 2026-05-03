@@ -115,3 +115,29 @@ Both games have a fixed daily play cap, difficulty choice (Training / Standard /
 - Both games reuse the existing `XpToast`, `BeltUpModal`, and `XpBurst` components. No new XP celebration UI is needed.
 - The difficulty picker should show the XP multiplier clearly so users understand the tradeoff before choosing.
 - The ghost opponent's round results should be shown post-duel in a recap so players understand why they won or lost against the ghost — this reinforces the "sparring partner" metaphor.
+
+---
+
+## Implementation Notes (as-built)
+
+### Bourbon Pool — Live from DB, Not Pre-Curated
+The bourbon pool is fetched at runtime from the `bourbons` table on every session — no separate game-specific table. As users fill in missing bourbon data, those bourbons automatically become eligible. The pool filter requires:
+- `name` is non-null and non-blank
+- `type` is non-null
+- At least one of `proof > 0`, `distillery IS NOT NULL`, or `state IS NOT NULL`
+
+As of launch ~417 of 1,860 bourbons meet this bar. The query over-fetches 150 candidates and shuffles to a pool of 30, so every session is unique.
+
+### Round 1 Dossier — Partial, Data-Driven
+Round 1 shows a partial dossier card instead of a blank "??? Bourbon" placeholder. Fields shown (only when non-null/non-zero): **Type** (human-readable label from enum), **State**, **Distillery**, **Proof**. The `BourbonDossier` type is exported from `duel-question-generator.ts`. The display adapts — if a bourbon only has type data, only type is shown; "No details on file" is the last resort.
+
+### Round 2 Stat Battle — Independent Target Selection
+Round 2 picks its subject independently from a `statEligiblePool` (bourbons with at least one of proof/age/mashbill that is non-null and non-zero). This decouples Round 1 and Round 2 targets so a bourbon that qualifies for the pool via distillery/state alone can never produce "0" as the correct stat answer.
+
+### Fake Notes & Sensei Quotes — Public Read RLS
+`duel_fake_notes` and `sensei_quotes` were originally gated with `auth.role() = 'authenticated'`. This caused silent query failures (returning empty) before auth was fully resolved during game load, which caused the Honda Civic hardcoded fallback to appear every round. Both tables now use `using (true)` — they contain no sensitive data. Migration: `20240140000000_dojo_public_read_policies.sql`.
+
+### Seeded Content
+- `duel_fake_notes`: 100 notes per tier (301 total) seeded in `20240139000000_dojo_content_seed.sql`
+- `sensei_quotes`: ~93 quotes across 6 outcome keys (`duel_win`, `duel_loss`, `duel_sweep`, `pour_perfect`, `pour_partial`, `pour_fail`)
+- Fake note query fetches 50 per session (not 10) for better `pickRandom` variety
