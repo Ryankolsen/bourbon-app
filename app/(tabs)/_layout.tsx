@@ -155,6 +155,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="dojo"
+        options={{
+          title: "Dojo",
+          tabBarIcon: ({ focused }) => <TabIcon emoji="🥋" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
