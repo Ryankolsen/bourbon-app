@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { isAdmin } from "@/lib/admin";
 import { useGroupNotifications } from "@/hooks/use-group-notifications";
 import { useSocialNotifications } from "@/hooks/use-social-notifications";
+import { useBourbonSuggestions } from "@/hooks/use-bourbon-suggestions";
 import { useTheme } from "@/lib/theme-provider";
 import { useCheckIn } from "@/hooks/use-check-in";
 import { useXpNotification } from "@/context/xp-context";
@@ -74,6 +75,38 @@ function BellIcon() {
         )}
       </View>
     </TouchableOpacity>
+  );
+}
+
+function AdminTabIcon({ focused }: { focused: boolean }) {
+  const { data: suggestions = [] } = useBourbonSuggestions();
+  const { activeTheme } = useTheme();
+  const pendingCount = suggestions.length;
+
+  return (
+    <View>
+      <Text className={focused ? "text-2xl" : "text-2xl opacity-50"}>🔧</Text>
+      {pendingCount > 0 && (
+        <View
+          style={{
+            position: "absolute",
+            top: -2,
+            right: -4,
+            minWidth: 14,
+            height: 14,
+            borderRadius: 7,
+            paddingHorizontal: 2,
+            backgroundColor: activeTheme.colors.badgeError,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text style={{ color: "#fff", fontSize: 9, fontWeight: "bold" }}>
+            {pendingCount}
+          </Text>
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -179,7 +212,7 @@ export default function TabsLayout() {
         options={{
           title: "Admin",
           href: adminUser ? undefined : null,
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🔧" focused={focused} />,
+          tabBarIcon: ({ focused }) => <AdminTabIcon focused={focused} />,
         }}
       />
     </Tabs>

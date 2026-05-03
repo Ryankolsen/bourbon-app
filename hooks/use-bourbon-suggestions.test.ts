@@ -1,5 +1,6 @@
 /**
- * Unit tests for useSubmitBourbonSuggestion.
+ * Unit tests for useSubmitBourbonSuggestion, useBourbonSuggestions,
+ * useApproveSuggestion, and useRejectSuggestion.
  *
  * Pattern: renderHook + QueryClientProvider wrapper, supabase and expo-crypto
  * mocked, one test per observable behavior.
@@ -8,7 +9,12 @@
 import { renderHook, act, waitFor } from "@testing-library/react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
-import { useSubmitBourbonSuggestion } from "./use-bourbon-suggestions";
+import {
+  useSubmitBourbonSuggestion,
+  useBourbonSuggestions,
+  useApproveSuggestion,
+  useRejectSuggestion,
+} from "./use-bourbon-suggestions";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -18,12 +24,42 @@ jest.mock("expo-crypto", () => ({
   randomUUID: jest.fn(() => FIXED_UUID),
 }));
 
+// Shared chainable query builder spies. All chain methods return `builder`
+// so that arbitrary call chains resolve via `builder.then`.
 const mockInsert = jest.fn();
+const mockUpdate = jest.fn();
+const mockSelect = jest.fn();
+const mockEq = jest.fn();
+const mockOrder = jest.fn();
 const mockFrom = jest.fn();
+const mockRpc = jest.fn();
+
+function makeQueryBuilder(resolveValue: { data: unknown; error: unknown }) {
+  const builder = {
+    select: mockSelect,
+    insert: mockInsert,
+    update: mockUpdate,
+    eq: mockEq,
+    order: mockOrder,
+    then: jest.fn((resolve: (v: typeof resolveValue) => void) =>
+      Promise.resolve(resolveValue).then(resolve)
+    ),
+  };
+
+  // Every chain method returns builder so arbitrary chains resolve via .then
+  mockSelect.mockReturnValue(builder);
+  mockInsert.mockReturnValue(builder);
+  mockUpdate.mockReturnValue(builder);
+  mockEq.mockReturnValue(builder);
+  mockOrder.mockReturnValue(builder);
+
+  return builder;
+}
 
 jest.mock("@/lib/supabase", () => ({
   supabase: {
     from: (table: string) => mockFrom(table),
+    rpc: (...args: unknown[]) => mockRpc(...args),
   },
 }));
 
@@ -42,18 +78,13 @@ function createWrapper() {
   return { Wrapper, qc };
 }
 
-function makeQueryBuilder(resolveValue: { data: unknown; error: unknown }) {
-  return {
-    insert: mockInsert.mockReturnValue(Promise.resolve(resolveValue)),
-  };
-}
-
 // ── useSubmitBourbonSuggestion ────────────────────────────────────────────────
 
 describe("useSubmitBourbonSuggestion", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFrom.mockReturnValue(makeQueryBuilder({ data: null, error: null }));
+    mockRpc.mockResolvedValue({ data: null, error: null });
   });
 
   // Slice 1 — core wiring: returns idle before mutation fires
@@ -141,7 +172,6 @@ describe("useSubmitBourbonSuggestion", () => {
   // Slice 2 — content details: two suggestions → two insert calls, same submission_id
   it("makes two insert calls sharing the same submission_id when given two suggestions", async () => {
     const { Wrapper } = createWrapper();
-    mockFrom.mockReturnValue(makeQueryBuilder({ data: null, error: null }));
     const { result } = renderHook(() => useSubmitBourbonSuggestion(), {
       wrapper: Wrapper,
     });
@@ -210,5 +240,226 @@ describe("useSubmitBourbonSuggestion", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockInsert).not.toHaveBeenCalled();
+  });
+});
+
+// ── useBourbonSuggestions ─────────────────────────────────────────────────────
+
+describe("useBourbonSuggestions", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFrom.mockReturnValue(makeQueryBuilder({ data: [], error: null }));
+    mockRpc.mockResolvedValue({ data: null, error: null });
+  });
+
+  // Slice 1 — core wiring: calls the correct table
+  it("calls supabase.from('bourbon_edit_suggestions')", async () => {
+    const { Wrapper } = createWrapper();
+    renderHook(() => useBourbonSuggestions(), { wrapper: Wrapper });
+
+    await waitFor(() => expect(mockFrom).toHaveBeenCalledWith("bourbon_edit_suggestions"));
+  });
+
+  // Slice 2 — content details: filters by status = 'pending'
+  it("filters by status = 'pending'", async () => {
+    const { Wrapper } = createWrapper();
+    renderHook(() => useBourbonSuggestions(), { wrapper: Wrapper });
+
+    await waitFor(() =>
+      expect(mockEq).toHaveBeenCalledWith("status", "pending")
+    );
+  });
+
+  // Slice 2 — content details: orders by created_at ascending
+  it("orders by created_at ascending", async () => {
+    const { Wrapper } = createWrapper();
+    renderHook(() => useBourbonSuggestions(), { wrapper: Wrapper });
+
+    await waitFor(() =>
+      expect(mockOrder).toHaveBeenCalledWith("created_at", { ascending: true })
+    );
+  });
+
+  // Slice 2 — content details: returns data from query
+  it("returns data from query", async () => {
+    const mockData = [
+      {
+        id: "sug-1",
+        bourbon_id: "bou-1",
+        field_name: "proof",
+        old_value: null,
+        new_value: "90",
+        status: "pending",
+        created_at: "2026-01-01T00:00:00Z",
+        bourbons: { name: "Eagle Rare" },
+        profiles: { display_name: "Alice" },
+      },
+    ];
+    mockFrom.mockReturnValue(makeQueryBuilder({ data: mockData, error: null }));
+
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useBourbonSuggestions(), {
+      wrapper: Wrapper,
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual(mockData);
+  });
+
+  // Slice 3 — edge case: empty array when no pending suggestions
+  it("returns an empty array when no pending suggestions exist", async () => {
+    mockFrom.mockReturnValue(makeQueryBuilder({ data: [], error: null }));
+
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useBourbonSuggestions(), {
+      wrapper: Wrapper,
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual([]);
+  });
+});
+
+// ── useApproveSuggestion ──────────────────────────────────────────────────────
+
+describe("useApproveSuggestion", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFrom.mockReturnValue(makeQueryBuilder({ data: null, error: null }));
+    mockRpc.mockResolvedValue({ data: null, error: null });
+  });
+
+  // Slice 1 — core wiring: calls rpc with correct name and argument
+  it("calls supabase.rpc('apply_bourbon_suggestion', { p_suggestion_id }) with correct arg", async () => {
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useApproveSuggestion(), {
+      wrapper: Wrapper,
+    });
+
+    await act(async () => {
+      result.current.mutate({ suggestionId: "sug-abc" });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockRpc).toHaveBeenCalledWith("apply_bourbon_suggestion", {
+      p_suggestion_id: "sug-abc",
+    });
+  });
+
+  // Slice 3 — edge case: Supabase error surfaces to caller
+  it("sets mutation status to 'error' when rpc returns an error", async () => {
+    const rpcError = { message: "Not found", code: "PGRST116" };
+    mockRpc.mockResolvedValue({ data: null, error: rpcError });
+
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useApproveSuggestion(), {
+      wrapper: Wrapper,
+    });
+
+    await act(async () => {
+      result.current.mutate({ suggestionId: "sug-bad" });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error).toBe(rpcError);
+  });
+});
+
+// ── useRejectSuggestion ───────────────────────────────────────────────────────
+
+describe("useRejectSuggestion", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFrom.mockReturnValue(makeQueryBuilder({ data: null, error: null }));
+    mockRpc.mockResolvedValue({ data: null, error: null });
+  });
+
+  // Slice 1 — core wiring: calls update on correct table
+  it("calls supabase.from('bourbon_edit_suggestions').update(...).eq('id', suggestionId)", async () => {
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useRejectSuggestion(), {
+      wrapper: Wrapper,
+    });
+
+    await act(async () => {
+      result.current.mutate({
+        suggestionId: "sug-xyz",
+        reviewedBy: "admin-1",
+      });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockFrom).toHaveBeenCalledWith("bourbon_edit_suggestions");
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "rejected", reviewed_by: "admin-1" })
+    );
+    expect(mockEq).toHaveBeenCalledWith("id", "sug-xyz");
+  });
+
+  // Slice 2 — content details: review_note included when provided
+  it("includes review_note in the update payload when provided", async () => {
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useRejectSuggestion(), {
+      wrapper: Wrapper,
+    });
+
+    await act(async () => {
+      result.current.mutate({
+        suggestionId: "sug-xyz",
+        reviewedBy: "admin-1",
+        reviewNote: "Incorrect value",
+      });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ review_note: "Incorrect value" })
+    );
+  });
+
+  // Slice 3 — edge case: review_note omitted from payload when not provided
+  it("omits review_note from the update payload when not provided", async () => {
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useRejectSuggestion(), {
+      wrapper: Wrapper,
+    });
+
+    await act(async () => {
+      result.current.mutate({
+        suggestionId: "sug-xyz",
+        reviewedBy: "admin-1",
+      });
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const updatePayload = mockUpdate.mock.calls[0][0];
+    expect(updatePayload).not.toHaveProperty("review_note");
+  });
+
+  // Slice 3 — edge case: Supabase error surfaces to caller
+  it("sets mutation status to 'error' when Supabase returns an error", async () => {
+    const supabaseError = { message: "Forbidden", code: "42501" };
+    mockFrom.mockReturnValue(
+      makeQueryBuilder({ data: null, error: supabaseError })
+    );
+
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useRejectSuggestion(), {
+      wrapper: Wrapper,
+    });
+
+    await act(async () => {
+      result.current.mutate({
+        suggestionId: "sug-xyz",
+        reviewedBy: "admin-1",
+      });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error).toBe(supabaseError);
   });
 });
