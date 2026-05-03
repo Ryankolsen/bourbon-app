@@ -14,6 +14,15 @@ import { Database } from '@/types/database';
 
 export type Difficulty = 'training' | 'standard' | 'challenge';
 
+export interface BourbonDossier {
+  /** Human-readable bourbon type label, e.g. "Wheated Bourbon". */
+  bourbonType: string | null;
+  distillery: string | null;
+  state: string | null;
+  /** Proof as stored in the DB; null when missing. */
+  proof: number | null;
+}
+
 export interface IdentificationRound {
   type: 'identification';
   bourbonId: string;
@@ -22,6 +31,8 @@ export interface IdentificationRound {
   correctAnswer: string;
   /** 4 shuffled bourbon names including the correct answer. */
   choices: string[];
+  /** Partial dossier shown to the player — only non-null/non-zero fields. */
+  dossier: BourbonDossier;
 }
 
 export interface StatBattleRound {
@@ -83,6 +94,24 @@ function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+const BOURBON_TYPE_LABELS: Record<string, string> = {
+  traditional: 'Traditional Bourbon',
+  small_batch: 'Small Batch',
+  single_barrel: 'Single Barrel',
+  wheated: 'Wheated Bourbon',
+  cask_strength: 'Cask Strength',
+  high_rye: 'High Rye Bourbon',
+  rye: 'Rye Whiskey',
+  bottled_in_bond: 'Bottled in Bond',
+  straight: 'Straight Bourbon',
+  blended: 'Blended Whiskey',
+};
+
+function formatBourbonType(raw: string | null): string | null {
+  if (!raw) return null;
+  return BOURBON_TYPE_LABELS[raw] ?? raw;
+}
+
 // ---------------------------------------------------------------------------
 // Round builders
 // ---------------------------------------------------------------------------
@@ -116,12 +145,20 @@ function buildIdentificationRound(
   const chosen = shuffle(distractors).slice(0, 3);
   const choices = shuffle([target.name, ...chosen.map((b) => b.name)]);
 
+  const dossier: BourbonDossier = {
+    bourbonType: formatBourbonType(target.type as string | null),
+    distillery: target.distillery ?? null,
+    state: target.state ?? null,
+    proof: target.proof !== null && Number(target.proof) !== 0 ? Number(target.proof) : null,
+  };
+
   return {
     type: 'identification',
     bourbonId: target.id,
     bourbonName: target.name,
     correctAnswer: target.name,
     choices,
+    dossier,
   };
 }
 
@@ -129,11 +166,11 @@ function buildStatBattleRound(
   target: BourbonRow,
   pool: BourbonRow[],
 ): StatBattleRound {
-  // Prefer stats the target bourbon actually has
+  // Prefer stats the target bourbon actually has — treat 0 and blank as invalid
   const candidates: Array<'proof' | 'age' | 'mashbill'> = [];
-  if (target.proof !== null) candidates.push('proof');
-  if (target.age_statement !== null) candidates.push('age');
-  if (target.mashbill !== null) candidates.push('mashbill');
+  if (target.proof !== null && target.proof !== 0) candidates.push('proof');
+  if (target.age_statement !== null && target.age_statement !== 0) candidates.push('age');
+  if (target.mashbill !== null && target.mashbill.trim() !== '') candidates.push('mashbill');
 
   const statType: 'proof' | 'age' | 'mashbill' =
     candidates.length > 0 ? pickRandom(candidates) : 'proof';
@@ -144,7 +181,9 @@ function buildStatBattleRound(
     const correct = String(target.proof ?? 0);
     const wrongs = [
       ...new Set(
-        others.filter((b) => b.proof !== null).map((b) => String(b.proof)),
+        others
+          .filter((b) => b.proof !== null && b.proof !== 0)
+          .map((b) => String(b.proof)),
       ),
     ].filter((v) => v !== correct);
 
@@ -162,7 +201,7 @@ function buildStatBattleRound(
     const wrongs = [
       ...new Set(
         others
-          .filter((b) => b.age_statement !== null)
+          .filter((b) => b.age_statement !== null && b.age_statement !== 0)
           .map((b) => `${b.age_statement} year`),
       ),
     ].filter((v) => v !== correct);
@@ -181,7 +220,7 @@ function buildStatBattleRound(
   const wrongs = [
     ...new Set(
       others
-        .filter((b) => b.mashbill !== null)
+        .filter((b) => b.mashbill !== null && b.mashbill.trim() !== '')
         .map((b) => b.mashbill as string),
     ),
   ].filter((v) => v !== correct);
@@ -269,11 +308,19 @@ export async function generateDuelQuestions(
   supabase: SupabaseClient<Database>,
 ): Promise<DuelQuestionSet> {
   // ── 1. Fetch bourbon pool ─────────────────────────────────────────────────
+  // Filter at the DB level: must have a name, a type, and at least one of
+  // (proof, distillery, state) so every bourbon in the pool can produce a
+  // meaningful Round 1 dossier and has at least one stat for Round 2.
+  // Random order so every session draws a different set.
   const { data: bourbonsData, error: bourbonsError } = await supabase
     .from('bourbons')
     .select('*')
-    .order('name')
-    .limit(POOL_SIZE);
+    .not('name', 'is', null)
+    .not('name', 'eq', '')
+    .not('type', 'is', null)
+    .or('proof.gt.0,distillery.not.is.null,state.not.is.null')
+    .order('id') // stable secondary sort; primary randomisation below
+    .limit(POOL_SIZE * 5); // over-fetch then shuffle to get random subset
 
   if (bourbonsError || !bourbonsData || bourbonsData.length < 4) {
     throw new Error(
@@ -281,7 +328,7 @@ export async function generateDuelQuestions(
     );
   }
 
-  const pool: BourbonRow[] = bourbonsData;
+  const pool: BourbonRow[] = shuffle(bourbonsData).slice(0, POOL_SIZE);
 
   // ── 2. Fetch tastings for the pool (Round 3) ──────────────────────────────
   const bourbonIds = pool.map((b) => b.id);
@@ -303,18 +350,36 @@ export async function generateDuelQuestions(
 
   // ── 3. Fetch fake notes for this difficulty tier (Round 3) ────────────────
   const tier = difficultyToTier(difficulty);
-  const { data: fakeNotesData } = await supabase
+  const { data: fakeNotesData, error: fakeNotesError } = await supabase
     .from('duel_fake_notes')
     .select('id, note')
     .eq('difficulty_tier', tier)
-    .limit(10);
+    .limit(50);
+
+  if (fakeNotesError) {
+    console.warn('[DuelQuestionGenerator] Failed to fetch fake notes:', fakeNotesError.message);
+  }
 
   const fakeNotes = (fakeNotesData ?? []) as Array<{ id: string; note: string }>;
 
   // ── 4. Build rounds ───────────────────────────────────────────────────────
-  const target = pickRandom(pool);
-  const round1 = buildIdentificationRound(target, pool);
-  const round2 = buildStatBattleRound(target, pool);
+  const round1Target = pickRandom(pool);
+
+  // Round 2 must ask about a bourbon that has at least one valid stat.
+  // Pick independently from the pool so a stat-less round1Target can't
+  // produce "0 proof" as the correct answer.
+  const statEligiblePool = pool.filter(
+    (b) =>
+      (b.proof !== null && Number(b.proof) !== 0) ||
+      (b.age_statement !== null && b.age_statement !== 0) ||
+      (b.mashbill !== null && (b.mashbill as string).trim() !== ''),
+  );
+  const round2Target = statEligiblePool.length > 0
+    ? pickRandom(statEligiblePool)
+    : round1Target;
+
+  const round1 = buildIdentificationRound(round1Target, pool);
+  const round2 = buildStatBattleRound(round2Target, pool);
   const round3 = buildFakeNoteRound(pool, tastingsByBourbonId, fakeNotes);
 
   return {

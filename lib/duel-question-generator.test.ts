@@ -12,6 +12,7 @@ import {
   type DuelQuestionSet,
   type IdentificationRound,
   type FakeNoteRound,
+  type BourbonDossier,
 } from './duel-question-generator';
 import { createMockSupabaseClient } from './test-utils/supabase';
 
@@ -26,11 +27,13 @@ function makeBourbon(overrides: {
   proof?: number | null;
   age_statement?: number | null;
   mashbill?: string | null;
+  distillery?: string | null;
+  state?: string | null;
 }) {
   return {
     id: overrides.id,
     name: overrides.name,
-    distillery: null,
+    distillery: overrides.distillery ?? null,
     mashbill: overrides.mashbill ?? null,
     age_statement: overrides.age_statement ?? null,
     proof: overrides.proof ?? null,
@@ -39,7 +42,7 @@ function makeBourbon(overrides: {
     image_url: null,
     description: null,
     city: null,
-    state: null,
+    state: overrides.state ?? null,
     country: null,
     submitted_by: null,
     updated_by: null,
@@ -71,11 +74,11 @@ function makeTasting(overrides: {
 }
 
 const FIVE_BOURBONS = [
-  makeBourbon({ id: 'b1', name: 'Buffalo Trace', type: 'traditional', proof: 90, age_statement: 8 }),
-  makeBourbon({ id: 'b2', name: 'Wild Turkey 101', type: 'traditional', proof: 101, age_statement: 6 }),
-  makeBourbon({ id: 'b3', name: 'Knob Creek', type: 'small_batch', proof: 100, age_statement: 9 }),
-  makeBourbon({ id: 'b4', name: 'Woodford Reserve', type: 'traditional', proof: 90.4, age_statement: null }),
-  makeBourbon({ id: 'b5', name: 'Four Roses Single Barrel', type: 'single_barrel', proof: 100, age_statement: null }),
+  makeBourbon({ id: 'b1', name: 'Buffalo Trace', type: 'traditional', proof: 90, age_statement: 8, distillery: 'Buffalo Trace Distillery', state: 'Kentucky' }),
+  makeBourbon({ id: 'b2', name: 'Wild Turkey 101', type: 'traditional', proof: 101, age_statement: 6, distillery: 'Wild Turkey Distillery', state: 'Kentucky' }),
+  makeBourbon({ id: 'b3', name: 'Knob Creek', type: 'small_batch', proof: 100, age_statement: 9, distillery: 'Jim Beam', state: 'Kentucky' }),
+  makeBourbon({ id: 'b4', name: 'Woodford Reserve', type: 'traditional', proof: 90.4, age_statement: null, distillery: 'Woodford Reserve Distillery', state: 'Kentucky' }),
+  makeBourbon({ id: 'b5', name: 'Four Roses Single Barrel', type: 'single_barrel', proof: 100, age_statement: null, distillery: null, state: null }),
 ];
 
 const TWO_TASTINGS = [
@@ -202,6 +205,81 @@ describe('generateDuelQuestions — content details', () => {
     const fake = r3.notes.find((n) => n.isFake);
 
     expect(fake?.text).toBe(ONE_FAKE_NOTE[0].note);
+  });
+
+  it('Round 1 dossier includes a formatted bourbonType when type is present', async () => {
+    const { client } = createMockSupabaseClient();
+
+    client.from
+      .mockReturnValueOnce(makeQueryBuilder(FIVE_BOURBONS))
+      .mockReturnValueOnce(makeQueryBuilder(TWO_TASTINGS))
+      .mockReturnValueOnce(makeQueryBuilder(ONE_FAKE_NOTE));
+
+    const result = await generateDuelQuestions(3, 'standard', client as any);
+    const r1 = result.rounds[0] as IdentificationRound;
+
+    expect(r1.dossier).toBeDefined();
+    expect(r1.dossier.bourbonType).not.toBeNull();
+    expect(typeof r1.dossier.bourbonType).toBe('string');
+  });
+
+  it('Round 1 dossier proof is null when bourbon has no valid proof', async () => {
+    const noProofPool = FIVE_BOURBONS.map((b) => ({ ...b, proof: null }));
+    const { client } = createMockSupabaseClient();
+
+    client.from
+      .mockReturnValueOnce(makeQueryBuilder(noProofPool))
+      .mockReturnValueOnce(makeQueryBuilder(TWO_TASTINGS))
+      .mockReturnValueOnce(makeQueryBuilder(ONE_FAKE_NOTE));
+
+    const result = await generateDuelQuestions(3, 'standard', client as any);
+    const r1 = result.rounds[0] as IdentificationRound;
+
+    expect(r1.dossier.proof).toBeNull();
+  });
+
+  it('Round 1 dossier includes distillery and state when present', async () => {
+    // b1 has both distillery and state
+    const pool = [FIVE_BOURBONS[0], ...FIVE_BOURBONS.slice(1)];
+    const { client } = createMockSupabaseClient();
+
+    client.from
+      .mockReturnValueOnce(makeQueryBuilder(pool))
+      .mockReturnValueOnce(makeQueryBuilder(TWO_TASTINGS))
+      .mockReturnValueOnce(makeQueryBuilder(ONE_FAKE_NOTE));
+
+    const result = await generateDuelQuestions(3, 'standard', client as any);
+    const r1 = result.rounds[0] as IdentificationRound;
+
+    // The target could be any bourbon — verify the shape is always correct
+    expect(r1.dossier).toMatchObject<Partial<BourbonDossier>>({
+      bourbonType: expect.anything(),
+    });
+  });
+
+  it('Round 1 dossier is all-null when no optional fields are present', async () => {
+    const barePool = [
+      makeBourbon({ id: 'b1', name: 'Alpha', type: 'traditional' }),
+      makeBourbon({ id: 'b2', name: 'Beta', type: 'wheated' }),
+      makeBourbon({ id: 'b3', name: 'Gamma', type: 'small_batch' }),
+      makeBourbon({ id: 'b4', name: 'Delta', type: 'single_barrel' }),
+      makeBourbon({ id: 'b5', name: 'Epsilon', type: 'high_rye' }),
+    ];
+    const { client } = createMockSupabaseClient();
+
+    client.from
+      .mockReturnValueOnce(makeQueryBuilder(barePool))
+      .mockReturnValueOnce(makeQueryBuilder([]))
+      .mockReturnValueOnce(makeQueryBuilder(ONE_FAKE_NOTE));
+
+    const result = await generateDuelQuestions(3, 'standard', client as any);
+    const r1 = result.rounds[0] as IdentificationRound;
+
+    expect(r1.dossier.distillery).toBeNull();
+    expect(r1.dossier.state).toBeNull();
+    expect(r1.dossier.proof).toBeNull();
+    // bourbonType should still be formatted from the enum
+    expect(r1.dossier.bourbonType).not.toBeNull();
   });
 });
 

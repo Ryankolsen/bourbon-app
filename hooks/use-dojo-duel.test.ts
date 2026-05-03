@@ -67,6 +67,7 @@ const MOCK_QUESTIONS: DuelQuestionSet = {
       bourbonName: 'Buffalo Trace',
       correctAnswer: 'Buffalo Trace',
       choices: ['Buffalo Trace', "Maker's Mark", 'Wild Turkey', 'Four Roses'],
+      dossier: { bourbonType: 'Traditional Bourbon', distillery: 'Buffalo Trace Distillery', state: 'Kentucky', proof: 90 },
     },
     {
       type: 'stat_battle',

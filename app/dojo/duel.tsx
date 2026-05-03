@@ -18,6 +18,7 @@ import {
   type IdentificationRound,
   type StatBattleRound,
   type FakeNoteRound,
+  type BourbonDossier,
 } from "@/lib/duel-question-generator";
 import { colors } from "@/lib/colors";
 
@@ -185,6 +186,13 @@ function IdentificationRoundView({
     return "disabled";
   }
 
+  const { dossier } = round;
+  const dossierRows: { label: string; value: string }[] = [];
+  if (dossier.bourbonType) dossierRows.push({ label: "Type", value: dossier.bourbonType });
+  if (dossier.state) dossierRows.push({ label: "State", value: dossier.state });
+  if (dossier.distillery) dossierRows.push({ label: "Distillery", value: dossier.distillery });
+  if (dossier.proof) dossierRows.push({ label: "Proof", value: String(dossier.proof) });
+
   return (
     <View>
       <View
@@ -197,19 +205,34 @@ function IdentificationRoundView({
         }}
       >
         <Text style={{ fontSize: 40, marginBottom: 12 }}>🥃</Text>
-        <Text style={{ color: c.brand400, fontSize: 13, marginBottom: 6 }}>
+        <Text style={{ color: c.brand400, fontSize: 13, marginBottom: 16 }}>
           Which bourbon is this?
         </Text>
-        <Text
-          style={{
-            color: c.brand100,
-            fontSize: 18,
-            fontWeight: "700",
-            textAlign: "center",
-          }}
-        >
-          ??? Bourbon
-        </Text>
+
+        {dossierRows.map(({ label, value }) => (
+          <View
+            key={label}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              width: "100%",
+              paddingVertical: 5,
+              borderBottomWidth: 1,
+              borderBottomColor: c.brand700,
+            }}
+          >
+            <Text style={{ color: c.brand400, fontSize: 13 }}>{label}</Text>
+            <Text style={{ color: c.brand100, fontSize: 13, fontWeight: "600" }}>
+              {value}
+            </Text>
+          </View>
+        ))}
+
+        {dossierRows.length === 0 && (
+          <Text style={{ color: c.brand500, fontSize: 13, fontStyle: "italic" }}>
+            No details on file
+          </Text>
+        )}
       </View>
 
       {round.choices.map((choice) => (
