@@ -363,7 +363,8 @@ describe("useApproveSuggestion", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error).toBe(rpcError);
+    expect(result.current.error).toBeInstanceOf(Error);
+    expect((result.current.error as Error).message).toBe("Not found");
   });
 });
 
@@ -461,6 +462,7 @@ describe("useRejectSuggestion", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error).toBe(supabaseError);
+    expect(result.current.error).toBeInstanceOf(Error);
+    expect((result.current.error as Error).message).toBe("Forbidden");
   });
 });

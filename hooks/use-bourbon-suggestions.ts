@@ -115,7 +115,7 @@ export function useApproveSuggestion() {
       const { error } = await supabase.rpc("apply_bourbon_suggestion", {
         p_suggestion_id: suggestionId,
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: SUGGESTIONS_QUERY_KEY });
@@ -154,7 +154,7 @@ export function useRejectSuggestion() {
         .from("bourbon_edit_suggestions")
         .update(update)
         .eq("id", suggestionId);
-      if (error) throw error;
+      if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: SUGGESTIONS_QUERY_KEY });

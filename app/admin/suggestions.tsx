@@ -19,6 +19,7 @@ import {
 } from "@/hooks/use-bourbon-suggestions";
 import { useTheme } from "@/lib/theme-provider";
 import { colors } from "@/lib/colors";
+import { useToast } from "@/lib/toast-provider";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -179,6 +180,7 @@ export default function SuggestionsScreen() {
 
   const adminUser = !!(user?.email && isAdmin(user.email));
 
+  const { showToast } = useToast();
   const { data: suggestions = [], isLoading } = useBourbonSuggestions();
   const approve = useApproveSuggestion();
   const reject = useRejectSuggestion();
@@ -191,7 +193,11 @@ export default function SuggestionsScreen() {
     setPendingAction(suggestionId);
     approve.mutate(
       { suggestionId },
-      { onSettled: () => setPendingAction(null) }
+      {
+        onSuccess: () => showToast("Suggestion approved"),
+        onError: (err) => showToast(err instanceof Error ? err.message : "Failed to approve", "error"),
+        onSettled: () => setPendingAction(null),
+      }
     );
   }
 
@@ -206,7 +212,11 @@ export default function SuggestionsScreen() {
           setPendingAction(suggestionId);
           reject.mutate(
             { suggestionId, reviewedBy: user.id },
-            { onSettled: () => setPendingAction(null) }
+            {
+              onSuccess: () => showToast("Suggestion rejected"),
+              onError: (err) => showToast(err instanceof Error ? err.message : "Failed to reject", "error"),
+              onSettled: () => setPendingAction(null),
+            }
           );
         },
       },
