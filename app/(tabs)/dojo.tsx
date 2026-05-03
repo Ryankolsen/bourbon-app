@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useGameDailySession, DAILY_CAP, type GameType } from "@/hooks/use-game-daily-session";
 import { useTheme } from "@/lib/theme-provider";
-import { colors } from "@/lib/colors";
+import { DifficultyPickerSheet } from "@/components/DifficultyPickerSheet";
+import { type Difficulty } from "@/lib/duel-question-generator";
 
 // ---------------------------------------------------------------------------
 // Reset countdown
@@ -43,6 +46,8 @@ function GameCard({ emoji, title, tagline, gameType, userId, onPlay }: GameCardP
       ? "Loading…"
       : `${session.playsRemaining} / ${DAILY_CAP} plays left`;
 
+  const playable = session.canPlay && !session.isLoading && !!userId;
+
   return (
     <View
       className="rounded-2xl p-5 mb-4"
@@ -80,28 +85,20 @@ function GameCard({ emoji, title, tagline, gameType, userId, onPlay }: GameCardP
 
       <TouchableOpacity
         onPress={onPlay}
-        disabled={!session.canPlay || session.isLoading || !userId}
+        disabled={!playable}
         className="rounded-xl py-3 items-center"
         style={{
-          backgroundColor:
-            session.canPlay && !session.isLoading && userId
-              ? c.tabActive
-              : c.brand800,
-          borderWidth: session.canPlay && !session.isLoading && userId ? 0 : 1,
+          backgroundColor: playable ? c.tabActive : c.brand800,
+          borderWidth: playable ? 0 : 1,
           borderColor: c.tabInactive,
           opacity: session.isLoading ? 0.5 : 1,
         }}
         accessibilityRole="button"
-        accessibilityState={{ disabled: !session.canPlay }}
+        accessibilityState={{ disabled: !playable }}
       >
         <Text
           className="font-bold text-base"
-          style={{
-            color:
-              session.canPlay && !session.isLoading && userId
-                ? c.white
-                : c.tabInactive,
-          }}
+          style={{ color: playable ? c.white : c.tabInactive }}
         >
           {!userId
             ? "Sign in to play"
@@ -153,50 +150,74 @@ function PlaysIndicator({
 // DojoScreen
 // ---------------------------------------------------------------------------
 
+type PendingGame = { gameType: GameType; title: string } | null;
+
 export default function DojoScreen() {
   const { user } = useAuth();
   const { activeTheme } = useTheme();
   const c = activeTheme.colors;
+  const router = useRouter();
+  const [pendingGame, setPendingGame] = useState<PendingGame>(null);
+
+  function openPicker(gameType: GameType, title: string) {
+    setPendingGame({ gameType, title });
+  }
+
+  function handleDifficultySelect(difficulty: Difficulty) {
+    if (!pendingGame) return;
+    setPendingGame(null);
+
+    if (pendingGame.gameType === "dojo_duel") {
+      router.push(`/dojo/duel?difficulty=${difficulty}` as never);
+    } else {
+      router.push(`/dojo/sacred-pour?difficulty=${difficulty}` as never);
+    }
+  }
 
   return (
-    <ScrollView className="flex-1 bg-brand-900" contentContainerStyle={{ padding: 16 }}>
-      <View className="mb-6 mt-2">
-        <Text className="text-brand-100 text-3xl font-bold">The Dojo</Text>
-        <Text className="text-brand-400 text-sm mt-1">
-          Sharpen your bourbon knowledge. Two games, five plays each, every day.
-        </Text>
-      </View>
+    <>
+      <ScrollView className="flex-1 bg-brand-900" contentContainerStyle={{ padding: 16 }}>
+        <View className="mb-6 mt-2">
+          <Text className="text-brand-100 text-3xl font-bold">The Dojo</Text>
+          <Text className="text-brand-400 text-sm mt-1">
+            Sharpen your bourbon knowledge. Two games, five plays each, every day.
+          </Text>
+        </View>
 
-      <GameCard
-        emoji="⚔️"
-        title="Dojo Duel"
-        tagline="3 rounds of bourbon knowledge against a ghost opponent"
-        gameType="dojo_duel"
-        userId={user?.id}
-        onPlay={() => {
-          // TODO: navigate to duel screen
-        }}
+        <GameCard
+          emoji="⚔️"
+          title="Dojo Duel"
+          tagline="3 rounds of bourbon knowledge against a ghost opponent"
+          gameType="dojo_duel"
+          userId={user?.id}
+          onPlay={() => openPicker("dojo_duel", "Dojo Duel")}
+        />
+
+        <GameCard
+          emoji="🫗"
+          title="The Sacred Pour"
+          tagline="Memorize a tasting sequence, then recreate it from memory"
+          gameType="sacred_pour"
+          userId={user?.id}
+          onPlay={() => openPicker("sacred_pour", "The Sacred Pour")}
+        />
+
+        <View
+          className="rounded-2xl p-4 mt-2"
+          style={{ backgroundColor: c.brand800 }}
+        >
+          <Text className="text-brand-400 text-xs text-center leading-5">
+            Win or lose, the Dojo rewards showing up.{"\n"}XP is earned on every attempt.
+          </Text>
+        </View>
+      </ScrollView>
+
+      <DifficultyPickerSheet
+        visible={!!pendingGame}
+        gameTitle={pendingGame?.title ?? ""}
+        onSelect={handleDifficultySelect}
+        onClose={() => setPendingGame(null)}
       />
-
-      <GameCard
-        emoji="🫗"
-        title="The Sacred Pour"
-        tagline="Memorize a tasting sequence, then recreate it from memory"
-        gameType="sacred_pour"
-        userId={user?.id}
-        onPlay={() => {
-          // TODO: navigate to sacred pour screen
-        }}
-      />
-
-      <View
-        className="rounded-2xl p-4 mt-2"
-        style={{ backgroundColor: c.brand800 }}
-      >
-        <Text className="text-brand-400 text-xs text-center leading-5">
-          Win or lose, the Dojo rewards showing up.{"\n"}XP is earned on every attempt.
-        </Text>
-      </View>
-    </ScrollView>
+    </>
   );
 }
