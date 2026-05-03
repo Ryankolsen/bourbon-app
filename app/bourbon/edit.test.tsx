@@ -1,11 +1,14 @@
 /**
- * Tests for the Edit Bourbon screen (issue #86 and #88).
+ * Tests for the Edit Bourbon screen (issue #180).
  *
  * Verifies:
  * 1. Admin mode: screen renders pre-filled with current bourbon field values
- * 2. User mode: only null/empty fields are rendered as editable inputs
- * 3. User mode: submit payload contains only the fields that were null at load time
- * 4. updated_by is stamped with the current user's ID
+ * 2. Community mode: Tier 1 path (blank field → useUpdateBourbon)
+ * 3. Community mode: Tier 2 path (existing value → useSubmitBourbonSuggestion)
+ * 4. Community mode: image URL field is absent
+ * 5. Community mode: proof=0 treated as blank (Tier 1)
+ * 6. Community mode: single submit handles both Tier 1 and Tier 2 changes
+ * 7. Community mode: no changes → neither hook is called
  */
 
 import React from 'react';
@@ -14,7 +17,7 @@ import EditBourbonScreen from './edit';
 
 // ── Variable-driven mock state ────────────────────────────────────────────────
 
-let mockLocalSearchParams: { id: string; mode?: string } = { id: 'bourbon-test-id' };
+let mockLocalSearchParams: { id: string } = { id: 'bourbon-test-id' };
 
 const mockRouterBack = jest.fn();
 const mockRouterReplace = jest.fn();
@@ -29,10 +32,15 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => ({ user: { id: 'admin-user-id' } }),
+  useAuth: () => ({ user: { id: 'user-id-abc' } }),
 }));
 
 const mockUpdateMutate = jest.fn();
+const mockUpdateMutateAsync = jest.fn().mockResolvedValue({
+  id: 'bourbon-test-id',
+  name: "Blanton's Original",
+});
+
 let mockBourbonData: {
   id: string;
   name: string;
@@ -72,7 +80,11 @@ let mockBourbonData: {
 };
 
 jest.mock('@/hooks/use-bourbons', () => ({
-  useUpdateBourbon: () => ({ mutate: mockUpdateMutate, isPending: false }),
+  useUpdateBourbon: () => ({
+    mutate: mockUpdateMutate,
+    mutateAsync: mockUpdateMutateAsync,
+    isPending: false,
+  }),
   useBourbon: () => ({
     data: mockBourbonData,
     isLoading: false,
@@ -80,13 +92,22 @@ jest.mock('@/hooks/use-bourbons', () => ({
   }),
 }));
 
+const mockSuggestionMutateAsync = jest.fn().mockResolvedValue(undefined);
+
+jest.mock('@/hooks/use-bourbon-suggestions', () => ({
+  useSubmitBourbonSuggestion: () => ({
+    mutateAsync: mockSuggestionMutateAsync,
+    isPending: false,
+  }),
+}));
+
 let mockIsAdminEdit = true;
 jest.mock('@/hooks/use-profile', () => ({
   useProfile: () => ({
     data: {
-      id: 'admin-user-id',
-      username: 'admin',
-      display_name: 'Admin User',
+      id: 'user-id-abc',
+      username: 'testuser',
+      display_name: 'Test User',
       avatar_url: null,
       is_admin: mockIsAdminEdit,
       created_at: '2024-01-01T00:00:00Z',
@@ -120,7 +141,7 @@ jest.mock('@/lib/location-data', () => ({
 }));
 
 jest.mock('react-native-element-dropdown', () => {
-  const { View, Text, TouchableOpacity } = require('react-native');
+  const { View, Text } = require('react-native');
   return {
     Dropdown: ({ value, testID }: { data: unknown[]; value: string | null; onChange: (item: unknown) => void; placeholder: string; testID?: string }) => (
       <View testID={testID}>
@@ -156,6 +177,7 @@ describe('EditBourbonScreen — admin mode', () => {
     jest.clearAllMocks();
     mockLocalSearchParams = { id: 'bourbon-test-id' };
     mockIsAdminEdit = true;
+    mockUpdateMutateAsync.mockResolvedValue({ id: 'bourbon-test-id', name: "Blanton's Original" });
     mockBourbonData = {
       id: 'bourbon-test-id',
       name: "Blanton's Original",
@@ -196,108 +218,137 @@ describe('EditBourbonScreen — admin mode', () => {
   });
 });
 
-// ── User mode tests ───────────────────────────────────────────────────────────
+// ── Community mode tests ──────────────────────────────────────────────────────
 
-describe('EditBourbonScreen — user mode', () => {
+describe('EditBourbonScreen — community mode', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockLocalSearchParams = { id: 'bourbon-test-id', mode: 'user' };
+    mockLocalSearchParams = { id: 'bourbon-test-id' };
     mockIsAdminEdit = false;
+    mockUpdateMutateAsync.mockResolvedValue({ id: 'bourbon-test-id', name: "Blanton's Original" });
+    mockSuggestionMutateAsync.mockResolvedValue(undefined);
   });
 
-  // Test 1 — core wiring: field locking
-  // Bourbon has name='Buffalo Trace' (non-null) and distillery=null.
-  // In user mode: distillery input is present; name TextInput is not rendered.
-  it('user mode: renders distillery input (null field) but not name input (non-null)', () => {
+  // Test 1 — Tier 1 path: proof was null, user submits a new value
+  it('Tier 1: calls useUpdateBourbon when submitting a value for a null (blank) field', async () => {
     mockBourbonData = {
-      id: 'bourbon-test-id',
-      name: 'Buffalo Trace',
-      distillery: null,
-      proof: 90,
-      type: 'traditional',
-      age_statement: null,
-      mashbill: null,
-      msrp: null,
-      description: null,
-      city: null,
-      state: 'Kentucky',
-      country: 'USA',
-      image_url: null,
-      submitted_by: null,
-      updated_by: null,
-      created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
+      ...mockBourbonData,
+      proof: null,
     };
 
     render(<EditBourbonScreen />);
 
-    // distillery was null → should be rendered as editable picker
-    expect(screen.getByTestId('distillery-picker')).toBeTruthy();
+    // Proof field should be empty (null → "")
+    const proofInput = screen.getByPlaceholderText('e.g. 93');
+    expect(proofInput.props.value).toBe('');
 
-    // name was non-null → should NOT be rendered as an editable TextInput
-    expect(screen.queryByDisplayValue('Buffalo Trace')).toBeNull();
+    // User enters a new proof value
+    fireEvent.changeText(proofInput, '95');
+    fireEvent.press(screen.getByText('Save Changes'));
+
+    await waitFor(() => expect(mockUpdateMutateAsync).toHaveBeenCalledTimes(1));
+
+    const call = mockUpdateMutateAsync.mock.calls[0][0];
+    expect(call.fields.proof).toBe('95');
+    expect(mockSuggestionMutateAsync).not.toHaveBeenCalled();
   });
 
-  // Test 2 — payload only includes null fields
-  it('user mode: submit payload contains only null fields, not non-null fields like name', async () => {
+  // Test 2 — Tier 2 path: proof was 90, user submits 95
+  it('Tier 2: calls useSubmitBourbonSuggestion when changing an existing (non-blank) field', async () => {
     mockBourbonData = {
-      id: 'bourbon-test-id',
-      name: 'Buffalo Trace',
-      distillery: null,
+      ...mockBourbonData,
       proof: 90,
-      type: 'traditional',
-      age_statement: null,
-      mashbill: null,
-      msrp: null,
-      description: null,
-      city: null,
-      state: 'Kentucky',
-      country: 'USA',
-      image_url: null,
-      submitted_by: null,
-      updated_by: null,
-      created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
     };
 
     render(<EditBourbonScreen />);
+
+    const proofInput = screen.getByPlaceholderText('e.g. 93');
+    expect(proofInput.props.value).toBe('90');
+
+    fireEvent.changeText(proofInput, '95');
+    fireEvent.press(screen.getByText('Save Changes'));
+
+    await waitFor(() => expect(mockSuggestionMutateAsync).toHaveBeenCalledTimes(1));
+
+    const call = mockSuggestionMutateAsync.mock.calls[0][0];
+    expect(call.suggestions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ fieldName: 'proof', oldValue: '90', newValue: '95' }),
+      ])
+    );
+    expect(mockUpdateMutateAsync).not.toHaveBeenCalled();
+  });
+
+  // Test 3 — Image URL field is not present in community form
+  it('does not render the image URL field for community users', () => {
+    render(<EditBourbonScreen />);
+    expect(screen.queryByTestId('image-url-input')).toBeNull();
+  });
+
+  // Test 4 — proof=0 is treated as blank (Tier 1, not Tier 2)
+  it('Tier 1: proof=0 is treated as blank and routes to useUpdateBourbon', async () => {
+    mockBourbonData = {
+      ...mockBourbonData,
+      proof: 0,
+    };
+
+    render(<EditBourbonScreen />);
+
+    const proofInput = screen.getByPlaceholderText('e.g. 93');
+    // Form shows "0" as the current value
+    expect(proofInput.props.value).toBe('0');
+
+    fireEvent.changeText(proofInput, '95');
+    fireEvent.press(screen.getByText('Save Changes'));
+
+    await waitFor(() => expect(mockUpdateMutateAsync).toHaveBeenCalledTimes(1));
+
+    const call = mockUpdateMutateAsync.mock.calls[0][0];
+    expect(call.fields.proof).toBe('95');
+    expect(mockSuggestionMutateAsync).not.toHaveBeenCalled();
+  });
+
+  // Test 5 — Both Tier 1 and Tier 2 changes in the same submit
+  it('dispatches both Tier 1 and Tier 2 in a single submit when both types of changes are present', async () => {
+    mockBourbonData = {
+      ...mockBourbonData,
+      proof: null,           // blank → Tier 1 when filled
+      distillery: 'Buffalo Trace',  // non-blank → Tier 2 when changed
+    };
+
+    render(<EditBourbonScreen />);
+
+    // Change proof (Tier 1: was null)
+    fireEvent.changeText(screen.getByPlaceholderText('e.g. 93'), '95');
+
+    // Change distillery (Tier 2: was "Buffalo Trace")
+    fireEvent.changeText(screen.getByTestId('distillery-picker-input'), 'Four Roses');
 
     fireEvent.press(screen.getByText('Save Changes'));
 
-    await waitFor(() => expect(mockUpdateMutate).toHaveBeenCalledTimes(1));
-    const callFields = mockUpdateMutate.mock.calls[0][0].fields;
-    // name was non-null → must NOT be in the submitted fields
-    expect(callFields).not.toHaveProperty('name');
-    // distillery was null → must be in the submitted fields
-    expect(callFields).toHaveProperty('distillery');
+    await waitFor(() => {
+      expect(mockUpdateMutateAsync).toHaveBeenCalledTimes(1);
+      expect(mockSuggestionMutateAsync).toHaveBeenCalledTimes(1);
+    });
   });
 
-  // Test 5 — updated_by stamped
-  it('user mode: updated_by is set to the current user ID on submit', async () => {
+  // Test 6 — No changes: neither hook is called
+  it('does not call either hook when user submits with no changes', async () => {
     mockBourbonData = {
-      id: 'bourbon-test-id',
-      name: 'Buffalo Trace',
-      distillery: null,
+      ...mockBourbonData,
       proof: 90,
-      type: 'traditional',
-      age_statement: null,
-      mashbill: null,
-      msrp: null,
-      description: null,
-      city: null,
-      state: 'Kentucky',
-      country: 'USA',
-      image_url: null,
-      submitted_by: null,
-      updated_by: null,
-      created_at: '2024-01-01T00:00:00Z',
-      updated_at: '2024-01-01T00:00:00Z',
+      distillery: 'Buffalo Trace',
     };
 
     render(<EditBourbonScreen />);
+
+    // Submit without changing anything (all form values match bourbon values)
     fireEvent.press(screen.getByText('Save Changes'));
 
-    await waitFor(() => expect(mockUpdateMutate).toHaveBeenCalledTimes(1));
-    expect(mockUpdateMutate.mock.calls[0][0].updatedBy).toBe('admin-user-id');
+    // Allow any async work to settle
+    await waitFor(() => {});
+
+    expect(mockUpdateMutateAsync).not.toHaveBeenCalled();
+    expect(mockSuggestionMutateAsync).not.toHaveBeenCalled();
   });
 });

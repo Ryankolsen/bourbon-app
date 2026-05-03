@@ -107,15 +107,15 @@ jest.mock('@/hooks/use-profile', () => ({
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 describe('BourbonDetailScreen — admin gating', () => {
-  // Slice 1 — non-admin: Edit button is NOT shown
-  it('does NOT show Edit button for a non-admin user', () => {
+  // Slice 1 — non-admin: Edit button appears in the action section
+  it('shows Edit button in the action section for an authenticated non-admin user', () => {
     mockIsAdmin = false;
     render(<BourbonDetailScreen />);
-    expect(screen.queryByText('Edit')).toBeNull();
+    expect(screen.getByText('Edit')).toBeTruthy();
   });
 
-  // Slice 2 — admin: Edit button IS shown
-  it('shows Edit button for an admin user', () => {
+  // Slice 2 — admin: Edit button IS shown in the header
+  it('shows Edit button in the header for an admin user', () => {
     mockIsAdmin = true;
     render(<BourbonDetailScreen />);
     expect(screen.getByText('Edit')).toBeTruthy();

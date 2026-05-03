@@ -219,15 +219,15 @@ describe('BourbonDetailScreen — admin delete flow', () => {
   });
 });
 
-// ── "Add Missing Info" button tests ──────────────────────────────────────────
+// ── Edit button tests ─────────────────────────────────────────────────────────
 
-describe('BourbonDetailScreen — Add Missing Info button', () => {
+describe('BourbonDetailScreen — Edit button', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  // Test 3 — "Add Missing Info" visible for non-admin when at least one optional field is null
-  it('shows "Add Missing Info" for authenticated non-admin when at least one optional field is null', () => {
+  // Test 3 — Edit button visible in action section for authenticated non-admin users
+  it('shows "Edit" in the action section for authenticated non-admin users', () => {
     mockIsAdmin = false;
     mockBourbonDetailData = {
       id: 'bourbon-delete-id',
@@ -236,7 +236,7 @@ describe('BourbonDetailScreen — Add Missing Info button', () => {
       proof: 93,
       type: 'single_barrel',
       age_statement: null,
-      mashbill: null,   // null optional field
+      mashbill: null,
       msrp: null,
       description: null,
       city: null,
@@ -250,11 +250,12 @@ describe('BourbonDetailScreen — Add Missing Info button', () => {
     };
 
     render(<BourbonDetailScreen />);
-    expect(screen.getByText('Add Missing Info')).toBeTruthy();
+    expect(screen.getByText('Edit')).toBeTruthy();
+    expect(screen.queryByText('Add Missing Info')).toBeNull();
   });
 
-  // Test 4 — "Add Missing Info" hidden when all optional fields are populated
-  it('hides "Add Missing Info" for non-admin when all optional fields are populated', () => {
+  // Test 4 — Edit button always visible regardless of whether fields are populated
+  it('shows "Edit" for non-admin even when all optional fields are populated', () => {
     mockIsAdmin = false;
     mockBourbonDetailData = {
       id: 'bourbon-delete-id',
@@ -277,11 +278,11 @@ describe('BourbonDetailScreen — Add Missing Info button', () => {
     };
 
     render(<BourbonDetailScreen />);
-    expect(screen.queryByText('Add Missing Info')).toBeNull();
+    expect(screen.getByText('Edit')).toBeTruthy();
   });
 
-  // Test 6 — admin sees "Edit" not "Add Missing Info"
-  it('shows "Edit" for admin and NOT "Add Missing Info" even when optional fields are null', () => {
+  // Test 6 — admin sees "Edit" in header, action section Edit not shown
+  it('shows "Edit" for admin and NOT "Add Missing Info"', () => {
     mockIsAdmin = true;
     mockBourbonDetailData = {
       id: 'bourbon-delete-id',
@@ -290,7 +291,7 @@ describe('BourbonDetailScreen — Add Missing Info button', () => {
       proof: 93,
       type: 'single_barrel',
       age_statement: null,
-      mashbill: null,   // null optional field
+      mashbill: null,
       msrp: null,
       description: null,
       city: null,

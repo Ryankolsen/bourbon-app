@@ -25,21 +25,6 @@ import { buildAddToWishlistPayload } from "@/lib/wishlist";
 import { buildAddToCollectionPayload } from "@/lib/collection";
 import { buildCommentPayload } from "@/lib/comments";
 
-/** Optional bourbon fields that a regular user can contribute to. */
-const OPTIONAL_BOURBON_FIELDS = [
-  "distillery",
-  "proof",
-  "type",
-  "age_statement",
-  "mashbill",
-  "msrp",
-  "description",
-  "city",
-  "state",
-  "country",
-  "image_url",
-] as const;
-
 export default function BourbonDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -84,10 +69,6 @@ export default function BourbonDetailScreen() {
     id,
     activeGroupId ?? undefined
   );
-
-  const hasNullOptionalFields = bourbon
-    ? OPTIONAL_BOURBON_FIELDS.some((field) => bourbon[field] == null)
-    : false;
 
   if (isLoading) {
     return (
@@ -221,13 +202,6 @@ export default function BourbonDetailScreen() {
               <Text className="text-red-400 text-base">Delete</Text>
             </TouchableOpacity>
           </View>
-        ) : user && hasNullOptionalFields ? (
-          <TouchableOpacity
-            onPress={() => router.push(`/bourbon/edit?id=${id}&mode=user` as never)}
-            hitSlop={8}
-          >
-            <Text className="text-brand-400 text-base">Add Missing Info</Text>
-          </TouchableOpacity>
         ) : null}
       </View>
 
@@ -446,6 +420,16 @@ export default function BourbonDetailScreen() {
               {wishlistItem ? "★ Remove from Wishlist" : "☆ Add to Wishlist"}
             </Text>
           </TouchableOpacity>
+
+          {/* Edit button for authenticated non-admin users */}
+          {user && !isAdmin && (
+            <TouchableOpacity
+              onPress={() => router.push(`/bourbon/edit?id=${id}` as never)}
+              className="bg-brand-800 border border-brand-600 rounded-2xl py-4 items-center"
+            >
+              <Text className="text-brand-200 font-semibold text-base">Edit</Text>
+            </TouchableOpacity>
+          )}
 
           {/* Recommend to Group (only if user belongs to at least one group) */}
           {hasGroups && (
