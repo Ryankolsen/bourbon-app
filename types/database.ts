@@ -806,6 +806,65 @@ export interface Database {
         };
         Relationships: [];
       };
+      bourbon_edit_suggestions: {
+        Row: {
+          id: string;
+          bourbon_id: string;
+          submitted_by: string | null;
+          submission_id: string;
+          field_name: string;
+          old_value: string | null;
+          new_value: string | null;
+          status: 'pending' | 'approved' | 'rejected';
+          reviewed_by: string | null;
+          review_note: string | null;
+          created_at: string;
+          reviewed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          bourbon_id: string;
+          submitted_by?: string | null;
+          submission_id: string;
+          field_name: string;
+          old_value?: string | null;
+          new_value?: string | null;
+          status?: 'pending' | 'approved' | 'rejected';
+          reviewed_by?: string | null;
+          review_note?: string | null;
+          created_at?: string;
+          reviewed_at?: string | null;
+        };
+        Update: {
+          status?: 'pending' | 'approved' | 'rejected';
+          reviewed_by?: string | null;
+          review_note?: string | null;
+          reviewed_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bourbon_edit_suggestions_bourbon_id_fkey";
+            columns: ["bourbon_id"];
+            isOneToOne: false;
+            referencedRelation: "bourbons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bourbon_edit_suggestions_submitted_by_fkey";
+            columns: ["submitted_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bourbon_edit_suggestions_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       bourbon_rating_stats: {
@@ -851,6 +910,10 @@ export interface Database {
       award_achievement_share_xp: {
         Args: { key: string };
         Returns: { xp_awarded: number; already_claimed: boolean }[];
+      };
+      apply_bourbon_suggestion: {
+        Args: { p_suggestion_id: string };
+        Returns: void;
       };
     };
     Enums: {
