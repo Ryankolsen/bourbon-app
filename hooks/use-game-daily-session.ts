@@ -65,13 +65,18 @@ export function useGameDailySession(
     const newPlaysUsed = playsUsed + 1;
     const newXpEarned = (data?.xp_earned ?? 0) + xpEarned;
 
-    await supabase.from("game_daily_sessions").upsert({
+    const { error } = await supabase.from("game_daily_sessions").upsert({
       user_id: userId,
       game_type: gameType,
       date: today,
       plays_used: newPlaysUsed,
       xp_earned: newXpEarned,
     });
+
+    if (error) {
+      console.error("[recordPlay] upsert failed:", error.message, error.code, { gameType, newPlaysUsed });
+      return;
+    }
 
     await queryClient.invalidateQueries({
       queryKey: ["game-daily-session", userId, gameType, today],

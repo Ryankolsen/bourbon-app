@@ -184,11 +184,12 @@ export function usePourOrFaker({ userId }: UsePourOrFakerOptions): UsePourOrFake
           // Queue exhausted — treat as game_over (all real/fakes consumed)
           const xpEarned = computeXp(newStreak, d);
           if (userId) {
-            await supabase.rpc('award_xp', {
+            const { error: xpErr } = await supabase.rpc('award_xp', {
               p_user_id: userId,
               p_event_type: 'pour_or_faker_complete' as XpEventType,
               p_xp_amount: xpEarned,
             });
+            if (xpErr) console.error('[pour-or-faker] award_xp failed:', xpErr.message);
           }
           await recordPlay(xpEarned);
           setVerdict({ streak: newStreak, xpEarned, wasReal: card.isReal, cardName: card.name });
@@ -202,11 +203,12 @@ export function usePourOrFaker({ userId }: UsePourOrFakerOptions): UsePourOrFake
         const xpEarned = computeXp(finalStreak, d);
 
         if (userId) {
-          await supabase.rpc('award_xp', {
+          const { error: xpErr } = await supabase.rpc('award_xp', {
             p_user_id: userId,
             p_event_type: 'pour_or_faker_complete' as XpEventType,
             p_xp_amount: xpEarned,
           });
+          if (xpErr) console.error('[pour-or-faker] award_xp failed:', xpErr.message);
         }
         await recordPlay(xpEarned);
 
