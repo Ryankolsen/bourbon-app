@@ -1,0 +1,48 @@
+name: Daily Database Backup
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 2:00 AM ET (UTC-4)
+  workflow_dispatch: # allow manual runs
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+
+      - name: Run pg_dump
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          FILENAME="bourbon-app-$(date -u +%Y-%m-%d).sql.gz"
+          pg_dump \
+            --no-owner \
+            --no-acl \
+            --dbname="${{ secrets.SUPABASE_DB_URL }}" \
+            | gzip > "$FILENAME"
+          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
+
+      - name: Validate dump is non-empty
+        run: |
+          if [ ! -s "$FILENAME" ]; then
+            echo "ERROR: Dump file is empty or missing"
+            exit 1
+          fi
+          echo "Dump size: $(du -sh $FILENAME | cut -f1)"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Upload to S3
+        run: |
+          aws s3 cp "$FILENAME" "s3://${{ secrets.AWS_S3_BUCKET }}/daily/$FILENAME"
+          echo "Backup uploaded: s3://${{ secrets.AWS_S3_BUCKET }}/daily/$FILENAME"
