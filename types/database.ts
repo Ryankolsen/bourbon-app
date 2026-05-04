@@ -704,14 +704,14 @@ export interface Database {
       game_daily_sessions: {
         Row: {
           user_id: string;
-          game_type: 'dojo_duel' | 'sacred_pour';
+          game_type: 'dojo_duel' | 'sacred_pour' | 'pour_or_faker';
           date: string;
           plays_used: number;
           xp_earned: number;
         };
         Insert: {
           user_id: string;
-          game_type: 'dojo_duel' | 'sacred_pour';
+          game_type: 'dojo_duel' | 'sacred_pour' | 'pour_or_faker';
           date: string;
           plays_used?: number;
           xp_earned?: number;
@@ -940,7 +940,8 @@ export interface Database {
         | 'dojo_duel_sweep'
         | 'dojo_duel_loss'
         | 'sacred_pour_perfect'
-        | 'sacred_pour_complete';
+        | 'sacred_pour_complete'
+        | 'pour_or_faker_complete';
     };
   };
 }
