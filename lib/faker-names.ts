@@ -1,0 +1,186 @@
+export type Difficulty = 'training' | 'standard' | 'challenge';
+
+/**
+ * Obviously wrong names — too generic, too silly, or clearly non-bourbon.
+ * Great for beginners learning to spot fakes.
+ */
+export const TRAINING_FAKES: string[] = [
+  'Corn Juice Premium',
+  'Old Grandpa\'s Special Reserve',
+  'Heritage Distillery Classic Bourbon',
+  'American Gold Select',
+  'Farmer\'s Pride Whiskey',
+  'Ol\' Kentucky Sunshine',
+  'Happy Valley Grain Spirit',
+  'Rustic Barrel Beverage',
+  'Uncle Bob\'s Brown Liquor',
+  'Countryside Aged Spirit',
+  'Harvest Moon Whiskey Drink',
+  'Liquid Gold Premium',
+  'The Original American Whiskey',
+  'Brown Barrel Special',
+  'Good Times Bourbon Flavor',
+  'Classic American Grain Whiskey',
+  'Grandma\'s Secret Recipe Bourbon',
+  'Ye Olde Whiskey Shoppe Select',
+  'Mellow Gold Bourbon Beverage',
+  'Happy Farmer\'s Choice',
+  'Old Reliable Corn Spirit',
+  'The Generic Bourbon Brand',
+  'Amber Waves Grain Whiskey',
+  'Country Roads Premium Spirit',
+  'Homestyle Kentucky Whiskey',
+  'Simple Man\'s Select Bourbon',
+  'Standard Issue American Whiskey',
+  'Uncle Jimmy\'s Corn Juice',
+  'Ol\' Reliable Brown Spirit',
+  'Plain Label Bourbon Style',
+  'Barn Owl Premium Grain Spirit',
+  'Heartland Classic American',
+  'Regular Old Whiskey Co.',
+  'Farmer Joe\'s Special Batch',
+  'Traditional American Grain Drink',
+  'The Everyday Bourbon Alternative',
+  'Rural Route Aged Spirit',
+  'Common Folk Corn Whiskey',
+  'Backyard Still Select',
+  'Neighborly Grain Reserve',
+  'Simple Sip American Spirit',
+  'Good Enough Bourbon',
+  'Decent American Whiskey Brand',
+  'Middling Reserve Select',
+  'Average Man\'s American Spirit',
+  'So-So Single Barrel',
+  'Ordinary Old Grain Whiskey',
+  'Nothing Fancy Bourbon',
+  'Just Whiskey Premium',
+  'Mainstream American Corn Spirit',
+];
+
+/**
+ * Plausible names that follow real bourbon naming conventions but don't exist.
+ * Convincing enough to fool casual drinkers.
+ */
+export const STANDARD_FAKES: string[] = [
+  'Ridgeline Small Batch Bourbon',
+  'Copper Basin Single Barrel Select',
+  'Millstone 12 Year Kentucky Straight',
+  'Blue Ridge Reserve Bourbon',
+  'Ironwood Distillery Single Barrel',
+  'Ashwood 10 Year Small Batch',
+  'Limestone Creek Kentucky Straight',
+  'Blackwater Small Batch Bourbon',
+  'Sycamore Hill Single Barrel Select',
+  'Crestwood 8 Year Bottled in Bond',
+  'Maplewood Reserve Kentucky Straight',
+  'Thornwood Small Batch Bourbon',
+  'Oakdale Single Barrel 107 Proof',
+  'Riverside 12 Year Reserve',
+  'Hickory Ridge Small Batch Select',
+  'Kentuckian Small Batch Reserve',
+  'Clearwater Single Barrel Bourbon',
+  'Sundown 10 Year Kentucky Straight',
+  'Pinecrest Reserve Small Batch',
+  'Meadowbrook Single Barrel Bourbon',
+  'Creekside 9 Year Small Batch',
+  'Highpoint Reserve Kentucky Straight',
+  'Silverton Single Barrel Select',
+  'Elmwood 14 Year Bourbon',
+  'Brookstone Small Batch Reserve',
+  'Stonegate 10 Year Single Barrel',
+  'Wheatfield Small Batch Bourbon',
+  'Redwood Reserve Kentucky Straight',
+  'Cloverdale Single Barrel Select',
+  'Willowbend 12 Year Small Batch',
+  'Foxglove Reserve Bourbon',
+  'Cedarwood 8 Year Kentucky Straight',
+  'Birchwood Small Batch Select',
+  'Hearthstone Single Barrel Bourbon',
+  'Bridgeway 10 Year Reserve',
+  'Copperhead Small Batch Kentucky Straight',
+  'Peakstone Single Barrel Select',
+  'Riverview Reserve Bourbon',
+  'Timberline Small Batch 10 Year',
+  'Windmill Reserve Kentucky Straight',
+  'Hollowood Single Barrel Bourbon',
+  'Baystone 12 Year Small Batch',
+  'Fernhill Reserve Select',
+  'Glenwood Small Batch Kentucky Straight',
+  'Arrowhead Single Barrel 108 Proof',
+  'Kentwood Reserve 10 Year Bourbon',
+  'Stonewall Small Batch Select',
+  'Briarwood Single Barrel Kentucky Straight',
+  'Hillcrest Reserve Bourbon',
+  'Shadowbrook 11 Year Small Batch',
+];
+
+/**
+ * Enthusiast-grade fakes that mimic specific brand naming patterns or
+ * real barrel/mashbill terminology. Designed to fool even serious collectors.
+ */
+export const CHALLENGE_FAKES: string[] = [
+  'Four Roses Limited Edition Small Batch OESK',
+  'Buffalo Trace Experimental Collection Wheat Mash #27',
+  'Heaven Hill 18 Year Bottled in Bond',
+  'Wild Turkey Master\'s Keep 17 Year Bourbon',
+  'Maker\'s Mark Private Select Seared Cask',
+  'Willett Family Estate 12 Year Single Barrel',
+  'Old Forester 117 Series: Barrel Strength 2024',
+  'Knob Creek 2001 Limited Edition 25 Year',
+  'Elijah Craig Barrel Proof C924',
+  'Woodford Reserve Master\'s Collection Batch Proof 2024',
+  'Jim Beam Single Barrel Collection 10 Year',
+  'Bulleit Barrel Strength Rye 12 Year Limited',
+  'Four Roses 2024 Limited Edition Single Barrel OBSQ',
+  'Angel\'s Envy Cask Strength Port Finish 2024',
+  'Blanton\'s Straight from the Barrel Lot No. 783',
+  'Buffalo Trace Antique Collection Sazerac 18 Year 2024',
+  'George T. Stagg Jr. Spring 2024 Release',
+  'Pappy Van Winkle\'s Family Reserve 17 Year',
+  'Old Rip Van Winkle 12 Year Handmade Bourbon',
+  'Van Winkle Special Reserve 13 Year Lot B',
+  'Weller C.Y.P.B. 2024 Limited Release',
+  'W.L. Weller Full Proof 2024 Kentucky Straight',
+  'Colonel E.H. Taylor, Jr. Cured Oak Single Barrel',
+  'Colonel E.H. Taylor Bottled in Bond 18 Year',
+  'Eagle Rare Double Eagle Very Rare 2024',
+  'Michter\'s Celebration Sour Mash 2024',
+  'Michter\'s 25 Year Limited Release Bourbon',
+  'Hirsch Selected Wheat Whiskey 20 Year',
+  'Parker\'s Heritage Collection 24 Year',
+  'Heaven Hill Bottled in Bond 15 Year Single Barrel',
+  'Bernheim Original 17 Year Wheat Whiskey',
+  'Larceny Barrel Proof A124 Kentucky Straight',
+  'Old Fitzgerald Bottled in Bond 19 Year',
+  'Evan Williams Single Barrel Vintage 2011',
+  'Henry McKenna 20 Year Single Barrel Bottled in Bond',
+  'Russell\'s Reserve Single Rickhouse Camp Nelson',
+  'Wild Turkey Forgiven Batch 305 2024 Reissue',
+  'Rowan\'s Creek 25 Year Single Barrel Select',
+  'Noah\'s Mill Barrel Strength 15 Year',
+  'Knob Creek 2024 Limited Edition 15 Year',
+  'Baker\'s 7 Year Single Barrel Uncut Bourbon',
+  'Booker\'s 2024-03 "Granny\'s Batch"',
+  'Basil Hayden\'s Toast 10 Year Two-Barrel Blend',
+  'Old Grand-Dad Bottled in Bond 14 Year',
+  'Old Grand-Dad 114 Barrel Strength Cask Select',
+  'Rebel Yell 10 Year Single Barrel Kentucky Straight',
+  'Yellow Rose Distilling Outlaw 13 Year Texas Straight',
+  'Garrison Brothers Cowboy Bourbon 2024 Batch 12',
+  'Lone Elm 16 Year Texas Straight Bourbon',
+  'Breckenridge Distillery Port Cask Finish 14 Year',
+];
+
+/**
+ * Returns the fake names array for the given difficulty tier.
+ */
+export function getFakesForDifficulty(difficulty: Difficulty): string[] {
+  switch (difficulty) {
+    case 'training':
+      return TRAINING_FAKES;
+    case 'standard':
+      return STANDARD_FAKES;
+    case 'challenge':
+      return CHALLENGE_FAKES;
+  }
+}
