@@ -170,7 +170,7 @@ export default function DojoScreen() {
     if (pendingGame.gameType === "dojo_duel") {
       router.push(`/dojo/duel?difficulty=${difficulty}` as never);
     } else {
-      router.push(`/dojo/sacred-pour?difficulty=${difficulty}` as never);
+      router.push(`/dojo/pour-or-faker?difficulty=${difficulty}` as never);
     }
   }
 
@@ -194,12 +194,12 @@ export default function DojoScreen() {
         />
 
         <GameCard
-          emoji="🫗"
-          title="The Sacred Pour"
-          tagline="Memorize a tasting sequence, then recreate it from memory"
-          gameType="sacred_pour"
+          emoji="🃏"
+          title="Pour or Faker"
+          tagline="Real bourbon or faker? Build your streak."
+          gameType="pour_or_faker"
           userId={user?.id}
-          onPlay={() => openPicker("sacred_pour", "The Sacred Pour")}
+          onPlay={() => openPicker("pour_or_faker", "Pour or Faker")}
         />
 
         <View

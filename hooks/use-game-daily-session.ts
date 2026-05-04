@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 
 export const DAILY_CAP = 5;
 
-export type GameType = "dojo_duel" | "sacred_pour" | "pour_or_faker";
+export type GameType = "dojo_duel" | "pour_or_faker";
 
 export interface GameDailySessionState {
   playsRemaining: number;
