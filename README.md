@@ -221,15 +221,14 @@ eas update --branch production --message "your message" --platform all
 
 ### Android → Google Play Store
 
-```bash
-# 1. Build the AAB
-eas build --profile production --platform android
+Upload is done manually via the Google Play Console.
 
-# 2. Submit
-eas submit --platform android
+```bash
+# Build the AAB
+eas build --profile production --platform android
 ```
 
-Or download the AAB from expo.dev and upload manually in Google Play Console.
+Download the AAB from expo.dev, then upload it in **Google Play Console → Production → Create new release**.
 
 ### iOS → App Store
 
@@ -237,11 +236,11 @@ Or download the AAB from expo.dev and upload manually in Google Play Console.
 # 1. Build the IPA
 eas build --profile production --platform ios
 
-# 2. Submit
+# 2. Upload to App Store Connect
 eas submit --platform ios
 ```
 
-Requires Apple credentials and an App Store Connect app record for `com.ryankolsen.bourbonvault`.
+Requires Apple credentials and an App Store Connect app record for `com.ryankolsen.bourbonvault`. If you have a local IPA, pass `--path ./path/to/your.ipa` instead of triggering a new build.
 
 ---
 
