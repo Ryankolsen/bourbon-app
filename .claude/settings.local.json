@@ -23,7 +23,9 @@
       "Read(//tmp/**)",
       "Bash(gh repo:*)",
       "Bash(pnpm run typecheck:*)",
-      "Bash(identify /Users/ryankolsen/IdeaProjects/bourbon-app/assets/icon.png)"
+      "Bash(identify /Users/ryankolsen/IdeaProjects/bourbon-app/assets/icon.png)",
+      "Read(//Users/ryankolsen/.claude/plugins/**)",
+      "Read(//Users/ryankolsen/.claude/**)"
     ],
     "ask": [
       "Bash(npx supabase db query --linked \"DELETE:*)",
