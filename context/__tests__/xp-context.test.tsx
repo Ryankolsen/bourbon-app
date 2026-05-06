@@ -326,6 +326,202 @@ describe("XpContext", () => {
     });
   });
 
+  // ── latestPromotion tests ─────────────────────────────────────────────────
+
+  // L1 — core wiring: promoted Realtime INSERT sets latestPromotion
+  it("latestPromotion: sets belt and id when Realtime INSERT has promoted: true", async () => {
+    function PromotionConsumer() {
+      const { latestPromotion } = useXpNotification();
+      if (!latestPromotion) return <Text testID="no-promo">none</Text>;
+      return (
+        <>
+          <Text testID="promo-belt">{latestPromotion.belt}</Text>
+          <Text testID="promo-id">{latestPromotion.id}</Text>
+        </>
+      );
+    }
+
+    const { getByTestId } = render(
+      <XpProvider>
+        <PromotionConsumer />
+      </XpProvider>
+    );
+
+    expect(getByTestId("no-promo")).toBeTruthy();
+
+    act(() => {
+      capturedCallback?.({
+        new: {
+          id: "promo-row-uuid",
+          xp_awarded: 10,
+          event_type: "daily_checkin",
+          promoted: true,
+          new_belt: 3,
+        },
+      });
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("promo-belt").props.children).toBe(3);
+      expect(getByTestId("promo-id").props.children).toBe("promo-row-uuid");
+    });
+  });
+
+  // L2 — content details: correct belt and id from Realtime payload
+  it("latestPromotion: captures exact belt and id from payload", async () => {
+    function PromotionConsumer() {
+      const { latestPromotion } = useXpNotification();
+      if (!latestPromotion) return <Text testID="no-promo">none</Text>;
+      return (
+        <>
+          <Text testID="promo-belt">{latestPromotion.belt}</Text>
+          <Text testID="promo-id">{latestPromotion.id}</Text>
+        </>
+      );
+    }
+
+    const { getByTestId } = render(
+      <XpProvider>
+        <PromotionConsumer />
+      </XpProvider>
+    );
+
+    act(() => {
+      capturedCallback?.({
+        new: {
+          id: "promo-uuid-1",
+          xp_awarded: 10,
+          event_type: "daily_checkin",
+          promoted: true,
+          new_belt: 2,
+        },
+      });
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("promo-belt").props.children).toBe(2);
+      expect(getByTestId("promo-id").props.children).toBe("promo-uuid-1");
+    });
+  });
+
+  // L3a — edge case: advance() does NOT clear latestPromotion
+  it("latestPromotion: advance() does not clear latestPromotion", async () => {
+    function PromotionAdvanceConsumer() {
+      const { current, advance, latestPromotion } = useXpNotification();
+      return (
+        <>
+          {latestPromotion ? (
+            <Text testID="promo-belt">{latestPromotion.belt}</Text>
+          ) : (
+            <Text testID="no-promo">none</Text>
+          )}
+          {current ? (
+            <TouchableOpacity testID="advance-btn" onPress={advance}>
+              <Text>advance</Text>
+            </TouchableOpacity>
+          ) : null}
+        </>
+      );
+    }
+
+    const { getByTestId, queryByTestId } = render(
+      <XpProvider>
+        <PromotionAdvanceConsumer />
+      </XpProvider>
+    );
+
+    act(() => {
+      capturedCallback?.({
+        new: {
+          id: "promo-adv-1",
+          xp_awarded: 10,
+          event_type: "daily_checkin",
+          promoted: true,
+          new_belt: 4,
+        },
+      });
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("promo-belt").props.children).toBe(4);
+      expect(getByTestId("advance-btn")).toBeTruthy();
+    });
+
+    fireEvent.press(getByTestId("advance-btn"));
+
+    await waitFor(() => {
+      // latestPromotion still set after advancing the queue
+      expect(getByTestId("promo-belt").props.children).toBe(4);
+      expect(queryByTestId("advance-btn")).toBeNull();
+    });
+  });
+
+  // L3b — edge case: second promotion with different id updates latestPromotion
+  it("latestPromotion: updates to new belt/id when second promotion fires", async () => {
+    function PromotionConsumer() {
+      const { latestPromotion } = useXpNotification();
+      if (!latestPromotion) return <Text testID="no-promo">none</Text>;
+      return (
+        <>
+          <Text testID="promo-belt">{latestPromotion.belt}</Text>
+          <Text testID="promo-id">{latestPromotion.id}</Text>
+        </>
+      );
+    }
+
+    const { getByTestId } = render(
+      <XpProvider>
+        <PromotionConsumer />
+      </XpProvider>
+    );
+
+    act(() => {
+      capturedCallback?.({
+        new: { id: "promo-first", xp_awarded: 10, event_type: "daily_checkin", promoted: true, new_belt: 2 },
+      });
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("promo-belt").props.children).toBe(2);
+    });
+
+    act(() => {
+      capturedCallback?.({
+        new: { id: "promo-second", xp_awarded: 10, event_type: "daily_checkin", promoted: true, new_belt: 3 },
+      });
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("promo-belt").props.children).toBe(3);
+      expect(getByTestId("promo-id").props.children).toBe("promo-second");
+    });
+  });
+
+  // L3c — edge case: promoted: false does not set latestPromotion
+  it("latestPromotion: remains null when Realtime INSERT has promoted: false", async () => {
+    function PromotionConsumer() {
+      const { latestPromotion } = useXpNotification();
+      if (!latestPromotion) return <Text testID="no-promo">none</Text>;
+      return <Text testID="promo-belt">{latestPromotion.belt}</Text>;
+    }
+
+    const { getByTestId } = render(
+      <XpProvider>
+        <PromotionConsumer />
+      </XpProvider>
+    );
+
+    act(() => {
+      capturedCallback?.({
+        new: { id: "non-promo", xp_awarded: 10, event_type: "daily_checkin", promoted: false, new_belt: 1 },
+      });
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("no-promo")).toBeTruthy();
+    });
+  });
+
   // 8 — edge case: Realtime INSERT with same id as direct enqueue is dropped
   it("Realtime duplicate of a directly-enqueued notification is dropped", async () => {
     let capturedEnqueue: ((n: XpNotification) => void) | null = null;

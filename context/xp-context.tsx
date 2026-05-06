@@ -53,6 +53,11 @@ interface XpContextValue {
    * Ignored when xpAwarded is 0 or when the same `id` was already enqueued.
    */
   enqueue: (notification: XpNotification) => void;
+  /**
+   * The most recent belt promotion event, or null if none has occurred this
+   * session. Independent of the display queue — advance() does not clear it.
+   */
+  latestPromotion: { belt: number; id: string } | null;
 }
 
 // ── Context ──────────────────────────────────────────────────────────────────
@@ -61,6 +66,7 @@ const XpContext = createContext<XpContextValue>({
   current: null,
   advance: () => {},
   enqueue: () => {},
+  latestPromotion: null,
 });
 
 export function useXpNotification(): XpContextValue {
@@ -77,6 +83,7 @@ function nextNotifId(): string {
 export function XpProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [queue, setQueue] = useState<XpNotification[]>([]);
+  const [latestPromotion, setLatestPromotion] = useState<{ belt: number; id: string } | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   /** Tracks notification IDs already added to the queue (deduplication). */
   const seenIds = useRef<Set<string>>(new Set());
@@ -128,14 +135,21 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
           if (seenIds.current.has(notifId)) return;
           seenIds.current.add(notifId);
 
+          const promoted = (row.promoted as boolean) ?? false;
+          const newBelt = (row.new_belt as number) ?? 1;
+
           const notification: XpNotification = {
             id: notifId,
             xpAwarded: row.xp_awarded as number,
             eventType: row.event_type as string,
             label: getXpEventLabel(row.event_type as string),
-            promoted: (row.promoted as boolean) ?? false,
-            newBelt: (row.new_belt as number) ?? 1,
+            promoted,
+            newBelt,
           };
+
+          if (promoted) {
+            setLatestPromotion({ belt: newBelt, id: notifId });
+          }
 
           setQueue((prev) => [...prev, notification]);
 
@@ -158,7 +172,7 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
   const current = queue[0] ?? null;
 
   return (
-    <XpContext.Provider value={{ current, advance, enqueue }}>
+    <XpContext.Provider value={{ current, advance, enqueue, latestPromotion }}>
       {children}
     </XpContext.Provider>
   );
