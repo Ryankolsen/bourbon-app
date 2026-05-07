@@ -46,11 +46,17 @@ const mockOn = jest.fn().mockImplementation(
 );
 const mockChannelObj = { on: mockOn, subscribe: mockSubscribe };
 const mockChannel = jest.fn().mockReturnValue(mockChannelObj);
+// rpc returns xp_awarded: 0 so check_in doesn't inject a notification
+const mockRpc = jest.fn().mockResolvedValue({
+  data: [{ xp_awarded: 0, streak_days: 1, promoted: false, new_belt: 1 }],
+  error: null,
+});
 
 jest.mock("@/lib/supabase", () => ({
   supabase: {
     channel: (...args: unknown[]) => mockChannel(...args),
     removeChannel: (...args: unknown[]) => mockRemoveChannel(...args),
+    rpc: (...args: unknown[]) => mockRpc(...args),
   },
 }));
 
@@ -69,7 +75,7 @@ function firePromotion(newBelt: number, id: string) {
     new: {
       id,
       xp_awarded: 10,
-      event_type: "daily_checkin",
+      event_type: "tasting_complete",
       promoted: true,
       new_belt: newBelt,
     },
@@ -97,6 +103,10 @@ describe("BeltUpModal", () => {
       }
     );
     mockChannel.mockReturnValue(mockChannelObj);
+    mockRpc.mockResolvedValue({
+      data: [{ xp_awarded: 0, streak_days: 1, promoted: false, new_belt: 1 }],
+      error: null,
+    });
   });
 
   // 1 — core wiring: promotion Realtime INSERT shows the modal

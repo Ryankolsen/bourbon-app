@@ -1,15 +1,16 @@
 /**
  * XpContext — client-side XP notification system.
  *
- * Subscribes to `xp_events` via Supabase Realtime (filtered to the current
- * user). Each INSERT dispatches a notification into a queue; XpToast reads
- * the queue and shows toasts sequentially. TanStack Query's user-xp cache is
- * invalidated on each event so profile displays update automatically.
+ * Owns the entire XP notification lifecycle:
+ * 1. Calls check_in() RPC once per authenticated session
+ * 2. Subscribes to xp_events Realtime channel for INSERT events
+ * 3. Deduplicates notifications from both paths via a seen-IDs set
+ * 4. Manages the sequential display queue
+ * 5. Invalidates user-xp TanStack Query cache on each event
+ * 6. Emits a latestPromotion signal for belt-up events
  *
- * Also exposes `enqueue` so callers can push a notification directly (e.g.
- * from the check-in RPC result) without waiting for the Realtime channel to
- * establish. A seen-IDs set deduplicates notifications that arrive via both
- * paths.
+ * Public interface: { current, advance, latestPromotion }
+ * enqueue is an internal detail — callers never push directly.
  */
 
 import React, {
@@ -24,7 +25,7 @@ import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/query-client";
 import { getXpEventLabel } from "@/lib/belt-config";
 import { useAuth } from "@/hooks/use-auth";
-import { TomorrowXp } from "@/lib/streak-utils";
+import { getTomorrowXp, TomorrowXp } from "@/lib/streak-utils";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -49,11 +50,6 @@ interface XpContextValue {
   /** Advance the queue — called by XpToast after the toast auto-dismisses. */
   advance: () => void;
   /**
-   * Imperatively push a notification into the queue (bypasses Realtime).
-   * Ignored when xpAwarded is 0 or when the same `id` was already enqueued.
-   */
-  enqueue: (notification: XpNotification) => void;
-  /**
    * The most recent belt promotion event, or null if none has occurred this
    * session. Independent of the display queue — advance() does not clear it.
    */
@@ -65,7 +61,6 @@ interface XpContextValue {
 const XpContext = createContext<XpContextValue>({
   current: null,
   advance: () => {},
-  enqueue: () => {},
   latestPromotion: null,
 });
 
@@ -87,28 +82,77 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   /** Tracks notification IDs already added to the queue (deduplication). */
   const seenIds = useRef<Set<string>>(new Set());
+  /** Tracks previous streak day count for isReset detection. */
+  const prevStreakRef = useRef<number | null>(null);
 
   const advance = useCallback(() => {
     setQueue((prev) => prev.slice(1));
   }, []);
 
-  /**
-   * Push a notification directly into the queue, bypassing Realtime.
-   * Deduplicates by `notification.id` so a subsequent Realtime event for the
-   * same logical event is silently dropped.
-   */
-  const enqueue = useCallback(
-    (notification: XpNotification) => {
-      if (notification.xpAwarded === 0) return;
-      if (seenIds.current.has(notification.id)) return;
-      seenIds.current.add(notification.id);
-      setQueue((prev) => [...prev, notification]);
-      if (user?.id) {
-        queryClient.invalidateQueries({ queryKey: ["user-xp", user.id] });
+  // ── check_in() RPC ────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const userId = user.id;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const checkInId = `daily_checkin-${today}`;
+
+    // Pre-register the date-keyed ID before the async RPC resolves. This
+    // blocks a concurrent Realtime event (which uses the same date-keyed ID
+    // for daily_checkin rows) from producing a duplicate notification.
+    // Also handles the rare case where Realtime fired before this effect ran.
+    if (seenIds.current.has(checkInId)) return;
+    seenIds.current.add(checkInId);
+
+    let cancelled = false;
+
+    async function runCheckIn() {
+      const { data, error } = await supabase.rpc("check_in");
+      if (cancelled) return;
+      if (error || !data || data.length === 0) return;
+
+      const row = data[0];
+      if (row.xp_awarded === 0) return;
+
+      const streakDays: number = row.streak_days;
+      const prevStreak = prevStreakRef.current;
+      const isReset = streakDays === 1 && prevStreak !== null && prevStreak > 1;
+      prevStreakRef.current = streakDays;
+
+      const promoted: boolean = row.promoted ?? false;
+      const newBelt: number = row.new_belt ?? 1;
+
+      if (promoted) {
+        setLatestPromotion({ belt: newBelt, id: checkInId });
       }
-    },
-    [user?.id]
-  );
+
+      setQueue((prev) => [
+        ...prev,
+        {
+          id: checkInId,
+          xpAwarded: row.xp_awarded as number,
+          eventType: "daily_checkin",
+          label: getXpEventLabel("daily_checkin"),
+          promoted,
+          newBelt,
+          streakDays,
+          isReset,
+          tomorrowXp: getTomorrowXp(streakDays),
+        },
+      ]);
+
+      queryClient.invalidateQueries({ queryKey: ["user-xp", userId] });
+    }
+
+    runCheckIn();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  // ── Realtime subscription ─────────────────────────────────────────────────
 
   useEffect(() => {
     if (!user?.id) return;
@@ -129,9 +173,14 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
           const row = payload.new;
           if (!row || row.xp_awarded === 0) return;
 
-          // Use the DB row UUID for deduplication when present; otherwise
-          // fall back to a locally-generated ID (should not happen in practice).
-          const notifId: string = (row.id as string) ?? nextNotifId();
+          // daily_checkin events use the same date-keyed format as the RPC
+          // path so both delivery mechanisms share the same dedup ID.
+          const today = new Date().toISOString().slice(0, 10);
+          const notifId: string =
+            row.event_type === "daily_checkin"
+              ? `daily_checkin-${today}`
+              : (row.id as string) ?? nextNotifId();
+
           if (seenIds.current.has(notifId)) return;
           seenIds.current.add(notifId);
 
@@ -172,7 +221,7 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
   const current = queue[0] ?? null;
 
   return (
-    <XpContext.Provider value={{ current, advance, enqueue, latestPromotion }}>
+    <XpContext.Provider value={{ current, advance, latestPromotion }}>
       {children}
     </XpContext.Provider>
   );

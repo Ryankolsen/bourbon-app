@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Tabs, useRouter } from "expo-router";
 import { Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "@/hooks/use-auth";
@@ -7,9 +6,6 @@ import { useGroupNotifications } from "@/hooks/use-group-notifications";
 import { useSocialNotifications } from "@/hooks/use-social-notifications";
 import { useBourbonSuggestions } from "@/hooks/use-bourbon-suggestions";
 import { useTheme } from "@/lib/theme-provider";
-import { useCheckIn } from "@/hooks/use-check-in";
-import { useXpNotification } from "@/context/xp-context";
-import { getXpEventLabel } from "@/lib/belt-config";
 
 function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
   return (
@@ -114,34 +110,6 @@ export default function TabsLayout() {
   const { user } = useAuth();
   const { activeTheme } = useTheme();
   const adminUser = !!(user?.email && isAdmin(user.email));
-
-  const { enqueue } = useXpNotification();
-
-  // Fire the daily check-in RPC once per confirmed userId per session.
-  // Gated on userId so it never fires with a null auth state.
-  // The RPC is idempotent — same-day calls are no-ops.
-  const checkIn = useCheckIn(user?.id);
-
-  // When the RPC returns non-zero XP, push the notification directly into
-  // XpContext without waiting for the Realtime channel to establish. This
-  // avoids the race where the Realtime subscription hasn't fully connected
-  // before check_in() inserts into xp_events, causing the toast to be missed.
-  // A stable date-based id deduplicates against a subsequent Realtime event.
-  useEffect(() => {
-    if (checkIn.isLoading || checkIn.lastXpAwarded === 0) return;
-    const today = new Date().toISOString().slice(0, 10);
-    enqueue({
-      id: `daily_checkin-${today}`,
-      xpAwarded: checkIn.lastXpAwarded,
-      eventType: "daily_checkin",
-      label: getXpEventLabel("daily_checkin"),
-      promoted: checkIn.promoted,
-      newBelt: checkIn.newBelt,
-      streakDays: checkIn.streakDays,
-      isReset: checkIn.isReset,
-      tomorrowXp: checkIn.tomorrowXp,
-    });
-  }, [checkIn.lastXpAwarded, checkIn.isLoading, enqueue]);
 
   const c = activeTheme.colors;
 

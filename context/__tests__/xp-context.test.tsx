@@ -3,13 +3,13 @@
  *
  * Pattern: render a consumer component inside XpProvider with mocked supabase
  * and useAuth. Realtime events are simulated by capturing the channel callback
- * and calling it directly.
+ * and calling it directly. RPC calls are resolved via mockRpc.
  */
 
 import React from "react";
 import { Text, TouchableOpacity } from "react-native";
 import { render, act, waitFor, fireEvent } from "@testing-library/react-native";
-import { XpProvider, useXpNotification, XpNotification } from "../xp-context";
+import { XpProvider, useXpNotification } from "../xp-context";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -25,11 +25,13 @@ const mockOn = jest.fn().mockImplementation(
 );
 const mockChannelObj = { on: mockOn, subscribe: mockSubscribe };
 const mockChannel = jest.fn().mockReturnValue(mockChannelObj);
+const mockRpc = jest.fn();
 
 jest.mock("@/lib/supabase", () => ({
   supabase: {
     channel: (...args: unknown[]) => mockChannel(...args),
     removeChannel: (...args: unknown[]) => mockRemoveChannel(...args),
+    rpc: (...args: unknown[]) => mockRpc(...args),
   },
 }));
 
@@ -39,15 +41,16 @@ jest.mock("@/lib/query-client", () => ({
   },
 }));
 
-const mockUserId = "user-123";
+// Mutable so individual tests can change auth state
+let mockAuthUser: { id: string } | null = { id: "user-123" };
 
 jest.mock("@/hooks/use-auth", () => ({
-  useAuth: () => ({ user: { id: mockUserId } }),
+  useAuth: () => ({ user: mockAuthUser }),
 }));
 
 // ── Consumer helpers ──────────────────────────────────────────────────────────
 
-/** Renders current notification text + an advance button for queue testing. */
+/** Renders current notification fields + an advance button for queue testing. */
 function Consumer() {
   const { current, advance } = useXpNotification();
   if (!current) return <Text testID="no-notif">none</Text>;
@@ -58,6 +61,12 @@ function Consumer() {
       <Text testID="label">{current.label}</Text>
       {current.streakDays !== undefined && (
         <Text testID="streak-days">{current.streakDays}</Text>
+      )}
+      {current.isReset !== undefined && (
+        <Text testID="is-reset">{current.isReset ? "true" : "false"}</Text>
+      )}
+      {current.tomorrowXp != null && (
+        <Text testID="tomorrow-xp-base">{current.tomorrowXp.base}</Text>
       )}
       <TouchableOpacity testID="advance-btn" onPress={advance}>
         <Text>advance</Text>
@@ -80,6 +89,7 @@ describe("XpContext", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     capturedCallback = null;
+    mockAuthUser = { id: "user-123" };
     mockOn.mockImplementation(
       (_event: unknown, _filter: unknown, cb: (payload: unknown) => void) => {
         capturedCallback = cb;
@@ -87,13 +97,21 @@ describe("XpContext", () => {
       }
     );
     mockChannel.mockReturnValue(mockChannelObj);
+    // Default RPC return: non-zero XP, streak day 3, no promotion
+    mockRpc.mockResolvedValue({
+      data: [{ xp_awarded: 4, streak_days: 3, promoted: false, new_belt: 1 }],
+      error: null,
+    });
   });
 
   // 1 — core wiring: Realtime INSERT dispatches a pending notification
   it("dispatches a notification when a Realtime INSERT fires", async () => {
     const { getByTestId } = renderWithProvider();
 
-    expect(getByTestId("no-notif")).toBeTruthy();
+    // Wait for RPC to resolve and populate current, then advance to clear it
+    await waitFor(() => expect(getByTestId("xp-awarded")).toBeTruthy());
+    fireEvent.press(getByTestId("advance-btn"));
+    await waitFor(() => expect(getByTestId("no-notif")).toBeTruthy());
 
     act(() => {
       capturedCallback?.({
@@ -111,6 +129,10 @@ describe("XpContext", () => {
   it("maps tasting_complete event_type to 'Tasting logged' label", async () => {
     const { getByTestId } = renderWithProvider();
 
+    await waitFor(() => expect(getByTestId("xp-awarded")).toBeTruthy());
+    fireEvent.press(getByTestId("advance-btn"));
+    await waitFor(() => expect(getByTestId("no-notif")).toBeTruthy());
+
     act(() => {
       capturedCallback?.({
         new: { xp_awarded: 25, event_type: "tasting_complete" },
@@ -125,6 +147,11 @@ describe("XpContext", () => {
   // 3a — edge case: two rapid events queue up; first is shown, second pending
   it("shows first notification and reveals second after advance", async () => {
     const { getByTestId } = renderWithProvider();
+
+    // Clear the RPC-driven check-in notification first
+    await waitFor(() => expect(getByTestId("xp-awarded")).toBeTruthy());
+    fireEvent.press(getByTestId("advance-btn"));
+    await waitFor(() => expect(getByTestId("no-notif")).toBeTruthy());
 
     act(() => {
       capturedCallback?.({ new: { xp_awarded: 10, event_type: "bourbon_added_to_collection" } });
@@ -152,178 +179,146 @@ describe("XpContext", () => {
     expect(mockRemoveChannel).toHaveBeenCalledTimes(1);
   });
 
-  // ── enqueue() tests ───────────────────────────────────────────────────────
+  // ── RPC check_in() tests ──────────────────────────────────────────────────
 
-  // 4 — core wiring: calling enqueue() adds notification to queue
-  it("enqueue: adds a notification to the queue when xpAwarded > 0", async () => {
-    let capturedEnqueue: ((n: XpNotification) => void) | null = null;
-
-    function CoreWiringConsumer() {
-      const { current, enqueue } = useXpNotification();
-      capturedEnqueue = enqueue;
-      if (!current) return <Text testID="no-notif">none</Text>;
-      return (
-        <>
-          <Text testID="xp-awarded">{current.xpAwarded}</Text>
-          <Text testID="event-type">{current.eventType}</Text>
-        </>
-      );
-    }
-
-    const { getByTestId } = render(
-      <XpProvider>
-        <CoreWiringConsumer />
-      </XpProvider>
-    );
-
-    expect(getByTestId("no-notif")).toBeTruthy();
-
-    act(() => {
-      capturedEnqueue?.({
-        id: "direct-1",
-        xpAwarded: 4,
-        eventType: "daily_checkin",
-        label: "Daily check-in",
-        promoted: false,
-        newBelt: 1,
-      });
-    });
+  // R1 — core wiring: XpProvider calls check_in() and populates current
+  it("RPC: populates current with xpAwarded and eventType after check_in resolves", async () => {
+    const { getByTestId } = renderWithProvider();
 
     await waitFor(() => {
       expect(getByTestId("xp-awarded").props.children).toBe(4);
       expect(getByTestId("event-type").props.children).toBe("daily_checkin");
     });
+
+    expect(mockRpc).toHaveBeenCalledWith("check_in");
   });
 
-  // 5 — content details: daily_checkin with streakDays is preserved
-  it("enqueue: preserves streakDays on a daily_checkin notification", async () => {
-    function StreakConsumer() {
-      const { current, enqueue } = useXpNotification();
-      if (!current)
-        return (
-          <TouchableOpacity
-            testID="enqueue-streak-btn"
-            onPress={() =>
-              enqueue({
-                id: "checkin-today",
-                xpAwarded: 4,
-                eventType: "daily_checkin",
-                label: "Daily check-in",
-                promoted: false,
-                newBelt: 1,
-                streakDays: 4,
-              })
-            }
-          >
-            <Text testID="no-notif">none</Text>
-          </TouchableOpacity>
-        );
-      return (
-        <>
-          <Text testID="xp-awarded">{current.xpAwarded}</Text>
-          <Text testID="streak-days">{current.streakDays}</Text>
-        </>
-      );
+  // R2 — content details: streakDays, isReset, tomorrowXp are populated
+  it("RPC: populates streakDays, isReset, and tomorrowXp on the notification", async () => {
+    const { getByTestId } = renderWithProvider();
+
+    await waitFor(() => {
+      expect(getByTestId("streak-days").props.children).toBe(3);
+      expect(getByTestId("is-reset").props.children).toBe("false");
+      // tomorrowXp.base = streakDays + 1 = 4
+      expect(getByTestId("tomorrow-xp-base").props.children).toBe(4);
+    });
+  });
+
+  // R3a — edge case: promoted: true sets latestPromotion
+  it("RPC: sets latestPromotion when check_in returns promoted: true", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [{ xp_awarded: 7, streak_days: 7, promoted: true, new_belt: 3 }],
+      error: null,
+    });
+
+    function PromotionConsumer() {
+      const { latestPromotion } = useXpNotification();
+      if (!latestPromotion) return <Text testID="no-promo">none</Text>;
+      return <Text testID="promo-belt">{latestPromotion.belt}</Text>;
     }
 
     const { getByTestId } = render(
       <XpProvider>
-        <StreakConsumer />
+        <PromotionConsumer />
       </XpProvider>
     );
 
-    act(() => {
-      fireEvent.press(getByTestId("enqueue-streak-btn"));
-    });
-
     await waitFor(() => {
-      expect(getByTestId("xp-awarded").props.children).toBe(4);
-      expect(getByTestId("streak-days").props.children).toBe(4);
+      expect(getByTestId("promo-belt").props.children).toBe(3);
     });
   });
 
-  // 6 — edge case: same id enqueued twice only appears once (deduplication)
-  it("enqueue: deduplicates notifications with the same id", async () => {
-    let capturedEnqueue: ((n: XpNotification) => void) | null = null;
-    let queueLength = 0;
+  // R3b — edge case: RPC fires then Realtime fires with same date-keyed id → dedup
+  it("RPC: Realtime daily_checkin event after RPC is deduplicated", async () => {
+    jest.useFakeTimers().setSystemTime(new Date("2024-01-01"));
 
-    function DedupConsumer() {
-      const { current, advance, enqueue } = useXpNotification();
-      capturedEnqueue = enqueue;
-      queueLength = current ? 1 : 0;
-      if (!current) return <Text testID="no-notif">none</Text>;
-      return (
-        <>
-          <Text testID="xp-awarded">{current.xpAwarded}</Text>
-          <TouchableOpacity testID="advance-btn" onPress={advance}>
-            <Text>advance</Text>
-          </TouchableOpacity>
-        </>
-      );
-    }
+    const { getByTestId } = renderWithProvider();
 
-    const { getByTestId, queryByTestId } = render(
-      <XpProvider>
-        <DedupConsumer />
-      </XpProvider>
-    );
-
-    const notif: XpNotification = {
-      id: "dedup-id",
-      xpAwarded: 10,
-      eventType: "daily_checkin",
-      label: "Daily check-in",
-      promoted: false,
-      newBelt: 1,
-    };
-
-    act(() => {
-      capturedEnqueue?.(notif);
-      capturedEnqueue?.(notif); // same id — should be dropped
-    });
-
+    // RPC notification arrives
     await waitFor(() => {
-      expect(getByTestId("xp-awarded").props.children).toBe(10);
+      expect(getByTestId("xp-awarded").props.children).toBe(4);
     });
 
-    // Advance should reveal "none" (queue has only 1 item)
+    // Realtime fires with same date-keyed id (daily_checkin event same day)
+    act(() => {
+      capturedCallback?.({
+        new: {
+          id: "daily_checkin-2024-01-01",
+          xp_awarded: 4,
+          event_type: "daily_checkin",
+          promoted: false,
+          new_belt: 1,
+        },
+      });
+    });
+
+    // Advance: queue should only have 1 item (Realtime was deduplicated)
     fireEvent.press(getByTestId("advance-btn"));
     await waitFor(() => {
       expect(getByTestId("no-notif")).toBeTruthy();
     });
+
+    jest.useRealTimers();
   });
 
-  // 7 — edge case: xpAwarded: 0 is ignored
-  it("enqueue: ignores notifications with xpAwarded === 0", async () => {
-    let capturedEnqueue: ((n: XpNotification) => void) | null = null;
+  // R3c — edge case: userId null → RPC not called, Realtime not subscribed
+  it("RPC: does not call rpc or subscribe when userId is null", () => {
+    mockAuthUser = null;
 
-    function ZeroConsumer() {
-      const { current, enqueue } = useXpNotification();
-      capturedEnqueue = enqueue;
-      if (!current) return <Text testID="no-notif">none</Text>;
-      return <Text testID="xp-awarded">{current.xpAwarded}</Text>;
-    }
-
-    const { getByTestId } = render(
+    render(
       <XpProvider>
-        <ZeroConsumer />
+        <Consumer />
       </XpProvider>
     );
 
-    act(() => {
-      capturedEnqueue?.({
-        id: "zero-xp",
-        xpAwarded: 0,
-        eventType: "daily_checkin",
-        label: "Daily check-in",
-        promoted: false,
-        newBelt: 1,
-      });
+    expect(mockRpc).not.toHaveBeenCalled();
+    expect(mockChannel).not.toHaveBeenCalled();
+  });
+
+  // R3d — edge case: isReset true when streak_days is 1 after prior streak > 1
+  it("RPC: sets isReset true when streak_days is 1 after a prior streak > 1", async () => {
+    // Day 1: establish streak of 5
+    jest.useFakeTimers().setSystemTime(new Date("2024-01-01"));
+    mockRpc.mockResolvedValueOnce({
+      data: [{ xp_awarded: 5, streak_days: 5, promoted: false, new_belt: 1 }],
+      error: null,
     });
 
+    const { getByTestId, rerender } = render(
+      <XpProvider>
+        <Consumer />
+      </XpProvider>
+    );
+
     await waitFor(() => {
-      expect(getByTestId("no-notif")).toBeTruthy();
+      expect(getByTestId("xp-awarded").props.children).toBe(5);
     });
+
+    // Advance to clear the queue
+    fireEvent.press(getByTestId("advance-btn"));
+    await waitFor(() => expect(getByTestId("no-notif")).toBeTruthy());
+
+    // Day 3: streak reset (missed a day)
+    jest.setSystemTime(new Date("2024-01-03"));
+    mockRpc.mockResolvedValueOnce({
+      data: [{ xp_awarded: 1, streak_days: 1, promoted: false, new_belt: 1 }],
+      error: null,
+    });
+
+    // Cycle userId to null then back to re-trigger the check_in effect
+    mockAuthUser = null;
+    rerender(<XpProvider><Consumer /></XpProvider>);
+
+    mockAuthUser = { id: "user-123" };
+    rerender(<XpProvider><Consumer /></XpProvider>);
+
+    await waitFor(() => {
+      expect(getByTestId("xp-awarded").props.children).toBe(1);
+      expect(getByTestId("is-reset").props.children).toBe("true");
+    });
+
+    jest.useRealTimers();
   });
 
   // ── latestPromotion tests ─────────────────────────────────────────────────
@@ -347,14 +342,15 @@ describe("XpContext", () => {
       </XpProvider>
     );
 
-    expect(getByTestId("no-promo")).toBeTruthy();
+    // Wait for RPC to settle (no promotion in default mock)
+    await waitFor(() => expect(mockRpc).toHaveBeenCalled());
 
     act(() => {
       capturedCallback?.({
         new: {
           id: "promo-row-uuid",
           xp_awarded: 10,
-          event_type: "daily_checkin",
+          event_type: "tasting_complete",
           promoted: true,
           new_belt: 3,
         },
@@ -386,12 +382,14 @@ describe("XpContext", () => {
       </XpProvider>
     );
 
+    await waitFor(() => expect(mockRpc).toHaveBeenCalled());
+
     act(() => {
       capturedCallback?.({
         new: {
           id: "promo-uuid-1",
           xp_awarded: 10,
-          event_type: "daily_checkin",
+          event_type: "tasting_complete",
           promoted: true,
           new_belt: 2,
         },
@@ -430,12 +428,17 @@ describe("XpContext", () => {
       </XpProvider>
     );
 
+    // Wait for RPC then advance past the check-in notification
+    await waitFor(() => expect(getByTestId("advance-btn")).toBeTruthy());
+    fireEvent.press(getByTestId("advance-btn"));
+    await waitFor(() => expect(queryByTestId("advance-btn")).toBeNull());
+
     act(() => {
       capturedCallback?.({
         new: {
           id: "promo-adv-1",
           xp_awarded: 10,
-          event_type: "daily_checkin",
+          event_type: "tasting_complete",
           promoted: true,
           new_belt: 4,
         },
@@ -475,9 +478,11 @@ describe("XpContext", () => {
       </XpProvider>
     );
 
+    await waitFor(() => expect(mockRpc).toHaveBeenCalled());
+
     act(() => {
       capturedCallback?.({
-        new: { id: "promo-first", xp_awarded: 10, event_type: "daily_checkin", promoted: true, new_belt: 2 },
+        new: { id: "promo-first", xp_awarded: 10, event_type: "tasting_complete", promoted: true, new_belt: 2 },
       });
     });
 
@@ -487,7 +492,7 @@ describe("XpContext", () => {
 
     act(() => {
       capturedCallback?.({
-        new: { id: "promo-second", xp_awarded: 10, event_type: "daily_checkin", promoted: true, new_belt: 3 },
+        new: { id: "promo-second", xp_awarded: 10, event_type: "tasting_complete", promoted: true, new_belt: 3 },
       });
     });
 
@@ -499,6 +504,12 @@ describe("XpContext", () => {
 
   // L3c — edge case: promoted: false does not set latestPromotion
   it("latestPromotion: remains null when Realtime INSERT has promoted: false", async () => {
+    // Use a mock that returns xp_awarded: 0 so the RPC path doesn't set latestPromotion
+    mockRpc.mockResolvedValueOnce({
+      data: [{ xp_awarded: 0, streak_days: 1, promoted: false, new_belt: 1 }],
+      error: null,
+    });
+
     function PromotionConsumer() {
       const { latestPromotion } = useXpNotification();
       if (!latestPromotion) return <Text testID="no-promo">none</Text>;
@@ -511,70 +522,16 @@ describe("XpContext", () => {
       </XpProvider>
     );
 
+    await waitFor(() => expect(mockRpc).toHaveBeenCalled());
+
     act(() => {
       capturedCallback?.({
-        new: { id: "non-promo", xp_awarded: 10, event_type: "daily_checkin", promoted: false, new_belt: 1 },
+        new: { id: "non-promo", xp_awarded: 10, event_type: "tasting_complete", promoted: false, new_belt: 1 },
       });
     });
 
     await waitFor(() => {
       expect(getByTestId("no-promo")).toBeTruthy();
-    });
-  });
-
-  // 8 — edge case: Realtime INSERT with same id as direct enqueue is dropped
-  it("Realtime duplicate of a directly-enqueued notification is dropped", async () => {
-    let capturedEnqueue: ((n: XpNotification) => void) | null = null;
-
-    function RealtimeDedupConsumer() {
-      const { current, advance, enqueue } = useXpNotification();
-      capturedEnqueue = enqueue;
-      if (!current) return <Text testID="no-notif">none</Text>;
-      return (
-        <>
-          <Text testID="xp-awarded">{current.xpAwarded}</Text>
-          <TouchableOpacity testID="advance-btn" onPress={advance}>
-            <Text>advance</Text>
-          </TouchableOpacity>
-        </>
-      );
-    }
-
-    const { getByTestId } = render(
-      <XpProvider>
-        <RealtimeDedupConsumer />
-      </XpProvider>
-    );
-
-    const sharedId = "shared-event-uuid";
-
-    act(() => {
-      // Direct enqueue first
-      capturedEnqueue?.({
-        id: sharedId,
-        xpAwarded: 5,
-        eventType: "daily_checkin",
-        label: "Daily check-in",
-        promoted: false,
-        newBelt: 1,
-      });
-    });
-
-    await waitFor(() => {
-      expect(getByTestId("xp-awarded").props.children).toBe(5);
-    });
-
-    act(() => {
-      // Realtime arrives with the same row id — should be deduplicated
-      capturedCallback?.({
-        new: { id: sharedId, xp_awarded: 5, event_type: "daily_checkin" },
-      });
-    });
-
-    // Advance: if Realtime was not deduplicated there would be a second item
-    fireEvent.press(getByTestId("advance-btn"));
-    await waitFor(() => {
-      expect(getByTestId("no-notif")).toBeTruthy();
     });
   });
 });
