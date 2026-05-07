@@ -19,30 +19,26 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { useXpNotification, XpNotification } from "@/context/xp-context";
+import { useXpNotification } from "@/context/xp-context";
 import { BeltBadge } from "@/components/BeltBadge";
 import { getBeltConfig, getBeltPromotionCopy } from "@/lib/belt-config";
 import { AchievementShareSheet } from "@/components/AchievementShareSheet";
 
 export function BeltUpModal() {
-  const { current } = useXpNotification();
+  const { latestPromotion } = useXpNotification();
   const [visible, setVisible] = useState(false);
-  const [promotion, setPromotion] = useState<XpNotification | null>(null);
+  const [promotion, setPromotion] = useState<{ belt: number; id: string } | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   // Track the last promotion ID we've shown so we don't re-show on re-renders
   const lastShownIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (
-      current?.promoted &&
-      current.newBelt >= 1 &&
-      current.id !== lastShownIdRef.current
-    ) {
-      lastShownIdRef.current = current.id;
-      setPromotion(current);
+    if (latestPromotion && latestPromotion.id !== lastShownIdRef.current) {
+      lastShownIdRef.current = latestPromotion.id;
+      setPromotion(latestPromotion);
       setVisible(true);
     }
-  }, [current?.id, current?.promoted]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [latestPromotion?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const dismiss = () => {
     setShareOpen(false);
@@ -51,8 +47,8 @@ export function BeltUpModal() {
 
   if (!visible || !promotion) return null;
 
-  const belt = getBeltConfig(promotion.newBelt);
-  const copy = getBeltPromotionCopy(promotion.newBelt);
+  const belt = getBeltConfig(promotion.belt);
+  const copy = getBeltPromotionCopy(promotion.belt);
 
   return (
     <Modal
@@ -67,7 +63,7 @@ export function BeltUpModal() {
           {/* Inner card — taps here do NOT propagate to the backdrop */}
           <TouchableWithoutFeedback>
             <View style={styles.card}>
-              <BeltBadge level={promotion.newBelt} size={60} />
+              <BeltBadge level={promotion.belt} size={60} />
 
               <Text style={styles.headline} testID="belt-up-headline">
                 {belt.senpai
