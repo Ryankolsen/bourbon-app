@@ -254,18 +254,25 @@ Requires Apple credentials and an App Store Connect app record for `com.ryankols
 
 ## Database
 
-### Apply migrations to prod
+### Apply migrations
 
 ```bash
+# Local only (safe to experiment)
+npx supabase migration up
+
+# Remote (prod) — review the migration list before accepting
 npx supabase db push --linked
 ```
+
+> **Warning:** `supabase db push` without `--linked` still targets remote, not local. Always use `migration up` when testing locally.
 
 ### Add a new migration
 
 ```bash
 npx supabase migration new your_migration_name
 # edit supabase/migrations/<timestamp>_your_migration_name.sql
-npx supabase db push --linked
+npx supabase migration up          # test locally first
+npx supabase db push --linked      # push to prod when ready
 ```
 
 ### Schema
@@ -281,8 +288,41 @@ npx supabase db push --linked
 | `group_members` | Group membership (owner / member, pending / accepted) |
 | `group_sale_alerts` | Sale alerts posted to a group (soft-deleted via `removed_at`) |
 | `user_push_tokens` | Push notification tokens per device |
+| `achievements` | Achievement definitions (title, tier, category, XP value) |
+| `user_achievements` | Earned achievements per user (written even when flag is off) |
+| `feature_flags` | Boolean flags gating new features from existing deployed bundles |
 
 All tables have Row Level Security enabled.
+
+---
+
+## Feature Flags
+
+Feature flags in `public.feature_flags` protect existing deployed builds from new functionality until a new bundle is live in both stores. Flags are seeded `false` and flipped manually — never via migration.
+
+### Current flags
+
+| Flag | Status | Blocks |
+|------|--------|--------|
+| `achievements_live` | **OFF** — waiting for v1.1.0 bundle in both stores | XP awards + bell notifications for achievements |
+
+### How to flip a flag
+
+Once the v1.1.0 bundle is live in **both** the App Store and Play Store:
+
+```bash
+npx supabase db query --linked \
+  "update public.feature_flags set enabled = true where name = 'achievements_live';"
+```
+
+Verify immediately after:
+
+```bash
+npx supabase db query --linked \
+  "select name, enabled from public.feature_flags;"
+```
+
+> **Before flipping:** decide whether to backfill XP for users who earned achievements while the flag was off. Users have `user_achievements` rows but no `xp_events` entries for that period. Ask before running any backfill script.
 
 ### Supabase Studio (local)
 
