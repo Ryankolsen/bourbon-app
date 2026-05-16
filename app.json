@@ -3,7 +3,7 @@
     "name": "Bourbon Dojo",
     "slug": "bourbon-app",
     "scheme": "bourbonvault",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
