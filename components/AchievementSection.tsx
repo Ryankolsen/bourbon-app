@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useAchievements, useAchievementsRealtime } from '@/hooks/use-achievements';
+import { useEarnedAchievements } from '@/hooks/use-earned-achievements';
 import { AchievementCard } from './AchievementCard';
 import { AchievementDetailSheet } from './AchievementDetailSheet';
 import { Database } from '@/types/database';
@@ -31,13 +32,14 @@ export function AchievementSection({ userId, isOwnProfile }: AchievementSectionP
     earnedAt: string | null;
   } | null>(null);
 
-  const { achievements } = useAchievements(userId);
-  useAchievementsRealtime(userId);
+  const ownData = useAchievements(isOwnProfile ? userId : undefined);
+  const visitorData = useEarnedAchievements(!isOwnProfile ? userId : undefined);
+  useAchievementsRealtime(isOwnProfile ? userId : undefined);
 
-  const filteredAchievements = achievements.filter(({ achievement, earnedAt }) => {
-    if (achievement.category !== CATEGORY_MAP[activeCategory]) return false;
-    if (!isOwnProfile && earnedAt === null) return false;
-    return true;
+  const achievements = isOwnProfile ? ownData.achievements : visitorData.achievements;
+
+  const filteredAchievements = achievements.filter(({ achievement }) => {
+    return achievement.category === CATEGORY_MAP[activeCategory];
   });
 
   return (

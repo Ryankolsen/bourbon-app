@@ -21,6 +21,11 @@ jest.mock('@/hooks/use-achievements', () => ({
   useAchievementsRealtime: jest.fn(),
 }));
 
+const mockUseEarnedAchievements = jest.fn();
+jest.mock('@/hooks/use-earned-achievements', () => ({
+  useEarnedAchievements: (...args: unknown[]) => mockUseEarnedAchievements(...args),
+}));
+
 jest.mock('@/components/AchievementDetailSheet', () => ({
   AchievementDetailSheet: () => {
     const { View } = require('react-native');
@@ -93,6 +98,11 @@ describe('AchievementSection', () => {
       isSuccess: true,
       isPending: false,
     });
+    mockUseEarnedAchievements.mockReturnValue({
+      achievements: [],
+      isSuccess: true,
+      isPending: false,
+    });
   });
 
   // 1 — Core wiring: collapsed by default
@@ -138,7 +148,27 @@ describe('AchievementSection', () => {
     expect(screen.queryByTestId('achievement-card')).toBeNull();
   });
 
-  // 5 — Tab switching: switching to Collection tab shows collection achievements
+  // 5 — Visitor mode uses useEarnedAchievements and shows only earned, no lock icons
+  it('hides unearned achievements in visitor mode', () => {
+    const earnedAchievements = [
+      { achievement: makeMockAchievement('earned_1', 'tasting', 'Earned One'), earnedAt: '2026-01-01T00:00:00Z' },
+      { achievement: makeMockAchievement('earned_2', 'tasting', 'Earned Two'), earnedAt: '2026-01-02T00:00:00Z' },
+      { achievement: makeMockAchievement('earned_3', 'tasting', 'Earned Three'), earnedAt: '2026-01-03T00:00:00Z' },
+    ];
+    mockUseEarnedAchievements.mockReturnValue({
+      achievements: earnedAchievements,
+      isSuccess: true,
+      isPending: false,
+    });
+
+    render(<AchievementSection userId="other-user" isOwnProfile={false} />);
+    fireEvent.press(screen.getByTestId('achievement-expand-button'));
+
+    expect(screen.queryAllByTestId('achievement-locked')).toHaveLength(0);
+    expect(screen.getAllByTestId('achievement-card')).toHaveLength(3);
+  });
+
+  // 6 — Tab switching: switching to Collection tab shows collection achievements
   it('switches to Collection tab and shows collection achievements', () => {
     const earnedMap = { collection_0: '2026-01-01T00:00:00Z' };
     mockUseAchievements.mockReturnValue({

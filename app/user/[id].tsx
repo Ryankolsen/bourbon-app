@@ -24,6 +24,7 @@ import { useUserXp } from "@/hooks/use-user-xp";
 import { colors } from "@/lib/colors";
 import { BeltBadge } from "@/components/BeltBadge";
 import { XpProgressBar } from "@/components/XpProgressBar";
+import { AchievementSection } from "@/components/AchievementSection";
 
 export default function PublicProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -132,6 +133,9 @@ export default function PublicProfileScreen() {
             </>
           )}
         </View>
+
+        {/* Achievements (earned only) */}
+        <AchievementSection userId={id} isOwnProfile={false} />
 
         {/* Follower / following counts */}
         <View className="flex-row bg-brand-800 rounded-2xl p-4 mb-4 justify-around">
