@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { buildCommentPayload } from '@/lib/tasting-comments';
@@ -93,6 +93,11 @@ export function useTastingCommentsRealtime(
   tastingId: string | undefined,
   onInsert: (comment: CommentRow) => void,
 ) {
+  const onInsertRef = useRef(onInsert);
+  useEffect(() => {
+    onInsertRef.current = onInsert;
+  });
+
   useEffect(() => {
     if (!tastingId) return;
     const channel = supabase
@@ -105,11 +110,11 @@ export function useTastingCommentsRealtime(
           table: 'tasting_comments',
           filter: `tasting_id=eq.${tastingId}`,
         },
-        (payload) => onInsert(payload.new as CommentRow),
+        (payload) => onInsertRef.current(payload.new as CommentRow),
       )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tastingId, onInsert]);
+  }, [tastingId]);
 }
