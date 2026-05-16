@@ -26,7 +26,8 @@
       "Bash(identify /Users/ryankolsen/IdeaProjects/bourbon-app/assets/icon.png)",
       "Read(//Users/ryankolsen/.claude/plugins/**)",
       "Read(//Users/ryankolsen/.claude/**)",
-      "Bash(mktemp *)"
+      "Bash(mktemp *)",
+      "Skill(write-a-skill)"
     ],
     "ask": [
       "Bash(npx supabase db query --linked \"DELETE:*)",
