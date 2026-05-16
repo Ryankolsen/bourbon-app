@@ -25,7 +25,8 @@
       "Bash(pnpm run typecheck:*)",
       "Bash(identify /Users/ryankolsen/IdeaProjects/bourbon-app/assets/icon.png)",
       "Read(//Users/ryankolsen/.claude/plugins/**)",
-      "Read(//Users/ryankolsen/.claude/**)"
+      "Read(//Users/ryankolsen/.claude/**)",
+      "Bash(mktemp *)"
     ],
     "ask": [
       "Bash(npx supabase db query --linked \"DELETE:*)",
