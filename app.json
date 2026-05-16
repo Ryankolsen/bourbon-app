@@ -22,7 +22,7 @@
       }
     },
     "android": {
-      "package": "com.ryankolsen.bourbonvault",
+      "package": "com.ryankolsen.bourbondojo",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#3D2010"
