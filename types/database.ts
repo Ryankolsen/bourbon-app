@@ -490,18 +490,20 @@ export interface Database {
         Row: {
           id: string;
           recipient_id: string;
-          actor_id: string;
-          type: 'new_tasting' | 'new_follower';
+          actor_id: string | null;
+          type: 'new_tasting' | 'new_follower' | 'achievement_unlocked';
           tasting_id: string | null;
+          metadata: Json | null;
           created_at: string;
           dismissed_at: string | null;
         };
         Insert: {
           id?: string;
           recipient_id: string;
-          actor_id: string;
-          type: 'new_tasting' | 'new_follower';
+          actor_id?: string | null;
+          type: 'new_tasting' | 'new_follower' | 'achievement_unlocked';
           tasting_id?: string | null;
+          metadata?: Json | null;
           created_at?: string;
           dismissed_at?: string | null;
         };
@@ -509,6 +511,74 @@ export interface Database {
           dismissed_at?: string | null;
         };
         Relationships: [];
+      };
+      achievements: {
+        Row: {
+          id: string;
+          key: string;
+          category: 'tasting' | 'collection' | 'social' | 'dojo' | 'explorer';
+          tier: 'new_make' | 'bonded' | 'single_barrel' | null;
+          title: string;
+          description: string;
+          xp_award: number;
+          trigger_type: string;
+          trigger_threshold: number | null;
+        };
+        Insert: {
+          id?: string;
+          key: string;
+          category: 'tasting' | 'collection' | 'social' | 'dojo' | 'explorer';
+          tier?: 'new_make' | 'bonded' | 'single_barrel' | null;
+          title: string;
+          description: string;
+          xp_award: number;
+          trigger_type: string;
+          trigger_threshold?: number | null;
+        };
+        Update: {
+          key?: string;
+          category?: 'tasting' | 'collection' | 'social' | 'dojo' | 'explorer';
+          tier?: 'new_make' | 'bonded' | 'single_barrel' | null;
+          title?: string;
+          description?: string;
+          xp_award?: number;
+          trigger_type?: string;
+          trigger_threshold?: number | null;
+        };
+        Relationships: [];
+      };
+      user_achievements: {
+        Row: {
+          id: string;
+          user_id: string;
+          achievement_id: string;
+          earned_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          achievement_id: string;
+          earned_at?: string;
+        };
+        Update: {
+          earned_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey";
+            columns: ["achievement_id"];
+            isOneToOne: false;
+            referencedRelation: "achievements";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       group_notifications: {
         Row: {
@@ -915,6 +985,10 @@ export interface Database {
         Args: { p_suggestion_id: string };
         Returns: void;
       };
+      check_and_award_achievement: {
+        Args: { p_user_id: string; p_achievement_key: string };
+        Returns: { awarded: boolean; xp_awarded: number }[];
+      };
     };
     Enums: {
       xp_event_type:
@@ -941,7 +1015,8 @@ export interface Database {
         | 'dojo_duel_loss'
         | 'sacred_pour_perfect'
         | 'sacred_pour_complete'
-        | 'pour_or_faker_complete';
+        | 'pour_or_faker_complete'
+        | 'achievement_unlocked';
     };
   };
 }
