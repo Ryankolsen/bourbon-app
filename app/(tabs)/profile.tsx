@@ -28,6 +28,7 @@ import { BeltBadge } from "@/components/BeltBadge";
 import { XpProgressBar } from "@/components/XpProgressBar";
 import { StreakCard } from "@/components/StreakCard";
 import { DojoGuideModal } from "@/components/DojoGuideModal";
+import { AchievementSection } from "@/components/AchievementSection";
 import { getTomorrowXp } from "@/lib/streak-utils";
 
 const THEME_OPTIONS: { label: string; value: ThemeMode }[] = [
@@ -191,6 +192,9 @@ export default function ProfileScreen() {
             </>
           )}
         </View>
+
+        {/* Achievements */}
+        <AchievementSection userId={user?.id} isOwnProfile />
 
         {/* Follower / following counts */}
         <View className="flex-row bg-brand-800 rounded-2xl p-4 mb-4 justify-around">

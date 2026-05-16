@@ -92,6 +92,13 @@ jest.mock("@/components/StreakCard", () => ({
   },
 }));
 
+jest.mock("@/components/AchievementSection", () => ({
+  AchievementSection: () => {
+    const { View } = require("react-native");
+    return <View testID="achievement-section" />;
+  },
+}));
+
 // Importing expo-router is not needed for profile, but just in case
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: jest.fn() }),

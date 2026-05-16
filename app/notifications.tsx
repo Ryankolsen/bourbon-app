@@ -36,19 +36,26 @@ function NotificationRow({
   onDismiss: (id: string) => void;
 }) {
   const router = useRouter();
+  const isAchievement = item.type === 'achievement_unlocked';
+  const achievementTitle =
+    isAchievement && item.metadata
+      ? (item.metadata as { title?: string }).title ?? 'Unknown'
+      : null;
+
   const actorName = item.profiles?.username
     ? `@${item.profiles.username}`
     : item.profiles?.display_name ?? 'Someone';
 
-  const label =
-    item.type === 'new_tasting'
-      ? `${actorName} logged a tasting`
-      : `${actorName} is now following you`;
+  const label = isAchievement
+    ? `Achievement Unlocked: ${achievementTitle}`
+    : item.type === 'new_tasting'
+    ? `${actorName} logged a tasting`
+    : `${actorName} is now following you`;
 
   function handlePress() {
-    if (item.type === 'new_tasting' && item.tasting_id) {
-      // Navigate to bourbon via tasting — for now navigate to actor profile
-      // Full bourbon lookup would need a separate query; navigate to actor
+    if (isAchievement) {
+      router.push('/(tabs)/profile' as never);
+    } else if (item.type === 'new_tasting' && item.tasting_id) {
       router.push(`/user/${item.actor_id}` as never);
     } else {
       router.push(`/user/${item.actor_id}` as never);
@@ -61,6 +68,11 @@ function NotificationRow({
       onPress={handlePress}
       testID="notification-row"
     >
+      {!isAchievement && item.actor_id && (
+        <View testID="actor-avatar" className="mr-3">
+          <Text className="text-brand-400 text-base">👤</Text>
+        </View>
+      )}
       <View className="flex-1">
         <Text className="text-brand-100 text-sm font-medium" numberOfLines={2}>
           {label}
