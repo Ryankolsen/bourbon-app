@@ -219,7 +219,7 @@ export default function BourbonDetailScreen() {
           )}
           {bourbon.type && (
             <View className="mt-2 self-start bg-brand-700 px-3 py-1 rounded-full">
-              <Text className="text-brand-200 text-xs font-medium capitalize">
+              <Text className="text-surface-text text-xs font-medium capitalize">
                 {bourbon.type}
               </Text>
             </View>
@@ -281,7 +281,7 @@ export default function BourbonDetailScreen() {
                           onPress={() => setSelectedGroupId(gm.group_id)}
                           className={`px-3 py-1 rounded-full ${isActive ? "bg-brand-600" : "bg-brand-700"}`}
                         >
-                          <Text className={`text-xs font-medium ${isActive ? "text-white" : "text-brand-300"}`}>
+                          <Text className={`text-xs font-medium ${isActive ? "text-white" : "text-surface-text"}`}>
                             {gm.groups?.name ?? "Group"}
                           </Text>
                         </TouchableOpacity>
@@ -491,7 +491,7 @@ export default function BourbonDetailScreen() {
                   onPress={() => setCommentVisibility("public")}
                   className={`px-3 py-1 rounded-full ${commentVisibility === "public" ? "bg-brand-600" : "bg-brand-700"}`}
                 >
-                  <Text className={`text-xs font-medium ${commentVisibility === "public" ? "text-white" : "text-brand-300"}`}>
+                  <Text className={`text-xs font-medium ${commentVisibility === "public" ? "text-white" : "text-surface-text"}`}>
                     Public
                   </Text>
                 </TouchableOpacity>
@@ -500,7 +500,7 @@ export default function BourbonDetailScreen() {
                     onPress={() => setCommentVisibility("group")}
                     className={`px-3 py-1 rounded-full ${commentVisibility === "group" ? "bg-brand-600" : "bg-brand-700"}`}
                   >
-                    <Text className={`text-xs font-medium ${commentVisibility === "group" ? "text-white" : "text-brand-300"}`}>
+                    <Text className={`text-xs font-medium ${commentVisibility === "group" ? "text-white" : "text-surface-text"}`}>
                       {activeGroup?.groups?.name ?? "Group only"}
                     </Text>
                   </TouchableOpacity>

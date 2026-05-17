@@ -96,7 +96,7 @@ function SuggestionCard({
     >
       {isConflicting && (
         <View className="bg-brand-700 rounded-lg px-2 py-1 self-start mb-2">
-          <Text className="text-brand-300 text-xs font-medium">⚠️ Conflicting</Text>
+          <Text className="text-surface-text text-xs font-medium">⚠️ Conflicting</Text>
         </View>
       )}
 
