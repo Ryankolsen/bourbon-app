@@ -69,12 +69,12 @@ export function AchievementSection({ userId, isOwnProfile }: AchievementSectionP
                 testID={`achievement-tab-${cat.toLowerCase()}`}
                 onPress={() => setActiveCategory(cat)}
                 className={`mr-2 px-3 py-1.5 rounded-full border ${
-                  activeCategory === cat ? 'bg-brand-500 border-brand-500' : 'border-brand-600'
+                  activeCategory === cat ? 'bg-brand-600 border-brand-600' : 'border-brand-500'
                 }`}
               >
                 <Text
                   className={`text-xs font-semibold ${
-                    activeCategory === cat ? 'text-white' : 'text-brand-400'
+                    activeCategory === cat ? 'text-white' : 'text-brand-300'
                   }`}
                 >
                   {cat}

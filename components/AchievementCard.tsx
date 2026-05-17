@@ -27,17 +27,17 @@ export function AchievementCard({ achievement, earnedAt, onPress }: AchievementC
     >
       {!isEarned && (
         <View testID="achievement-locked" className="mr-3">
-          <Text className="text-brand-400 text-base">🔒</Text>
+          <Text className="text-surface-text text-base">🔒</Text>
         </View>
       )}
       <View className="flex-1">
-        <Text className="text-brand-100 font-semibold text-sm">{achievement.title}</Text>
+        <Text className="text-surface-text font-semibold text-sm">{achievement.title}</Text>
         {isEarned && tierLabel && (
-          <Text className="text-brand-400 text-xs mt-0.5">{tierLabel}</Text>
+          <Text className="text-surface-text text-xs mt-0.5 opacity-70">{tierLabel}</Text>
         )}
       </View>
       {isEarned && (
-        <Text className="text-brand-400 text-xs">✓</Text>
+        <Text className="text-surface-text text-xs">✓</Text>
       )}
     </TouchableOpacity>
   );
