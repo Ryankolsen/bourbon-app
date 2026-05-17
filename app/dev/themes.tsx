@@ -109,7 +109,7 @@ function ThemeCard({
             paddingVertical: 2,
           }}
         >
-          <Text style={{ color: c.brand300, fontSize: 11 }}>
+          <Text style={{ color: textOnBg(c.brand700), fontSize: 11 }}>
             {theme.variant}
           </Text>
         </View>
@@ -164,7 +164,7 @@ function ThemeCard({
             paddingVertical: 4,
           }}
         >
-          <Text style={{ color: c.white, fontSize: 11, fontWeight: "600" }}>
+          <Text style={{ color: textOnBg(c.brand500), fontSize: 11, fontWeight: "600" }}>
             Button
           </Text>
         </View>
@@ -195,7 +195,7 @@ function ThemeCard({
           alignItems: "center",
         }}
       >
-        <Text style={{ color: theme.id === "high-contrast" ? c.black : c.white, fontWeight: "600" }}>
+        <Text style={{ color: textOnBg(isActive ? c.brand500 : c.brand700), fontWeight: "600" }}>
           {isActive ? "✓ Active" : "Apply"}
         </Text>
       </TouchableOpacity>
