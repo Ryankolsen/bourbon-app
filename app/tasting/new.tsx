@@ -122,7 +122,7 @@ export default function NewTastingScreen() {
                 onPress={() => setRating(rating === r ? null : r)}
                 className="items-center"
               >
-                <Text className={`text-3xl ${rating !== null && r <= rating ? "opacity-100" : "opacity-30"}`}>
+                <Text className={`text-3xl ${rating !== null && r <= rating ? "text-amber-400" : "text-zinc-600"}`}>
                   ★
                 </Text>
               </TouchableOpacity>
