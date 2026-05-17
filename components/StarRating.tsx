@@ -17,14 +17,13 @@ const SIZE_CLASS: Record<NonNullable<StarRatingProps["size"]>, string> = {
   lg: "text-3xl",
 };
 
-// Filled-star color per variant (Tailwind classes — no hardcoded hex)
 const FILLED_CLASS: Record<StarRatingVariant, string> = {
-  personal: "text-amber-400",
+  personal: "text-star-filled",
   community: "text-brand-400",
 };
 
 const EMPTY_CLASS: Record<StarRatingVariant, string> = {
-  personal: "text-amber-200",
+  personal: "text-star-empty",
   community: "text-brand-200",
 };
 

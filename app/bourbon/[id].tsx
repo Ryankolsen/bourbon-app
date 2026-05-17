@@ -395,9 +395,9 @@ export default function BourbonDetailScreen() {
 
           <TouchableOpacity
             onPress={() => router.push(`/tasting/new?bourbonId=${bourbon.id}`)}
-            className="bg-brand-800 border border-brand-600 rounded-2xl py-4 items-center"
+            className="bg-brand-700 rounded-2xl py-4 items-center"
           >
-            <Text className="text-brand-200 font-semibold text-base">📓 Log Tasting</Text>
+            <Text className="text-surface-text font-semibold text-base">📓 Log Tasting</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -414,9 +414,9 @@ export default function BourbonDetailScreen() {
               }
             }}
             disabled={addToWishlist.isPending || removeFromWishlist.isPending}
-            className="bg-brand-800 border border-brand-600 rounded-2xl py-4 items-center"
+            className="bg-brand-700 rounded-2xl py-4 items-center"
           >
-            <Text className="text-brand-200 font-semibold text-base">
+            <Text className="text-surface-text font-semibold text-base">
               {wishlistItem ? "★ Remove from Wishlist" : "☆ Add to Wishlist"}
             </Text>
           </TouchableOpacity>
@@ -425,9 +425,9 @@ export default function BourbonDetailScreen() {
           {user && !isAdmin && (
             <TouchableOpacity
               onPress={() => router.push(`/bourbon/edit?id=${id}` as never)}
-              className="bg-brand-800 border border-brand-600 rounded-2xl py-4 items-center"
+              className="bg-brand-700 rounded-2xl py-4 items-center"
             >
-              <Text className="text-brand-200 font-semibold text-base">Edit</Text>
+              <Text className="text-surface-text font-semibold text-base">Edit</Text>
             </TouchableOpacity>
           )}
 
@@ -443,9 +443,9 @@ export default function BourbonDetailScreen() {
                   }
                 }}
                 disabled={recommendBourbon.isPending}
-                className="bg-brand-800 border border-brand-600 rounded-2xl py-4 items-center"
+                className="bg-brand-700 rounded-2xl py-4 items-center"
               >
-                <Text className="text-brand-200 font-semibold text-base">
+                <Text className="text-surface-text font-semibold text-base">
                   {recommendBourbon.isPending ? "Recommending…" : "👍 Recommend to Group"}
                 </Text>
               </TouchableOpacity>

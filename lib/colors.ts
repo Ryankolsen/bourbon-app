@@ -41,6 +41,10 @@ export const colors = {
   spinnerDefault: "#38bdf8",
   spinnerAmber:   "#7dd3fc",
 
+  // Star ratings (personal variant) — mirrors Charcoal theme
+  starFilled: "#f59e0b",
+  starEmpty:  "#6b6b6b",
+
   // Input placeholders
   placeholderDark:   "#8a8aaa",
   placeholderMuted:  "#7a7a8a",

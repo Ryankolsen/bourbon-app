@@ -42,6 +42,9 @@ module.exports = {
         "accent-amber":         "var(--accent-amber)",
         "spinner-default":      "var(--spinner-default)",
         "spinner-amber":        "var(--spinner-amber)",
+        // Semantic tokens — star ratings (personal variant)
+        "star-filled":          "var(--star-filled)",
+        "star-empty":           "var(--star-empty)",
         // Semantic tokens — input placeholders
         "placeholder-dark":     "var(--placeholder-dark)",
         "placeholder-muted":    "var(--placeholder-muted)",

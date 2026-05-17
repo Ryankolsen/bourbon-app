@@ -64,10 +64,10 @@ describe("StarRating", () => {
   });
 
   // Slice 6 — variant colors: personal and community apply different classes
-  it("personal variant applies amber color class to filled stars", () => {
+  it("personal variant applies star-filled semantic token to filled stars", () => {
     const { getByTestId } = render(<StarRating value={1} variant="personal" />);
     const filledStar = getByTestId("star-0-filled");
-    expect(filledStar.props.className).toMatch(/amber/);
+    expect(filledStar.props.className).toMatch(/star-filled/);
   });
 
   it("community variant applies brand color class to filled stars", () => {

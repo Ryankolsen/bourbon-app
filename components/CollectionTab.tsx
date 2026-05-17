@@ -76,7 +76,7 @@ export default function CollectionTab() {
         >
           <Text className="text-xl">⚙️</Text>
           {hasActiveFilters && (
-            <View className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full" />
+            <View className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-accent-amber rounded-full" />
           )}
         </TouchableOpacity>
       </View>

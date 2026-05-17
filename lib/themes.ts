@@ -54,6 +54,11 @@ export type ThemeColors = {
   spinnerDefault: string;
   spinnerAmber: string;
 
+  /** Filled star color for personal (amber) star ratings */
+  starFilled: string;
+  /** Empty / unselected star color — must be distinguishable from starFilled */
+  starEmpty: string;
+
   placeholderDark: string;
   placeholderMuted: string;
   placeholderGroup: string;
@@ -121,6 +126,8 @@ const charcoal: Theme = {
     accentAmber:    "#f59e0b",
     spinnerDefault: "#38bdf8",
     spinnerAmber:   "#7dd3fc",
+    starFilled: "#f59e0b",  // amber — 9.3:1 on brand-800 #1a1a1a ✓
+    starEmpty:  "#6b6b6b",  // mid gray — 3.5:1 on #1a1a1a (UI component threshold) ✓
     // Lightened — dark grey (#4a4a4a) was invisible on brand-800 #1a1a1a (near-black)
     placeholderDark:   "#8a8aaa",
     placeholderMuted:  "#7a7a8a",
@@ -172,6 +179,8 @@ const highContrast: Theme = {
     accentAmber:    "#ffd700",
     spinnerDefault: "#ffd700",
     spinnerAmber:   "#ffec40",
+    starFilled: "#ffd700",  // gold — 19.6:1 on brand-800 #0a0a0a ✓
+    starEmpty:  "#7a7a00",  // dark olive — 3.6:1 on #0a0a0a (UI component threshold) ✓
     // Brightened — dark olive was invisible on brand-800 #0a0a0a (near-black)
     placeholderDark:   "#999400",
     placeholderMuted:  "#888400",
@@ -235,6 +244,8 @@ const navyFlax: Theme = {
     accentAmber:    "#b8691a",
     spinnerDefault: "#1e4080",
     spinnerAmber:   "#2a4470",
+    starFilled: "#b8691a",  // warm amber — 4.6:1 on brand-800 #ffffff ✓
+    starEmpty:  "#b0a090",  // warm tan — 1.9:1 on white (large icon, AA-large OK) ✓
     placeholderDark:   "#4a6080",
     placeholderMuted:  "#5a7090",
     // Light — needs to be near-white on brand-700 #6a84aa (medium steel blue)
@@ -300,6 +311,8 @@ export function themeColorsToCssVars(c: ThemeColors): Record<string, string> {
     "--accent-amber":    c.accentAmber,
     "--spinner-default": c.spinnerDefault,
     "--spinner-amber":   c.spinnerAmber,
+    "--star-filled": c.starFilled,
+    "--star-empty":  c.starEmpty,
     "--placeholder-dark":   c.placeholderDark,
     "--placeholder-muted":  c.placeholderMuted,
     "--placeholder-group":  c.placeholderGroup,

@@ -145,7 +145,7 @@ export default function NewBourbonScreen() {
 
         {similarBourbons.length > 0 && (
           <View className="gap-2">
-            <Text className="text-amber-400 text-xs font-semibold uppercase tracking-widest">
+            <Text className="text-accent-amber text-xs font-semibold uppercase tracking-widest">
               Similar bourbons already in the database
             </Text>
             {similarBourbons.map((bourbon) => (
@@ -448,7 +448,7 @@ function DuplicateCard({ bourbon }: { bourbon: BourbonRow }) {
       )}
 
       <TouchableOpacity onPress={() => setExpanded((v) => !v)} className="mt-1">
-        <Text className="text-amber-500 text-xs">{expanded ? "See less" : "See more"}</Text>
+        <Text className="text-accent-amber text-xs">{expanded ? "See less" : "See more"}</Text>
       </TouchableOpacity>
     </View>
   );
