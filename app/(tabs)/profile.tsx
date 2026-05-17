@@ -139,12 +139,12 @@ export default function ProfileScreen() {
               />
             ) : (
               <View className="w-24 h-24 rounded-full bg-brand-700 items-center justify-center">
-                <Text className="text-brand-300 text-3xl font-bold">
+                <Text className="text-surface-text text-3xl font-bold">
                   {(profile?.display_name ?? user?.email ?? "?")[0].toUpperCase()}
                 </Text>
               </View>
             )}
-            <View className="absolute bottom-0 right-0 bg-brand-500 rounded-full w-7 h-7 items-center justify-center">
+            <View className="absolute bottom-0 right-0 bg-brand-600 rounded-full w-7 h-7 items-center justify-center">
               {uploadAvatar.isPending ? (
                 <ActivityIndicator size="small" color={colors.white} />
               ) : (
@@ -251,7 +251,7 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   onPress={saveProfile}
                   disabled={updateProfile.isPending}
-                  className="flex-1 bg-brand-500 rounded-xl py-3 items-center"
+                  className="flex-1 bg-brand-600 rounded-xl py-3 items-center"
                 >
                   {updateProfile.isPending ? (
                     <ActivityIndicator size="small" color={colors.white} />
@@ -306,13 +306,13 @@ export default function ProfileScreen() {
                 onPress={() => setThemeMode(opt.value)}
                 className={`flex-1 py-2 rounded-xl items-center border ${
                   themeMode === opt.value
-                    ? "bg-brand-500 border-brand-500"
-                    : "border-brand-600"
+                    ? "bg-brand-600 border-brand-600"
+                    : "border-brand-500"
                 }`}
               >
                 <Text
                   className={`text-xs font-semibold ${
-                    themeMode === opt.value ? "text-white" : "text-brand-400"
+                    themeMode === opt.value ? "text-white" : "text-brand-300"
                   }`}
                 >
                   {opt.label}
