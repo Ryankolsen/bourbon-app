@@ -73,6 +73,8 @@ export function useDismissSocialNotification(userId: string | undefined) {
   });
 }
 
+let realtimeChannelSeq = 0;
+
 /**
  * Subscribe to Supabase Realtime INSERT events on social_notifications
  * filtered by recipient_id. Calls onInsert with each new row.
@@ -88,8 +90,11 @@ export function useSocialNotificationsRealtime(
   useEffect(() => {
     if (!userId) return;
 
+    // Unique name per mount prevents collision when removeChannel (async) hasn't
+    // finished before the screen remounts and tries to reuse the same channel name.
+    const channelName = `social-notifications:${userId}:${++realtimeChannelSeq}`;
     const channel = supabase
-      .channel(`social-notifications:${userId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {

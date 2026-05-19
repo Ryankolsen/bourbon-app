@@ -303,4 +303,29 @@ describe('useSocialNotificationsRealtime', () => {
     unmount();
     expect(mockRemoveChannel).toHaveBeenCalledWith(mockChannel);
   });
+
+  // Regression — second mount uses a different channel name to avoid collision
+  // when removeChannel (async) hasn't finished before the screen remounts.
+  it('uses a unique channel name on each mount to avoid reuse collisions', () => {
+    const { Wrapper } = createWrapper();
+    const { unmount, rerender } = renderHook(
+      () => useSocialNotificationsRealtime('user-1', jest.fn()),
+      { wrapper: Wrapper }
+    );
+    const firstName = mockChannelFn.mock.calls[0][0] as string;
+
+    unmount();
+
+    const { Wrapper: Wrapper2 } = createWrapper();
+    renderHook(() => useSocialNotificationsRealtime('user-1', jest.fn()), {
+      wrapper: Wrapper2,
+    });
+    const secondName = mockChannelFn.mock.calls[1][0] as string;
+
+    expect(firstName).not.toBe(secondName);
+    expect(firstName).toContain('user-1');
+    expect(secondName).toContain('user-1');
+
+    void rerender; // suppress unused-var warning
+  });
 });

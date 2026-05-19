@@ -45,6 +45,8 @@ export function useAchievements(userId: string | undefined) {
   };
 }
 
+let achievementsChannelSeq = 0;
+
 export function useAchievementsRealtime(userId: string | undefined) {
   const qc = useQueryClient();
 
@@ -52,7 +54,7 @@ export function useAchievementsRealtime(userId: string | undefined) {
     if (!userId) return;
 
     const channel = supabase
-      .channel(`user-achievements:${userId}`)
+      .channel(`user-achievements:${userId}:${++achievementsChannelSeq}`)
       .on(
         'postgres_changes',
         {

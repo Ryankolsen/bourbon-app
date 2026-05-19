@@ -89,6 +89,8 @@ export function usePostComment() {
  * Realtime subscription: appends new comments for a tasting via onInsert callback.
  * Caller is responsible for prepending/appending to local state.
  */
+let tastingCommentsChannelSeq = 0;
+
 export function useTastingCommentsRealtime(
   tastingId: string | undefined,
   onInsert: (comment: CommentRow) => void,
@@ -101,7 +103,7 @@ export function useTastingCommentsRealtime(
   useEffect(() => {
     if (!tastingId) return;
     const channel = supabase
-      .channel(`tasting-comments:${tastingId}`)
+      .channel(`tasting-comments:${tastingId}:${++tastingCommentsChannelSeq}`)
       .on(
         'postgres_changes',
         {

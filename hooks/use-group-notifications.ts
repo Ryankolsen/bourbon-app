@@ -100,6 +100,8 @@ export interface RealtimeNotificationPayload {
  * given owner. Calls `onInsert` with the new row whenever one arrives.
  * No-ops when ownerId is undefined. Cleans up the channel on unmount.
  */
+let groupNotificationsChannelSeq = 0;
+
 export function useGroupNotificationsRealtime(
   ownerId: string | undefined,
   onInsert: (payload: RealtimeNotificationPayload) => void
@@ -112,7 +114,7 @@ export function useGroupNotificationsRealtime(
     if (!ownerId) return;
 
     const channel = supabase
-      .channel(`group-notifications:${ownerId}`)
+      .channel(`group-notifications:${ownerId}:${++groupNotificationsChannelSeq}`)
       .on(
         "postgres_changes",
         {
