@@ -32,9 +32,9 @@ export function SaleAlertCard({ alert, currentUserId }: SaleAlertCardProps) {
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   function handleGetDirections() {
-    const url = `https://www.google.com/maps/place/?q=place_id:${alert.place_id}`;
+    const query = encodeURIComponent(alert.place_name ?? alert.place_address);
+    const url = `https://www.google.com/maps/search/?api=1&query=${query}&query_place_id=${alert.place_id}`;
     Linking.openURL(url).catch(() => {
-      // fall back to address search if place_id URL fails
       Linking.openURL(`https://maps.google.com/?q=${encodeURIComponent(alert.place_address)}`);
     });
   }
