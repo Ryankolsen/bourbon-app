@@ -24,12 +24,14 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { AppState } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/query-client";
 import { getXpEventLabel } from "@/lib/belt-config";
 import { useAuth } from "@/hooks/use-auth";
 import { TomorrowXp } from "@/lib/streak-utils";
-import { evaluateDailyBonus, DailyBonusDecision } from "@/lib/daily-bonus";
+import { evaluateDailyBonus, DailyBonusDecision, DailyBonusRecord } from "@/lib/daily-bonus";
+import { readDailyBonus, writeDailyBonus, clearDailyBonus } from "@/lib/daily-bonus-storage";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -82,6 +84,10 @@ function nextNotifId(): string {
   return `xp-notif-${++_notifSeq}`;
 }
 
+function todayString(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 export function XpProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [queue, setQueue] = useState<XpNotification[]>([]);
@@ -96,8 +102,41 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const claimDailyBonus = useCallback(() => {
+    const today = todayString();
+    clearDailyBonus(today).catch(() => {});
     setDailyBonus(null);
   }, []);
+
+  // ── Storage rehydration on mount and foreground ───────────────────────────
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    async function rehydrateFromStorage() {
+      const today = todayString();
+      const record = await readDailyBonus(today);
+      if (record && !record.acknowledged) {
+        setDailyBonus({
+          shouldShow: true,
+          awardedPoints: record.awardedPoints,
+          streakDays: record.streakDays,
+          milestoneHit: record.milestoneHit,
+          tomorrowPoints: record.tomorrowPoints,
+          nextMilestone: record.nextMilestone,
+        });
+      }
+    }
+
+    rehydrateFromStorage();
+
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") {
+        rehydrateFromStorage();
+      }
+    });
+
+    return () => subscription.remove();
+  }, [user?.id]);
 
   // ── check_in() RPC ────────────────────────────────────────────────────────
 
@@ -105,7 +144,7 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) return;
     const userId = user.id;
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayString();
     const checkInId = `daily_checkin-${today}`;
 
     // Pre-register the date-keyed ID before the async RPC resolves so a
@@ -131,7 +170,18 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
 
       const decision = evaluateDailyBonus({ checkInResult: row, today });
       if (decision.shouldShow) {
-        setDailyBonus(decision);
+        const record: DailyBonusRecord = {
+          awardedPoints: decision.awardedPoints,
+          streakDays: decision.streakDays,
+          milestoneHit: decision.milestoneHit,
+          tomorrowPoints: decision.tomorrowPoints,
+          nextMilestone: decision.nextMilestone,
+          acknowledged: false,
+        };
+        await writeDailyBonus(today, record);
+        if (!cancelled) {
+          setDailyBonus(decision);
+        }
       }
 
       queryClient.invalidateQueries({ queryKey: ["user-xp", userId] });

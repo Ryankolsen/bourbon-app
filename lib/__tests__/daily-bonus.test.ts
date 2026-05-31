@@ -1,4 +1,5 @@
 import { evaluateDailyBonus } from "../daily-bonus";
+import type { DailyBonusRecord } from "../daily-bonus";
 
 describe("evaluateDailyBonus", () => {
   it("returns shouldShow: true with correct values when xp_awarded > 0", () => {
@@ -81,5 +82,53 @@ describe("evaluateDailyBonus", () => {
     expect(result.milestoneHit).toBe(false);
     expect(result.tomorrowPoints).toBe(2);
     expect(result.nextMilestone).toEqual({ day: 7, daysRemaining: 6, bonusXp: 20 });
+  });
+
+  // Test 6 — re-show from cached record
+  it("returns shouldShow: true with cached awardedPoints when xp_awarded=0 and unacknowledged record exists", () => {
+    const cachedRecord: DailyBonusRecord = {
+      awardedPoints: 5,
+      streakDays: 5,
+      milestoneHit: false,
+      tomorrowPoints: 6,
+      nextMilestone: { day: 7, daysRemaining: 2, bonusXp: 20 },
+      acknowledged: false,
+    };
+    const result = evaluateDailyBonus({
+      checkInResult: { xp_awarded: 0, streak_days: 1, promoted: false, new_belt: 1 },
+      today: "2026-05-30",
+      cachedRecord,
+    });
+    expect(result.shouldShow).toBe(true);
+    expect(result.awardedPoints).toBe(5);
+    expect(result.streakDays).toBe(5);
+  });
+
+  // Test 7 — acknowledged record suppresses re-show
+  it("returns shouldShow: false when xp_awarded=0 and cachedRecord is acknowledged", () => {
+    const cachedRecord: DailyBonusRecord = {
+      awardedPoints: 5,
+      streakDays: 5,
+      milestoneHit: false,
+      tomorrowPoints: 6,
+      nextMilestone: null,
+      acknowledged: true,
+    };
+    const result = evaluateDailyBonus({
+      checkInResult: { xp_awarded: 0, streak_days: 1, promoted: false, new_belt: 1 },
+      today: "2026-05-30",
+      cachedRecord,
+    });
+    expect(result.shouldShow).toBe(false);
+  });
+
+  // Test 8 — stale (prior-day) record is ignored (null cachedRecord for today)
+  it("returns shouldShow: false when xp_awarded=0 and no cached record for today", () => {
+    const result = evaluateDailyBonus({
+      checkInResult: { xp_awarded: 0, streak_days: 1, promoted: false, new_belt: 1 },
+      today: "2026-05-30",
+      cachedRecord: null,
+    });
+    expect(result.shouldShow).toBe(false);
   });
 });

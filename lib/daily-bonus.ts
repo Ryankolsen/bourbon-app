@@ -13,6 +13,15 @@ export interface NextMilestone {
   bonusXp: number;
 }
 
+export interface DailyBonusRecord {
+  awardedPoints: number;
+  streakDays: number;
+  milestoneHit: boolean;
+  tomorrowPoints: number;
+  nextMilestone: NextMilestone | null;
+  acknowledged: boolean;
+}
+
 export interface DailyBonusDecision {
   shouldShow: boolean;
   awardedPoints: number;
@@ -25,9 +34,21 @@ export interface DailyBonusDecision {
 export function evaluateDailyBonus(params: {
   checkInResult: CheckInResult;
   today: string;
+  cachedRecord?: DailyBonusRecord | null;
 }): DailyBonusDecision {
   const { xp_awarded, streak_days } = params.checkInResult;
   if (xp_awarded <= 0) {
+    const { cachedRecord } = params;
+    if (cachedRecord && !cachedRecord.acknowledged) {
+      return {
+        shouldShow: true,
+        awardedPoints: cachedRecord.awardedPoints,
+        streakDays: cachedRecord.streakDays,
+        tomorrowPoints: cachedRecord.tomorrowPoints,
+        nextMilestone: cachedRecord.nextMilestone,
+        milestoneHit: cachedRecord.milestoneHit,
+      };
+    }
     return {
       shouldShow: false,
       awardedPoints: 0,
