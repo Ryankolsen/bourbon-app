@@ -92,6 +92,7 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [queue, setQueue] = useState<XpNotification[]>([]);
   const [latestPromotion, setLatestPromotion] = useState<{ belt: number; id: string } | null>(null);
+  const [pendingPromotion, setPendingPromotion] = useState<{ belt: number; id: string } | null>(null);
   const [dailyBonus, setDailyBonus] = useState<DailyBonusDecision | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   /** Tracks notification IDs already processed (deduplication). */
@@ -105,7 +106,11 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
     const today = todayString();
     clearDailyBonus(today).catch(() => {});
     setDailyBonus(null);
-  }, []);
+    if (pendingPromotion) {
+      setLatestPromotion(pendingPromotion);
+    }
+    setPendingPromotion(null);
+  }, [pendingPromotion]);
 
   // ── Storage rehydration on mount and foreground ───────────────────────────
 
@@ -164,11 +169,16 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
       const promoted: boolean = row.promoted ?? false;
       const newBelt: number = row.new_belt ?? 1;
 
-      if (promoted) {
-        setLatestPromotion({ belt: newBelt, id: checkInId });
-      }
-
       const decision = evaluateDailyBonus({ checkInResult: row, today });
+
+      if (promoted) {
+        if (decision.shouldShow) {
+          // Gate the belt-up until the daily-bonus screen is dismissed.
+          setPendingPromotion({ belt: newBelt, id: checkInId });
+        } else {
+          setLatestPromotion({ belt: newBelt, id: checkInId });
+        }
+      }
       if (decision.shouldShow) {
         const record: DailyBonusRecord = {
           awardedPoints: decision.awardedPoints,

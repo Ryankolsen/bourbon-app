@@ -225,10 +225,10 @@ describe("XpContext", () => {
     });
   });
 
-  // R3a — edge case: promoted: true sets latestPromotion
-  it("RPC: sets latestPromotion when check_in returns promoted: true", async () => {
+  // R3a — edge case: promoted: true with no daily bonus sets latestPromotion immediately
+  it("RPC: sets latestPromotion immediately when check_in returns promoted: true with xp_awarded: 0", async () => {
     mockRpc.mockResolvedValueOnce({
-      data: [{ xp_awarded: 7, streak_days: 7, promoted: true, new_belt: 3 }],
+      data: [{ xp_awarded: 0, streak_days: 1, promoted: true, new_belt: 3 }],
       error: null,
     });
 
@@ -480,6 +480,84 @@ describe("XpContext", () => {
       expect(getByTestId("promo-id").props.children).toBe("promo-second");
     });
   });
+
+  // ── Belt-up chaining tests ────────────────────────────────────────────────
+
+  // B1 — belt-up gated while daily screen is visible
+  it("belt-up: latestPromotion is withheld while daily bonus is active", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [{ xp_awarded: 5, streak_days: 5, promoted: true, new_belt: 3 }],
+      error: null,
+    });
+
+    function BeltUpConsumer() {
+      const { latestPromotion, dailyBonus } = useXpNotification();
+      return (
+        <>
+          {latestPromotion ? (
+            <Text testID="promo-belt">{latestPromotion.belt}</Text>
+          ) : (
+            <Text testID="no-promo">none</Text>
+          )}
+          {dailyBonus?.shouldShow && <Text testID="daily-visible">yes</Text>}
+        </>
+      );
+    }
+
+    const { getByTestId } = render(
+      <XpProvider>
+        <BeltUpConsumer />
+      </XpProvider>
+    );
+
+    await waitFor(() => expect(getByTestId("daily-visible")).toBeTruthy());
+    expect(getByTestId("no-promo")).toBeTruthy();
+  });
+
+  // B2 — belt-up released after the daily bonus Claim button is pressed
+  it("belt-up: latestPromotion is released after claimDailyBonus()", async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [{ xp_awarded: 5, streak_days: 5, promoted: true, new_belt: 3 }],
+      error: null,
+    });
+
+    function BeltUpClaimConsumer() {
+      const { latestPromotion, dailyBonus, claimDailyBonus } = useXpNotification();
+      return (
+        <>
+          {latestPromotion ? (
+            <Text testID="promo-belt">{latestPromotion.belt}</Text>
+          ) : (
+            <Text testID="no-promo">none</Text>
+          )}
+          {dailyBonus?.shouldShow && (
+            <TouchableOpacity testID="claim-btn" onPress={claimDailyBonus}>
+              <Text>Claim</Text>
+            </TouchableOpacity>
+          )}
+        </>
+      );
+    }
+
+    const { getByTestId, queryByTestId } = render(
+      <XpProvider>
+        <BeltUpClaimConsumer />
+      </XpProvider>
+    );
+
+    await waitFor(() => expect(getByTestId("claim-btn")).toBeTruthy());
+    expect(getByTestId("no-promo")).toBeTruthy();
+
+    fireEvent.press(getByTestId("claim-btn"));
+
+    await waitFor(() => {
+      expect(getByTestId("promo-belt").props.children).toBe(3);
+    });
+    expect(queryByTestId("claim-btn")).toBeNull();
+  });
+
+  // B3 — promotion without daily points is unaffected (regression guard)
+  // Covered by updated R3a: xp_awarded: 0 + promoted: true → immediate latestPromotion.
 
   // L3c — edge case: promoted: false does not set latestPromotion
   it("latestPromotion: remains null when Realtime INSERT has promoted: false", async () => {
