@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Image,
   Modal,
   StyleSheet,
   Text,
@@ -7,50 +8,113 @@ import {
   View,
 } from "react-native";
 import { useXpNotification } from "@/context/xp-context";
+import { useTheme } from "@/lib/theme-provider";
+
+// Swap this single reference to change the hero art without touching layout code.
+const HERO_SOURCE = require("../assets/icon.png");
+const COUNT_UP_DURATION = 800;
 
 export function DailyBonusScreen() {
   const { dailyBonus, claimDailyBonus } = useXpNotification();
+  const { activeTheme } = useTheme();
+  const c = activeTheme.colors;
+
+  const awardedPoints = dailyBonus?.awardedPoints ?? 0;
+
+  // Initialized to awardedPoints so the static value shows before Claim is pressed.
+  const [displayPoints, setDisplayPoints] = useState(awardedPoints);
+  const [claiming, setClaiming] = useState(false);
+
+  // Re-sync when the modal re-appears (e.g. dismissed then re-shown by persistence).
+  useEffect(() => {
+    if (dailyBonus?.shouldShow) {
+      setDisplayPoints(dailyBonus.awardedPoints ?? 0);
+      setClaiming(false);
+    }
+  }, [dailyBonus?.shouldShow]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!dailyBonus?.shouldShow) return null;
 
-  const { awardedPoints, streakDays, milestoneHit, tomorrowPoints, nextMilestone } = dailyBonus;
+  const { streakDays, milestoneHit, tomorrowPoints, nextMilestone } = dailyBonus;
+
+  const handleClaim = () => {
+    if (claiming) return;
+
+    if (awardedPoints <= 0) {
+      claimDailyBonus();
+      return;
+    }
+
+    setClaiming(true);
+    setDisplayPoints(0);
+
+    const steps = Math.min(awardedPoints, 20);
+    const stepInterval = Math.round(COUNT_UP_DURATION / steps);
+    let current = 0;
+
+    const timer = setInterval(() => {
+      current += 1;
+      if (current >= steps) {
+        setDisplayPoints(awardedPoints);
+        clearInterval(timer);
+        claimDailyBonus();
+      } else {
+        setDisplayPoints(Math.round((awardedPoints / steps) * current));
+      }
+    }, stepInterval);
+  };
 
   return (
     <Modal
       visible
       transparent
       animationType="fade"
-      onRequestClose={claimDailyBonus}
+      onRequestClose={handleClaim}
       testID="daily-bonus-modal"
     >
       <View style={styles.backdrop}>
-        <View style={styles.card}>
-          <Text style={styles.heading}>Daily Bonus</Text>
+        <View
+          style={[styles.card, { backgroundColor: c.brand800 }]}
+          testID="daily-bonus-card"
+        >
+          <Image
+            source={HERO_SOURCE}
+            style={styles.hero}
+            testID="daily-bonus-hero"
+            resizeMode="contain"
+          />
 
-          <Text style={styles.points}>
-            +{awardedPoints} Barrel Points
+          <Text style={[styles.heading, { color: c.accentAmber }]}>
+            Daily Bonus
+          </Text>
+
+          <Text style={[styles.points, { color: c.brand100 }]}>
+            +{displayPoints} Barrel Points
           </Text>
 
           {milestoneHit ? (
-            <Text style={styles.milestone}>
+            <Text style={[styles.milestone, { color: c.accentAmber }]}>
               {streakDays}-Day Streak Milestone!
             </Text>
           ) : nextMilestone ? (
-            <Text style={styles.progress}>
-              Day {streakDays} of {nextMilestone.day} — reach Day {nextMilestone.day} for a +{nextMilestone.bonusXp} bonus!
+            <Text style={[styles.progress, { color: c.brand400 }]}>
+              Day {streakDays} of {nextMilestone.day} — reach Day{" "}
+              {nextMilestone.day} for a +{nextMilestone.bonusXp} bonus!
             </Text>
           ) : null}
 
           {tomorrowPoints != null && tomorrowPoints > 0 && (
-            <Text style={styles.tomorrow}>+{tomorrowPoints} tomorrow</Text>
+            <Text style={[styles.tomorrow, { color: c.brand400 }]}>
+              +{tomorrowPoints} tomorrow
+            </Text>
           )}
 
           <TouchableOpacity
-            style={styles.claimBtn}
-            onPress={claimDailyBonus}
+            style={[styles.claimBtn, { backgroundColor: c.brand500 }]}
+            onPress={handleClaim}
             testID="claim-btn"
           >
-            <Text style={styles.claimText}>Claim</Text>
+            <Text style={[styles.claimText, { color: c.white }]}>Claim</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -66,52 +130,49 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   card: {
-    backgroundColor: "#1a1a1a",
     borderRadius: 20,
     padding: 32,
     alignItems: "center",
     width: "80%",
   },
+  hero: {
+    width: 120,
+    height: 120,
+    marginBottom: 16,
+  },
   heading: {
-    color: "#f59e0b",
     fontSize: 22,
     fontWeight: "700",
     marginBottom: 12,
   },
   points: {
-    color: "#FFFFFF",
     fontSize: 32,
     fontWeight: "800",
     marginBottom: 12,
   },
   milestone: {
-    color: "#f59e0b",
     fontSize: 18,
     fontWeight: "700",
     marginBottom: 12,
     textAlign: "center",
   },
   progress: {
-    color: "#a3a3a3",
     fontSize: 14,
     marginBottom: 8,
     textAlign: "center",
   },
   tomorrow: {
-    color: "#a3a3a3",
     fontSize: 14,
     marginBottom: 28,
     textAlign: "center",
   },
   claimBtn: {
-    backgroundColor: "#0ea5e9",
     paddingHorizontal: 40,
     paddingVertical: 14,
     borderRadius: 12,
     marginTop: 8,
   },
   claimText: {
-    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "700",
   },

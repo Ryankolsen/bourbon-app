@@ -6,7 +6,8 @@
  */
 
 import React from "react";
-import { render, fireEvent } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
+import { render, fireEvent, act } from "@testing-library/react-native";
 
 // ── Mock XpContext ────────────────────────────────────────────────────────────
 
@@ -22,6 +23,28 @@ jest.mock("@/context/xp-context", () => ({
   }),
 }));
 
+// ── Mock ThemeProvider ────────────────────────────────────────────────────────
+
+const mockDefaultColors = {
+  brand800: "#1a1a1a",
+  brand100: "#e0f2fe",
+  brand400: "#38bdf8",
+  brand500: "#0ea5e9",
+  accentAmber: "#f59e0b",
+  white: "#ffffff",
+};
+
+let mockThemeColors = { ...mockDefaultColors };
+
+jest.mock("@/lib/theme-provider", () => ({
+  useTheme: () => ({
+    activeTheme: { colors: mockThemeColors },
+    themeMode: "system",
+    setThemeMode: jest.fn(),
+    setDevThemeId: jest.fn(),
+  }),
+}));
+
 import { DailyBonusScreen } from "../DailyBonusScreen";
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -29,21 +52,30 @@ import { DailyBonusScreen } from "../DailyBonusScreen";
 describe("DailyBonusScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
     mockDailyBonus = null;
+    mockThemeColors = { ...mockDefaultColors };
   });
 
-  // 1 — core wiring: renders amount and Barrel Points text
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  // 1 — core wiring: renders amount and Barrel Points text on initial display
   it("renders awarded points and 'Barrel Points' when shouldShow is true", () => {
     mockDailyBonus = { shouldShow: true, awardedPoints: 5, streakDays: 5 };
     const { getByText } = render(<DailyBonusScreen />);
     expect(getByText("+5 Barrel Points")).toBeTruthy();
   });
 
-  // 2 — content details: Claim button calls claimDailyBonus
-  it("calls claimDailyBonus when Claim button is pressed", () => {
+  // 2 — content details: Claim button triggers animation then calls claimDailyBonus
+  it("calls claimDailyBonus after count-up animation completes on Claim press", () => {
     mockDailyBonus = { shouldShow: true, awardedPoints: 5, streakDays: 5 };
     const { getByTestId } = render(<DailyBonusScreen />);
     fireEvent.press(getByTestId("claim-btn"));
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
     expect(mockClaimDailyBonus).toHaveBeenCalledTimes(1);
   });
 
@@ -88,5 +120,40 @@ describe("DailyBonusScreen", () => {
     const { getByText } = render(<DailyBonusScreen />);
     expect(getByText(/Day 5 of 7/i)).toBeTruthy();
     expect(getByText(/\+6 tomorrow/i)).toBeTruthy();
+  });
+
+  // 7 — count-up animation settles on awardedPoints after Claim + timer advance
+  it("count-up animation settles on awardedPoints after Claim press and timers flush", () => {
+    mockDailyBonus = { shouldShow: true, awardedPoints: 5, streakDays: 1 };
+    const { getByTestId, getByText } = render(<DailyBonusScreen />);
+
+    fireEvent.press(getByTestId("claim-btn"));
+
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    // Modal stays visible in tests (claimDailyBonus is a mock, shouldShow unchanged)
+    expect(getByText("+5 Barrel Points")).toBeTruthy();
+  });
+
+  // 8 — hero image slot is wired with a swappable testID
+  it("renders a hero image with testID 'daily-bonus-hero'", () => {
+    mockDailyBonus = { shouldShow: true, awardedPoints: 5, streakDays: 1 };
+    const { getByTestId } = render(<DailyBonusScreen />);
+    expect(getByTestId("daily-bonus-hero")).toBeTruthy();
+  });
+
+  // 9 — card background comes from theme token, not a hardcoded hex
+  it("card background reads brand800 from activeTheme, not a hardcoded hex", () => {
+    mockThemeColors = { ...mockDefaultColors, brand800: "#abcdef" };
+    mockDailyBonus = { shouldShow: true, awardedPoints: 5, streakDays: 1 };
+    const { getByTestId } = render(<DailyBonusScreen />);
+    const card = getByTestId("daily-bonus-card");
+    const styleArray = card.props.style as object[];
+    const inlineStyle = Array.isArray(styleArray)
+      ? (styleArray[styleArray.length - 1] as Record<string, string>)
+      : (styleArray as Record<string, string>);
+    expect(inlineStyle.backgroundColor).toBe("#abcdef");
   });
 });
