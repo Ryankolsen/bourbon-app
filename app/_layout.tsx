@@ -12,6 +12,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { XpProvider } from "@/context/xp-context";
 import { XpToast } from "@/components/XpToast";
 import { BeltUpModal } from "@/components/BeltUpModal";
+import { DailyBonusScreen } from "@/components/DailyBonusScreen";
 import { PendingDeletionModal } from "@/components/PendingDeletionModal";
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -45,6 +46,7 @@ export default function RootLayout() {
               <StatusBar style="auto" />
               {__DEV__ && <DevUserSwitcher />}
             </AuthGuard>
+            <DailyBonusScreen />
             <XpToast />
             <BeltUpModal />
             <PendingDeletionModal />

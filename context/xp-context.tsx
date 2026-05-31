@@ -9,7 +9,10 @@
  * 5. Invalidates user-xp TanStack Query cache on each event
  * 6. Emits a latestPromotion signal for belt-up events
  *
- * Public interface: { current, advance, latestPromotion }
+ * daily_checkin is routed to dailyBonus state (not the toast queue).
+ * All other XP events continue through the toast queue.
+ *
+ * Public interface: { current, advance, latestPromotion, dailyBonus, claimDailyBonus }
  * enqueue is an internal detail — callers never push directly.
  */
 
@@ -25,7 +28,8 @@ import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/query-client";
 import { getXpEventLabel } from "@/lib/belt-config";
 import { useAuth } from "@/hooks/use-auth";
-import { getTomorrowXp, TomorrowXp } from "@/lib/streak-utils";
+import { TomorrowXp } from "@/lib/streak-utils";
+import { evaluateDailyBonus, DailyBonusDecision } from "@/lib/daily-bonus";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,11 +40,8 @@ export interface XpNotification {
   label: string;
   promoted: boolean;
   newBelt: number;
-  /** Streak day count at time of the event (populated for daily_checkin). */
   streakDays?: number;
-  /** True when the streak was broken and reset to Day 1 (populated for daily_checkin). */
   isReset?: boolean;
-  /** Tomorrow's XP breakdown (populated for daily_checkin). */
   tomorrowXp?: TomorrowXp | null;
 }
 
@@ -54,6 +55,10 @@ interface XpContextValue {
    * session. Independent of the display queue — advance() does not clear it.
    */
   latestPromotion: { belt: number; id: string } | null;
+  /** Set when check_in() returns xp_awarded > 0. Cleared by claimDailyBonus(). */
+  dailyBonus: DailyBonusDecision | null;
+  /** Dismiss the daily-bonus screen (called by DailyBonusScreen Claim button). */
+  claimDailyBonus: () => void;
 }
 
 // ── Context ──────────────────────────────────────────────────────────────────
@@ -62,6 +67,8 @@ const XpContext = createContext<XpContextValue>({
   current: null,
   advance: () => {},
   latestPromotion: null,
+  dailyBonus: null,
+  claimDailyBonus: () => {},
 });
 
 export function useXpNotification(): XpContextValue {
@@ -79,14 +86,17 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [queue, setQueue] = useState<XpNotification[]>([]);
   const [latestPromotion, setLatestPromotion] = useState<{ belt: number; id: string } | null>(null);
+  const [dailyBonus, setDailyBonus] = useState<DailyBonusDecision | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  /** Tracks notification IDs already added to the queue (deduplication). */
+  /** Tracks notification IDs already processed (deduplication). */
   const seenIds = useRef<Set<string>>(new Set());
-  /** Tracks previous streak day count for isReset detection. */
-  const prevStreakRef = useRef<number | null>(null);
 
   const advance = useCallback(() => {
     setQueue((prev) => prev.slice(1));
+  }, []);
+
+  const claimDailyBonus = useCallback(() => {
+    setDailyBonus(null);
   }, []);
 
   // ── check_in() RPC ────────────────────────────────────────────────────────
@@ -98,10 +108,8 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
     const today = new Date().toISOString().slice(0, 10);
     const checkInId = `daily_checkin-${today}`;
 
-    // Pre-register the date-keyed ID before the async RPC resolves. This
-    // blocks a concurrent Realtime event (which uses the same date-keyed ID
-    // for daily_checkin rows) from producing a duplicate notification.
-    // Also handles the rare case where Realtime fired before this effect ran.
+    // Pre-register the date-keyed ID before the async RPC resolves so a
+    // concurrent Realtime event with the same ID doesn't produce a duplicate.
     if (seenIds.current.has(checkInId)) return;
     seenIds.current.add(checkInId);
 
@@ -113,12 +121,6 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
       if (error || !data || data.length === 0) return;
 
       const row = data[0];
-      if (row.xp_awarded === 0) return;
-
-      const streakDays: number = row.streak_days;
-      const prevStreak = prevStreakRef.current;
-      const isReset = streakDays === 1 && prevStreak !== null && prevStreak > 1;
-      prevStreakRef.current = streakDays;
 
       const promoted: boolean = row.promoted ?? false;
       const newBelt: number = row.new_belt ?? 1;
@@ -127,20 +129,10 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
         setLatestPromotion({ belt: newBelt, id: checkInId });
       }
 
-      setQueue((prev) => [
-        ...prev,
-        {
-          id: checkInId,
-          xpAwarded: row.xp_awarded as number,
-          eventType: "daily_checkin",
-          label: getXpEventLabel("daily_checkin"),
-          promoted,
-          newBelt,
-          streakDays,
-          isReset,
-          tomorrowXp: getTomorrowXp(streakDays),
-        },
-      ]);
+      const decision = evaluateDailyBonus({ checkInResult: row, today });
+      if (decision.shouldShow) {
+        setDailyBonus(decision);
+      }
 
       queryClient.invalidateQueries({ queryKey: ["user-xp", userId] });
     }
@@ -173,13 +165,10 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
           const row = payload.new;
           if (!row || row.xp_awarded === 0) return;
 
-          // daily_checkin events use the same date-keyed format as the RPC
-          // path so both delivery mechanisms share the same dedup ID.
-          const today = new Date().toISOString().slice(0, 10);
-          const notifId: string =
-            row.event_type === "daily_checkin"
-              ? `daily_checkin-${today}`
-              : (row.id as string) ?? nextNotifId();
+          // daily_checkin is handled exclusively via check_in() RPC; skip here.
+          if (row.event_type === "daily_checkin") return;
+
+          const notifId: string = (row.id as string) ?? nextNotifId();
 
           if (seenIds.current.has(notifId)) return;
           seenIds.current.add(notifId);
@@ -202,7 +191,6 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
 
           setQueue((prev) => [...prev, notification]);
 
-          // Invalidate the user-xp query so profile displays refresh
           queryClient.invalidateQueries({ queryKey: ["user-xp", user.id] });
         }
       )
@@ -221,7 +209,7 @@ export function XpProvider({ children }: { children: React.ReactNode }) {
   const current = queue[0] ?? null;
 
   return (
-    <XpContext.Provider value={{ current, advance, latestPromotion }}>
+    <XpContext.Provider value={{ current, advance, latestPromotion, dailyBonus, claimDailyBonus }}>
       {children}
     </XpContext.Provider>
   );

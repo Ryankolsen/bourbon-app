@@ -52,25 +52,27 @@ jest.mock("@/hooks/use-auth", () => ({
 
 /** Renders current notification fields + an advance button for queue testing. */
 function Consumer() {
-  const { current, advance } = useXpNotification();
-  if (!current) return <Text testID="no-notif">none</Text>;
+  const { current, advance, dailyBonus } = useXpNotification();
   return (
     <>
-      <Text testID="xp-awarded">{current.xpAwarded}</Text>
-      <Text testID="event-type">{current.eventType}</Text>
-      <Text testID="label">{current.label}</Text>
-      {current.streakDays !== undefined && (
-        <Text testID="streak-days">{current.streakDays}</Text>
+      {current ? (
+        <>
+          <Text testID="xp-awarded">{current.xpAwarded}</Text>
+          <Text testID="event-type">{current.eventType}</Text>
+          <Text testID="label">{current.label}</Text>
+          <TouchableOpacity testID="advance-btn" onPress={advance}>
+            <Text>advance</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <Text testID="no-notif">none</Text>
       )}
-      {current.isReset !== undefined && (
-        <Text testID="is-reset">{current.isReset ? "true" : "false"}</Text>
+      {dailyBonus?.shouldShow && (
+        <>
+          <Text testID="daily-bonus-points">{dailyBonus.awardedPoints}</Text>
+          <Text testID="daily-bonus-streak">{dailyBonus.streakDays}</Text>
+        </>
       )}
-      {current.tomorrowXp != null && (
-        <Text testID="tomorrow-xp-base">{current.tomorrowXp.base}</Text>
-      )}
-      <TouchableOpacity testID="advance-btn" onPress={advance}>
-        <Text>advance</Text>
-      </TouchableOpacity>
     </>
   );
 }
@@ -108,10 +110,10 @@ describe("XpContext", () => {
   it("dispatches a notification when a Realtime INSERT fires", async () => {
     const { getByTestId } = renderWithProvider();
 
-    // Wait for RPC to resolve and populate current, then advance to clear it
-    await waitFor(() => expect(getByTestId("xp-awarded")).toBeTruthy());
-    fireEvent.press(getByTestId("advance-btn"));
-    await waitFor(() => expect(getByTestId("no-notif")).toBeTruthy());
+    // Wait for RPC to resolve — daily_checkin goes to dailyBonus, not current
+    await waitFor(() => expect(getByTestId("daily-bonus-points")).toBeTruthy());
+    // current is still empty (no toast for daily_checkin)
+    expect(getByTestId("no-notif")).toBeTruthy();
 
     act(() => {
       capturedCallback?.({
@@ -129,9 +131,7 @@ describe("XpContext", () => {
   it("maps tasting_complete event_type to 'Tasting logged' label", async () => {
     const { getByTestId } = renderWithProvider();
 
-    await waitFor(() => expect(getByTestId("xp-awarded")).toBeTruthy());
-    fireEvent.press(getByTestId("advance-btn"));
-    await waitFor(() => expect(getByTestId("no-notif")).toBeTruthy());
+    await waitFor(() => expect(getByTestId("daily-bonus-points")).toBeTruthy());
 
     act(() => {
       capturedCallback?.({
@@ -148,10 +148,8 @@ describe("XpContext", () => {
   it("shows first notification and reveals second after advance", async () => {
     const { getByTestId } = renderWithProvider();
 
-    // Clear the RPC-driven check-in notification first
-    await waitFor(() => expect(getByTestId("xp-awarded")).toBeTruthy());
-    fireEvent.press(getByTestId("advance-btn"));
-    await waitFor(() => expect(getByTestId("no-notif")).toBeTruthy());
+    // Wait for RPC to settle
+    await waitFor(() => expect(getByTestId("daily-bonus-points")).toBeTruthy());
 
     act(() => {
       capturedCallback?.({ new: { xp_awarded: 10, event_type: "bourbon_added_to_collection" } });
@@ -181,27 +179,49 @@ describe("XpContext", () => {
 
   // ── RPC check_in() tests ──────────────────────────────────────────────────
 
-  // R1 — core wiring: XpProvider calls check_in() and populates current
-  it("RPC: populates current with xpAwarded and eventType after check_in resolves", async () => {
-    const { getByTestId } = renderWithProvider();
+  // R1 — core wiring: check_in() sets dailyBonus, NOT the toast queue
+  it("RPC: populates dailyBonus (not current) after check_in resolves with xp_awarded > 0", async () => {
+    const { getByTestId, queryByTestId } = renderWithProvider();
 
     await waitFor(() => {
-      expect(getByTestId("xp-awarded").props.children).toBe(4);
-      expect(getByTestId("event-type").props.children).toBe("daily_checkin");
+      expect(getByTestId("daily-bonus-points").props.children).toBe(4);
     });
+
+    // Toast queue must remain empty for daily_checkin
+    expect(queryByTestId("xp-awarded")).toBeNull();
+    expect(getByTestId("no-notif")).toBeTruthy();
 
     expect(mockRpc).toHaveBeenCalledWith("check_in");
   });
 
-  // R2 — content details: streakDays, isReset, tomorrowXp are populated
-  it("RPC: populates streakDays, isReset, and tomorrowXp on the notification", async () => {
+  // R2 — content details: streakDays is populated in dailyBonus
+  it("RPC: populates streakDays in dailyBonus after check_in resolves", async () => {
     const { getByTestId } = renderWithProvider();
 
     await waitFor(() => {
-      expect(getByTestId("streak-days").props.children).toBe(3);
-      expect(getByTestId("is-reset").props.children).toBe("false");
-      // tomorrowXp.base = streakDays + 1 = 4
-      expect(getByTestId("tomorrow-xp-base").props.children).toBe(4);
+      expect(getByTestId("daily-bonus-streak").props.children).toBe(3);
+    });
+  });
+
+  // R2b — new spec test: non-daily_checkin Realtime INSERT still enqueues to toast
+  it("RPC: toast queue receives non-daily_checkin Realtime events after check_in", async () => {
+    const { getByTestId } = renderWithProvider();
+
+    // Wait for check_in to complete
+    await waitFor(() => expect(getByTestId("daily-bonus-points")).toBeTruthy());
+
+    // current is empty (daily_checkin didn't go to toast)
+    expect(getByTestId("no-notif")).toBeTruthy();
+
+    act(() => {
+      capturedCallback?.({
+        new: { xp_awarded: 25, event_type: "tasting_complete" },
+      });
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("xp-awarded").props.children).toBe(25);
+      expect(getByTestId("event-type").props.children).toBe("tasting_complete");
     });
   });
 
@@ -229,37 +249,28 @@ describe("XpContext", () => {
     });
   });
 
-  // R3b — edge case: RPC fires then Realtime fires with same date-keyed id → dedup
-  it("RPC: Realtime daily_checkin event after RPC is deduplicated", async () => {
-    jest.useFakeTimers().setSystemTime(new Date("2024-01-01"));
-
+  // R3b — edge case: Realtime daily_checkin event is skipped (not enqueued)
+  it("RPC: Realtime daily_checkin event is ignored (not added to toast queue)", async () => {
     const { getByTestId } = renderWithProvider();
 
-    // RPC notification arrives
-    await waitFor(() => {
-      expect(getByTestId("xp-awarded").props.children).toBe(4);
-    });
+    // Wait for check_in RPC to settle
+    await waitFor(() => expect(getByTestId("daily-bonus-points")).toBeTruthy());
 
-    // Realtime fires with same date-keyed id (daily_checkin event same day)
+    // Simulate a Realtime daily_checkin INSERT
     act(() => {
       capturedCallback?.({
         new: {
-          id: "daily_checkin-2024-01-01",
+          id: "daily_checkin-row-id",
           xp_awarded: 4,
           event_type: "daily_checkin",
-          promoted: false,
-          new_belt: 1,
         },
       });
     });
 
-    // Advance: queue should only have 1 item (Realtime was deduplicated)
-    fireEvent.press(getByTestId("advance-btn"));
+    // current remains empty — daily_checkin is skipped in Realtime path
     await waitFor(() => {
       expect(getByTestId("no-notif")).toBeTruthy();
     });
-
-    jest.useRealTimers();
   });
 
   // R3c — edge case: userId null → RPC not called, Realtime not subscribed
@@ -276,49 +287,18 @@ describe("XpContext", () => {
     expect(mockChannel).not.toHaveBeenCalled();
   });
 
-  // R3d — edge case: isReset true when streak_days is 1 after prior streak > 1
-  it("RPC: sets isReset true when streak_days is 1 after a prior streak > 1", async () => {
-    // Day 1: establish streak of 5
-    jest.useFakeTimers().setSystemTime(new Date("2024-01-01"));
-    mockRpc.mockResolvedValueOnce({
-      data: [{ xp_awarded: 5, streak_days: 5, promoted: false, new_belt: 1 }],
-      error: null,
-    });
-
-    const { getByTestId, rerender } = render(
-      <XpProvider>
-        <Consumer />
-      </XpProvider>
-    );
-
-    await waitFor(() => {
-      expect(getByTestId("xp-awarded").props.children).toBe(5);
-    });
-
-    // Advance to clear the queue
-    fireEvent.press(getByTestId("advance-btn"));
-    await waitFor(() => expect(getByTestId("no-notif")).toBeTruthy());
-
-    // Day 3: streak reset (missed a day)
-    jest.setSystemTime(new Date("2024-01-03"));
+  // R3d — edge case: dailyBonus.streakDays reflects the day count from check_in
+  it("RPC: dailyBonus.streakDays is 1 when check_in returns streak_days: 1", async () => {
     mockRpc.mockResolvedValueOnce({
       data: [{ xp_awarded: 1, streak_days: 1, promoted: false, new_belt: 1 }],
       error: null,
     });
 
-    // Cycle userId to null then back to re-trigger the check_in effect
-    mockAuthUser = null;
-    rerender(<XpProvider><Consumer /></XpProvider>);
-
-    mockAuthUser = { id: "user-123" };
-    rerender(<XpProvider><Consumer /></XpProvider>);
+    const { getByTestId } = renderWithProvider();
 
     await waitFor(() => {
-      expect(getByTestId("xp-awarded").props.children).toBe(1);
-      expect(getByTestId("is-reset").props.children).toBe("true");
+      expect(getByTestId("daily-bonus-streak").props.children).toBe(1);
     });
-
-    jest.useRealTimers();
   });
 
   // ── latestPromotion tests ─────────────────────────────────────────────────
@@ -428,10 +408,9 @@ describe("XpContext", () => {
       </XpProvider>
     );
 
-    // Wait for RPC then advance past the check-in notification
-    await waitFor(() => expect(getByTestId("advance-btn")).toBeTruthy());
-    fireEvent.press(getByTestId("advance-btn"));
-    await waitFor(() => expect(queryByTestId("advance-btn")).toBeNull());
+    // Wait for RPC to settle — no current notification (daily_checkin → dailyBonus)
+    await waitFor(() => expect(mockRpc).toHaveBeenCalled());
+    expect(queryByTestId("advance-btn")).toBeNull();
 
     act(() => {
       capturedCallback?.({
