@@ -46,8 +46,8 @@ export default function RootLayout() {
               <StatusBar style="auto" />
               {__DEV__ && <DevUserSwitcher />}
             </AuthGuard>
-            <DailyBonusScreen />
             <XpToast />
+            <DailyBonusScreen />
             <BeltUpModal />
             <PendingDeletionModal />
           </XpProvider>
