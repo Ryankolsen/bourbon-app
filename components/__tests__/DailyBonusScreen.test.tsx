@@ -10,8 +10,10 @@ import { render, fireEvent } from "@testing-library/react-native";
 
 // ── Mock XpContext ────────────────────────────────────────────────────────────
 
+import type { DailyBonusDecision } from "@/lib/daily-bonus";
+
 const mockClaimDailyBonus = jest.fn();
-let mockDailyBonus: { shouldShow: boolean; awardedPoints: number; streakDays?: number } | null = null;
+let mockDailyBonus: Partial<DailyBonusDecision> | null = null;
 
 jest.mock("@/context/xp-context", () => ({
   useXpNotification: () => ({
@@ -57,5 +59,34 @@ describe("DailyBonusScreen", () => {
     mockDailyBonus = null;
     const { queryByText } = render(<DailyBonusScreen />);
     expect(queryByText(/Barrel Points/)).toBeNull();
+  });
+
+  // 5 — milestone celebration renders on day 7
+  it("renders milestone celebration text when milestoneHit is true", () => {
+    mockDailyBonus = {
+      shouldShow: true,
+      awardedPoints: 27,
+      streakDays: 7,
+      milestoneHit: true,
+      tomorrowPoints: 8,
+      nextMilestone: { day: 30, daysRemaining: 23, bonusXp: 75 },
+    };
+    const { getByText } = render(<DailyBonusScreen />);
+    expect(getByText(/7-Day Streak Milestone/i)).toBeTruthy();
+  });
+
+  // 6 — progress line and tomorrow value on normal day
+  it("renders progress line and tomorrow value on a non-milestone day", () => {
+    mockDailyBonus = {
+      shouldShow: true,
+      awardedPoints: 5,
+      streakDays: 5,
+      milestoneHit: false,
+      tomorrowPoints: 6,
+      nextMilestone: { day: 7, daysRemaining: 2, bonusXp: 20 },
+    };
+    const { getByText } = render(<DailyBonusScreen />);
+    expect(getByText(/Day 5 of 7/i)).toBeTruthy();
+    expect(getByText(/\+6 tomorrow/i)).toBeTruthy();
   });
 });

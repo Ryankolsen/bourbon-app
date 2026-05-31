@@ -13,6 +13,8 @@ export function DailyBonusScreen() {
 
   if (!dailyBonus?.shouldShow) return null;
 
+  const { awardedPoints, streakDays, milestoneHit, tomorrowPoints, nextMilestone } = dailyBonus;
+
   return (
     <Modal
       visible
@@ -24,9 +26,25 @@ export function DailyBonusScreen() {
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <Text style={styles.heading}>Daily Bonus</Text>
+
           <Text style={styles.points}>
-            +{dailyBonus.awardedPoints} Barrel Points
+            +{awardedPoints} Barrel Points
           </Text>
+
+          {milestoneHit ? (
+            <Text style={styles.milestone}>
+              {streakDays}-Day Streak Milestone!
+            </Text>
+          ) : nextMilestone ? (
+            <Text style={styles.progress}>
+              Day {streakDays} of {nextMilestone.day} — reach Day {nextMilestone.day} for a +{nextMilestone.bonusXp} bonus!
+            </Text>
+          ) : null}
+
+          {tomorrowPoints != null && tomorrowPoints > 0 && (
+            <Text style={styles.tomorrow}>+{tomorrowPoints} tomorrow</Text>
+          )}
+
           <TouchableOpacity
             style={styles.claimBtn}
             onPress={claimDailyBonus}
@@ -64,13 +82,33 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 32,
     fontWeight: "800",
+    marginBottom: 12,
+  },
+  milestone: {
+    color: "#f59e0b",
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  progress: {
+    color: "#a3a3a3",
+    fontSize: 14,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  tomorrow: {
+    color: "#a3a3a3",
+    fontSize: 14,
     marginBottom: 28,
+    textAlign: "center",
   },
   claimBtn: {
     backgroundColor: "#0ea5e9",
     paddingHorizontal: 40,
     paddingVertical: 14,
     borderRadius: 12,
+    marginTop: 8,
   },
   claimText: {
     color: "#FFFFFF",
