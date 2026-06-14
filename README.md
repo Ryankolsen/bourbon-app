@@ -86,8 +86,10 @@ Restart Metro after changing this flag.
 ### 1. Install dependencies
 
 ```bash
-pnpm install
+npm install
 ```
+
+> **Use npm, not pnpm.** This project's tracked lockfile is `package-lock.json`. React Native / Expo and NativeWind's `className → style` transform require a flat (hoisted) `node_modules`; pnpm's default symlinked layout breaks NativeWind silently (the app renders with no styles at all). If you ever installed with pnpm, run `rm -rf node_modules pnpm-lock.yaml && npm install`.
 
 ### 2. Start local Supabase
 
