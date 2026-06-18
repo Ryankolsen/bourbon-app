@@ -30,24 +30,11 @@ TL;DR - build a tiny, end-to-end slice of the feature first, then expand it out.
 4. Polish and quick wins
 5. Refactors
 
-# EXPLORATION
+# EXECUTE THE TASK
 
-Explore the repo.
+Invoke the `do-work` skill to execute the selected task. It handles the full unit of work end-to-end: explore the repo, implement (red/green/refactor TDD for backend, direct for frontend), validate with `pnpm run typecheck` and `pnpm run test`, then commit once both pass cleanly.
 
-# IMPLEMENTATION
-
-Complete the task.
-
-# FEEDBACK LOOPS
-
-Before committing, run the feedback loops:
-
-- `pnpm run test` to run the tests
-- `pnpm run typecheck` to run the type checker
-
-# COMMIT
-
-Make a git commit. The commit message must:
+When `do-work` commits, the commit message must:
 
 1. Include key decisions made
 2. Include files changed
