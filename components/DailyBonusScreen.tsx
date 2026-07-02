@@ -46,11 +46,12 @@ export function DailyBonusScreen() {
     }
 
     setClaiming(true);
-    setDisplayPoints(0);
 
     const steps = Math.min(awardedPoints, 20);
     const stepInterval = Math.round(COUNT_UP_DURATION / steps);
-    let current = 0;
+    let current = 1;
+    // Start from the first step value instead of 0 so the number never flashes to zero.
+    setDisplayPoints(Math.round((awardedPoints / steps) * current));
 
     const timer = setInterval(() => {
       current += 1;

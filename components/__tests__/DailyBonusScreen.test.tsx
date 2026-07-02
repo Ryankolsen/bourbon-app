@@ -122,6 +122,17 @@ describe("DailyBonusScreen", () => {
     expect(getByText(/\+6 tomorrow/i)).toBeTruthy();
   });
 
+  // 7a — regression: Claim press must never render "+0 Barrel Points", even for one frame
+  it("never flashes to 0 points immediately after Claim is pressed", () => {
+    mockDailyBonus = { shouldShow: true, awardedPoints: 5, streakDays: 5 };
+    const { getByTestId, queryByText } = render(<DailyBonusScreen />);
+
+    fireEvent.press(getByTestId("claim-btn"));
+
+    // Check synchronously, before any timers have fired.
+    expect(queryByText("+0 Barrel Points")).toBeNull();
+  });
+
   // 7 — count-up animation settles on awardedPoints after Claim + timer advance
   it("count-up animation settles on awardedPoints after Claim press and timers flush", () => {
     mockDailyBonus = { shouldShow: true, awardedPoints: 5, streakDays: 1 };
