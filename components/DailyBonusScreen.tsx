@@ -11,7 +11,7 @@ import { useXpNotification } from "@/context/xp-context";
 import { useTheme } from "@/lib/theme-provider";
 
 // Swap this single reference to change the hero art without touching layout code.
-const HERO_SOURCE = require("../assets/icon.png");
+const HERO_SOURCE = require("../assets/daily_login_image.png");
 const COUNT_UP_DURATION = 800;
 
 export function DailyBonusScreen() {
