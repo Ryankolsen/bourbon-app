@@ -5,6 +5,8 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -140,7 +142,11 @@ export default function TastingDetailScreen() {
         )}
       </View>
 
-      <ScrollView contentContainerClassName="px-4 pb-8">
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+      <ScrollView contentContainerClassName="px-4 pb-8" keyboardShouldPersistTaps="handled">
         {/* Title */}
         <View className="mb-6">
           <Text className="text-brand-100 text-2xl font-bold">
@@ -242,6 +248,7 @@ export default function TastingDetailScreen() {
           </TouchableOpacity>
         )}
       </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
