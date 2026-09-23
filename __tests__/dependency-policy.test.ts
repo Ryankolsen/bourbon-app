@@ -19,6 +19,17 @@ const POLICY = {
     "react-native-worklets":
       "Reanimated 4.1 requires worklets 0.8.x; Expo SDK 54 still suggests 0.5.1",
   } as Record<string, string>,
+  // Libraries outside Expo's control, kept current within their major.
+  // Targets respect `min-release-age=7` in .npmrc.
+  minimums: {
+    "@hookform/resolvers": "5.9.1",
+    "@supabase/supabase-js": "2.116.0",
+    "@tanstack/react-query": "5.102.8",
+    nativewind: "4.2.7",
+    "react-hook-form": "7.88.0",
+    "react-native-worklets": "0.8.3",
+    zod: "4.6.5",
+  } as Record<string, string>,
 };
 
 const root = path.resolve(__dirname, "..");
@@ -60,6 +71,14 @@ describe("dependency policy", () => {
       expect(
         semver.satisfies(semver.minVersion(declared[name])!, expected[name])
       ).toBe(true);
+    }
+  );
+
+  it.each(Object.entries(POLICY.minimums))(
+    "%s is at least %s",
+    (name, minimum) => {
+      expect(semver.gte(installedVersion(name), minimum)).toBe(true);
+      expect(semver.gte(semver.minVersion(declared[name])!, minimum)).toBe(true);
     }
   );
 
