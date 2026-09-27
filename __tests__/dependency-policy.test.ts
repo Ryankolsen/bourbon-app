@@ -87,6 +87,16 @@ describe("dependency policy", () => {
     expect([...exclusions].sort()).toEqual(Object.keys(POLICY.excluded).sort());
   });
 
+  it.each(fs.readdirSync(path.join(root, "patches")))(
+    "patches/%s contains only source changes, no build artifacts",
+    (file) => {
+      const patch = fs.readFileSync(path.join(root, "patches", file), "utf8");
+      const touched = [...patch.matchAll(/^diff --git a\/(\S+)/gm)].map((m) => m[1]);
+      expect(touched.filter((p) => /\/build\//.test(p))).toEqual([]);
+      expect(patch).not.toMatch(/^Binary files /m);
+    }
+  );
+
   it("pins react, react-test-renderer and the overrides to one version", () => {
     const react = declared.react;
     expect(declared["react-test-renderer"]).toBe(react);

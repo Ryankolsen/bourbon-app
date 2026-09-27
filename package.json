@@ -10,7 +10,8 @@
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "prepare": "husky",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "audit:budget": "node scripts/audit-budget.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
