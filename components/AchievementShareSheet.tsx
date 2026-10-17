@@ -13,14 +13,14 @@ import React from 'react';
 import {
   ActivityIndicator,
   Modal,
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { APP_STORE_URLS, BELT_SHARE_COPY, BeltConfig } from '@/lib/belt-config';
+import { BELT_SHARE_COPY, BeltConfig } from '@/lib/belt-config';
+import { LANDING_PAGE_URL } from '@/lib/public-links';
 import { useShareAchievement } from '@/hooks/use-share-achievement';
 import { AchievementShareCard } from '@/components/AchievementShareCard';
 import { colors } from '@/lib/colors';
@@ -48,15 +48,11 @@ export function AchievementShareSheet({
 }: AchievementShareSheetProps) {
   const key = referenceKey ?? String(belt.level);
 
-  // Build the Bluesky caption: belt copy + platform-appropriate store URL
-  const storeURL = APP_STORE_URLS[Platform.OS === 'ios' ? 'ios' : 'android'];
+  // Build the Bluesky caption: belt copy + landing page URL
   const beltCopy = BELT_SHARE_COPY[belt.level];
-  const shareText = beltCopy ? `${beltCopy} ${storeURL}` : undefined;
+  const shareText = beltCopy ? `${beltCopy} ${LANDING_PAGE_URL}` : undefined;
 
   const { cardRef, share, isSharing } = useShareAchievement(key, shareText);
-
-  const cardPlatform: 'ios' | 'android' =
-    Platform.OS === 'ios' ? 'ios' : 'android';
 
   return (
     <Modal
@@ -111,7 +107,7 @@ export function AchievementShareSheet({
 
         {/* Off-screen card for react-native-view-shot capture */}
         <View ref={cardRef} style={styles.offScreen} pointerEvents="none">
-          <AchievementShareCard belt={belt} platform={cardPlatform} />
+          <AchievementShareCard belt={belt} />
         </View>
       </SafeAreaView>
     </Modal>

@@ -214,15 +214,6 @@ export const XP_EVENT_LABELS: Record<string, string> = {
 };
 
 /**
- * App store URLs for the BourbonVault app.
- * Placeholders until the app is published — update before going live.
- */
-export const APP_STORE_URLS = {
-  ios: 'https://apps.apple.com/app/bourbonvault/id0000000000',
-  android: 'https://play.google.com/store/apps/details?id=com.bourbonvault',
-} as const;
-
-/**
  * Belt-specific share copy shown on the AchievementShareCard.
  * One caption per belt level (1–10). Each caption is designed for social sharing.
  */

@@ -7,12 +7,11 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { BeltConfig, APP_STORE_URLS, BELT_SHARE_COPY } from '@/lib/belt-config';
+import { BeltConfig, BELT_SHARE_COPY } from '@/lib/belt-config';
+import { LANDING_PAGE_URL } from '@/lib/public-links';
 
 export interface AchievementShareCardProps {
   belt: BeltConfig;
-  /** Platform determines which app store URL to display on the card. */
-  platform: 'ios' | 'android';
 }
 
 const CARD_WIDTH = 360;
@@ -20,9 +19,8 @@ const CARD_HEIGHT = 640; // 9:16 ratio
 
 const PAPPY_LEVEL = 10;
 
-export function AchievementShareCard({ belt, platform }: AchievementShareCardProps) {
+export function AchievementShareCard({ belt }: AchievementShareCardProps) {
   const isPappy = belt.level === PAPPY_LEVEL;
-  const appStoreUrl = platform === 'ios' ? APP_STORE_URLS.ios : APP_STORE_URLS.android;
 
   return (
     <View
@@ -72,12 +70,12 @@ export function AchievementShareCard({ belt, platform }: AchievementShareCardPro
         {BELT_SHARE_COPY[belt.level]}
       </Text>
 
-      {/* App store URL */}
+      {/* Landing page URL */}
       <Text
         testID="app-store-url"
         style={[styles.appStoreUrl, { color: belt.iconColor }]}
       >
-        {appStoreUrl}
+        {LANDING_PAGE_URL}
       </Text>
     </View>
   );
