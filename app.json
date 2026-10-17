@@ -18,7 +18,7 @@
       "bundleIdentifier": "com.ryankolsen.bourbonvault",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSPhotoLibraryUsageDescription": "BourbonDojo uses your photo library to let you upload a profile picture. Tap your avatar to select a photo from your library to use as your profile image."
+        "NSPhotoLibraryUsageDescription": "Bourbon Dojo uses your photo library to let you upload a profile picture. Tap your avatar to select a photo from your library to use as your profile image."
       }
     },
     "android": {
