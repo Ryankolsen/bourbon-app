@@ -7,7 +7,7 @@
  */
 
 import React from "react";
-import { Platform } from "react-native";
+import { Platform, Linking } from "react-native";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react-native";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
@@ -246,5 +246,51 @@ describe("email sign-in", () => {
         password: "secret",
       })
     );
+  });
+});
+
+// ── Wordmark and links ───────────────────────────────────────────────────────
+
+describe("wordmark and links", () => {
+  const PRIVACY = "https://rko-design.netlify.app/bourbon-dojo/privacy";
+  const WEBSITE = "https://rko-design.netlify.app/";
+  let openURL: jest.SpyInstance;
+
+  beforeEach(() => {
+    openURL = jest.spyOn(Linking, "openURL").mockResolvedValue(true);
+  });
+  afterEach(() => {
+    openURL.mockRestore();
+  });
+
+  it("opens the privacy policy when the link is pressed", () => {
+    render(<LoginScreen />);
+    fireEvent.press(screen.getByText("Privacy Policy"));
+    expect(openURL).toHaveBeenCalledWith(PRIVACY);
+  });
+
+  it("shows the Bourbon Dojo wordmark and the privacy notice", () => {
+    render(<LoginScreen />);
+    expect(screen.getByText("Bourbon Dojo")).toBeTruthy();
+    expect(screen.queryByText("BourbonVault")).toBeNull();
+    expect(screen.getByText(/By continuing, you agree to our/)).toBeTruthy();
+  });
+
+  it("opens the website when Made by RKO Design is pressed", () => {
+    render(<LoginScreen />);
+    fireEvent.press(screen.getByText("Made by RKO Design"));
+    expect(openURL).toHaveBeenCalledWith(WEBSITE);
+  });
+
+  it("does not mention Terms of Service and exposes both links by role", () => {
+    render(<LoginScreen />);
+    expect(screen.queryByText(/Terms of Service/)).toBeNull();
+    expect(screen.getAllByRole("link").length).toBeGreaterThanOrEqual(2);
+  });
+
+  it.each(["ios", "android"] as const)("shows the privacy link on %s", (os) => {
+    Platform.OS = os;
+    render(<LoginScreen />);
+    expect(screen.getByText("Privacy Policy")).toBeTruthy();
   });
 });
