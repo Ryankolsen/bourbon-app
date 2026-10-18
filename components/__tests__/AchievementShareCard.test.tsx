@@ -54,7 +54,7 @@ describe('AchievementShareCard', () => {
     'belt %i (%s) text contrast is >= 4.5:1',
     (_level, _name, belt) => {
       const hasScrim = belt.shareTextColor === undefined;
-      const text = belt.shareTextColor ?? belt.iconColor;
+      const text = belt.shareTextColor ?? '#FFFFFF';
       const bg = hasScrim ? blendTowardBlack(belt.bgColor, 0.4) : belt.bgColor;
       expect(contrastRatio(text, bg)).toBeGreaterThanOrEqual(4.5);
     },

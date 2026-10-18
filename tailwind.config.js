@@ -40,6 +40,7 @@ module.exports = {
         "slider-track-empty":   "var(--slider-track-empty)",
         // Semantic tokens — accent / misc
         "accent-amber":         "var(--accent-amber)",
+        "xp-track":             "var(--xp-track)",
         "spinner-default":      "var(--spinner-default)",
         "spinner-amber":        "var(--spinner-amber)",
         // Semantic tokens — star ratings (personal variant)

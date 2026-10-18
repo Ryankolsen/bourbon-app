@@ -152,6 +152,25 @@ describe("BeltUpModal", () => {
     });
   });
 
+  // CTA text qualifies as WCAG large text (>= 18.66px bold)
+  it("renders the CTA text as large bold text in the belt iconColor", async () => {
+    const { getByTestId, getByText } = renderModal();
+
+    act(() => {
+      firePromotion(2, "promo-cta-style");
+    });
+
+    await waitFor(() => expect(getByTestId("belt-up-cta")).toBeTruthy());
+
+    const flat = Object.assign(
+      {},
+      ...[getByText("Let's go!").props.style].flat(5).filter(Boolean)
+    );
+    expect(flat.fontSize).toBeGreaterThanOrEqual(19);
+    expect(flat.fontWeight).toBe("700");
+    expect(flat.color).toBe("#92400E");
+  });
+
   // 3b — edge case: same promotion id does NOT re-open the modal
   it("does not re-show modal when the same promotion id fires again", async () => {
     const { getByTestId, queryByTestId } = renderModal();

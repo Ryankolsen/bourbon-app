@@ -51,6 +51,8 @@ export type ThemeColors = {
   sliderTrackEmpty: string;
 
   accentAmber: string;
+  /** Empty track of the XP progress bar (fill is delineated by a brand-100 border) */
+  xpTrack: string;
   spinnerDefault: string;
   spinnerAmber: string;
 
@@ -124,6 +126,7 @@ const charcoal: Theme = {
     sliderTrackFilled: "#0ea5e9",
     sliderTrackEmpty:  "#2a2a2a",
     accentAmber:    "#f59e0b",
+    xpTrack:        "#374151",
     spinnerDefault: "#38bdf8",
     spinnerAmber:   "#7dd3fc",
     starFilled: "#f59e0b",  // amber — 9.3:1 on brand-800 #1a1a1a ✓
@@ -177,6 +180,7 @@ const highContrast: Theme = {
     sliderTrackFilled: "#ccac00",
     sliderTrackEmpty:  "#1a1a1a",
     accentAmber:    "#ffd700",
+    xpTrack:        "#3a3a00",
     spinnerDefault: "#ffd700",
     spinnerAmber:   "#ffec40",
     starFilled: "#ffd700",  // gold — 19.6:1 on brand-800 #0a0a0a ✓
@@ -241,7 +245,8 @@ const navyFlax: Theme = {
     sliderThumb:       "#1e4080",
     sliderTrackFilled: "#2a4470",
     sliderTrackEmpty:  "#d0cac0",
-    accentAmber:    "#b8691a",
+    accentAmber:    "#a65d17",  // 5.0:1 on brand-800 #ffffff (12px XP label needs 4.5)
+    xpTrack:        "#d0cac0",
     spinnerDefault: "#1e4080",
     spinnerAmber:   "#2a4470",
     starFilled: "#b8691a",  // warm amber — 4.6:1 on brand-800 #ffffff ✓
@@ -309,6 +314,7 @@ export function themeColorsToCssVars(c: ThemeColors): Record<string, string> {
     "--slider-track-filled": c.sliderTrackFilled,
     "--slider-track-empty":  c.sliderTrackEmpty,
     "--accent-amber":    c.accentAmber,
+    "--xp-track":        c.xpTrack,
     "--spinner-default": c.spinnerDefault,
     "--spinner-amber":   c.spinnerAmber,
     "--star-filled": c.starFilled,

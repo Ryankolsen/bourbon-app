@@ -15,14 +15,18 @@ export interface BeltConfig {
   sensei: boolean;
   /** Background hex color for the belt badge */
   bgColor: string;
-  /** Icon/text hex color for contrast on bgColor */
+  /**
+   * Icon/text hex color on bgColor (badge glyph, CTA text). Always >= 3:1 on
+   * bgColor; >= 4.5:1 for belts 1, 2, 3, 4, 10. May be dark or white.
+   */
   iconColor: string;
   /** Short unicode character used as the belt badge icon */
   icon: string;
   /**
    * Card-only: dark text color for the share card on light backgrounds.
    * When set, the card uses it for all text and the icon and renders no scrim.
-   * When absent, the card uses iconColor on a dark scrim panel.
+   * When absent, the card uses white text on a dark scrim panel (independent
+   * of iconColor, which may be dark).
    */
   shareTextColor?: string;
 }
@@ -37,7 +41,7 @@ export const BELTS: BeltConfig[] = [
     senpai: false,
     sensei: false,
     bgColor: '#E5E7EB',
-    iconColor: '#6B7280',
+    iconColor: '#4B5563',
     icon: '○',
     shareTextColor: '#374151',
   },
@@ -61,7 +65,7 @@ export const BELTS: BeltConfig[] = [
     senpai: false,
     sensei: false,
     bgColor: '#FB923C',
-    iconColor: '#FFFFFF',
+    iconColor: '#111827',
     icon: '▲',
   },
   {
@@ -72,7 +76,7 @@ export const BELTS: BeltConfig[] = [
     senpai: false,
     sensei: false,
     bgColor: '#22C55E',
-    iconColor: '#FFFFFF',
+    iconColor: '#111827',
     icon: '◆',
   },
   {
@@ -138,7 +142,7 @@ export const BELTS: BeltConfig[] = [
     senpai: false,
     sensei: true,
     bgColor: '#F59E0B',
-    iconColor: '#78350F',
+    iconColor: '#451A03',
     icon: '⭐',
     shareTextColor: '#451A03',
   },

@@ -7,7 +7,9 @@ import {
   STREAK_MILESTONE_BONUSES,
   BELT_SHARE_COPY,
   SHARE_CTA,
+  BELTS,
 } from './belt-config';
+import { contrastRatio } from './contrast';
 
 // ---------------------------------------------------------------------------
 // Slice 1: core wiring — getBeltForXp boundaries
@@ -238,4 +240,18 @@ describe('threshold boundary promotions', () => {
       expect(getBeltForXp(xp - 1)).toBe(expectedBelt - 1);
     },
   );
+});
+
+describe('belt iconColor contrast on bgColor', () => {
+  it.each(BELTS.map((b) => [b.level, b.name, b] as const))(
+    'belt %i (%s) iconColor is >= 3:1 on bgColor',
+    (_l, _n, belt) => {
+      expect(contrastRatio(belt.iconColor, belt.bgColor)).toBeGreaterThanOrEqual(3);
+    },
+  );
+
+  it.each([1, 2, 3, 4, 10])('belt %i iconColor is >= 4.5:1 on bgColor', (level) => {
+    const belt = getBeltConfig(level);
+    expect(contrastRatio(belt.iconColor, belt.bgColor)).toBeGreaterThanOrEqual(4.5);
+  });
 });

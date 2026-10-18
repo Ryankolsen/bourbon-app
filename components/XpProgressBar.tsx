@@ -21,17 +21,17 @@ export function XpProgressBar({ totalXp, currentBelt, isLoading }: XpProgressBar
     return (
       <View testID="xp-progress-loading">
         <View
+          className="bg-xp-track"
           style={{
             height: 8,
-            backgroundColor: "#374151",
             borderRadius: 4,
           }}
         />
         <View
+          className="bg-xp-track"
           style={{
             height: 12,
             width: 160,
-            backgroundColor: "#374151",
             borderRadius: 4,
             marginTop: 6,
           }}
@@ -65,16 +65,19 @@ export function XpProgressBar({ totalXp, currentBelt, isLoading }: XpProgressBar
     <View>
       {/* Track */}
       <View
+        testID="xp-progress-track"
+        className="bg-xp-track"
         style={{
           height: 8,
-          backgroundColor: "#374151",
           borderRadius: 4,
           overflow: "hidden",
         }}
       >
-        {/* Fill */}
+        {/* Fill — themed 1px border keeps every belt color (incl. belt 9, which
+            matches the track) distinguishable from the track in all themes. */}
         <View
           testID="xp-progress-fill"
+          className={progressPercent > 0 ? "border border-brand-100" : undefined}
           style={{
             height: "100%",
             width: `${progressPercent}%`,
@@ -88,14 +91,16 @@ export function XpProgressBar({ totalXp, currentBelt, isLoading }: XpProgressBar
       {isMax ? (
         <Text
           testID="xp-max-label"
-          style={{ color: "#F59E0B", fontSize: 12, marginTop: 4, fontWeight: "600" }}
+          className="text-accent-amber"
+          style={{ fontSize: 12, marginTop: 4, fontWeight: "600" }}
         >
           MAX — Legendary status achieved
         </Text>
       ) : (
         <Text
           testID="xp-progress-label"
-          style={{ color: "#9CA3AF", fontSize: 12, marginTop: 4 }}
+          className="text-brand-400"
+          style={{ fontSize: 12, marginTop: 4 }}
         >
           {totalXp.toLocaleString("en-US")} / {nextBeltConfig!.minXp.toLocaleString("en-US")} Barrel Points
         </Text>

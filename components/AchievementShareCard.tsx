@@ -25,7 +25,7 @@ export const SHARE_SCRIM_ALPHA = 0.4;
 
 export function AchievementShareCard({ belt }: AchievementShareCardProps) {
   const isPappy = belt.level === PAPPY_LEVEL;
-  const textColor = belt.shareTextColor ?? belt.iconColor;
+  const textColor = belt.shareTextColor ?? '#FFFFFF';
   // Light-background belts define shareTextColor and need no scrim; the rest
   // keep white text on a dark scrim panel.
   const hasScrim = belt.shareTextColor === undefined;

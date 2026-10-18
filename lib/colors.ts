@@ -38,6 +38,7 @@ export const colors = {
 
   // Accent / spinners
   accentAmber:    "#f59e0b",
+  xpTrack:        "#374151",
   spinnerDefault: "#38bdf8",
   spinnerAmber:   "#7dd3fc",
 

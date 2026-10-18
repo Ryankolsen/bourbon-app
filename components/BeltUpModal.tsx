@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   ctaText: {
-    fontSize: 16,
+    fontSize: 19,
     fontWeight: "700",
   },
   shareButton: {
