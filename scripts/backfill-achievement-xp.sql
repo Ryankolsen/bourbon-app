@@ -10,7 +10,8 @@
 --    profiles, and inserts the xp_events row. It skips belt achievements for
 --    this event type, so nothing cascades. No social_notifications are inserted.
 --
--- 2. Dry run (preview the rows; read-only):
+-- 2. Dry run (preview the rows; read-only). Keep this filter in sync with the
+--    live CTE below:
 --      select ua.user_id, a.key, a.xp_award, ua.earned_at
 --        from public.user_achievements ua
 --        join public.achievements a on a.id = ua.achievement_id

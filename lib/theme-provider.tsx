@@ -1,5 +1,5 @@
 /**
- * ThemeProvider — runtime theme system for BourbonVault.
+ * ThemeProvider — runtime theme system for Bourbon Dojo.
  *
  * Wraps the app in a View that sets all brand-* CSS custom properties via
  * NativeWind's `vars()` utility, so every Tailwind class (bg-brand-900, etc.)

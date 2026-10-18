@@ -72,8 +72,8 @@ export function AchievementShareCard({ belt }: AchievementShareCardProps) {
 
       {/* Landing page URL */}
       <Text
-        testID="app-store-url"
-        style={[styles.appStoreUrl, { color: belt.iconColor }]}
+        testID="landing-url"
+        style={[styles.landingUrl, { color: belt.iconColor }]}
       >
         {LANDING_PAGE_URL}
       </Text>
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     opacity: 0.8,
     lineHeight: 18,
   },
-  appStoreUrl: {
+  landingUrl: {
     fontSize: 11,
     textAlign: 'center',
     opacity: 0.65,

@@ -8,6 +8,8 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { Linking } from 'react-native';
 import { useShareAchievement } from './use-share-achievement';
+import { SHARE_CTA } from '@/lib/belt-config';
+import { LANDING_PAGE_URL } from '@/lib/public-links';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -269,7 +271,7 @@ describe('useShareAchievement', () => {
 
   // 13 — platform routing: bluesky — opens bsky.app intent URL with encoded text
   it('opens bsky.app intent URL with encoded shareText for bluesky platform', async () => {
-    const shareText = 'Come train with me 🥋 https://rko-design.netlify.app/bourbon-dojo';
+    const shareText = `${SHARE_CTA} ${LANDING_PAGE_URL}`;
     mockCaptureRef.mockResolvedValue('file:///tmp/share.png');
     mockRpc.mockResolvedValue(rpcResponse(100, false));
     const openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);

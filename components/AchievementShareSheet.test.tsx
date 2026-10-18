@@ -2,6 +2,7 @@ import React from "react";
 import { Platform } from "react-native";
 import { render } from "@testing-library/react-native";
 import { BELTS, BELT_SHARE_COPY } from "@/lib/belt-config";
+import { LANDING_PAGE_URL } from "@/lib/public-links";
 
 const mockUseShareAchievement = jest.fn();
 
@@ -15,7 +16,7 @@ jest.mock("@/components/AchievementShareCard", () => ({
 
 import { AchievementShareSheet } from "./AchievementShareSheet";
 
-const LANDING = "https://rko-design.netlify.app/bourbon-dojo";
+const LANDING = LANDING_PAGE_URL;
 const belt = BELTS[3]; // level 4
 
 describe("AchievementShareSheet share text", () => {

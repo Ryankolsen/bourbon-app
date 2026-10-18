@@ -213,21 +213,24 @@ export const XP_EVENT_LABELS: Record<string, string> = {
   achievement_shared: 'Achievement shared',
 };
 
+/** Call to action appended to every belt share caption. */
+export const SHARE_CTA = "Come train with me 🥋";
+
 /**
  * Belt-specific share copy shown on the AchievementShareCard.
  * One caption per belt level (1–10). Each caption is designed for social sharing.
  */
 export const BELT_SHARE_COPY: Record<number, string> = {
-  1: "Just earning my stripes in the Bourbon Dojo 🥃 Every master starts as a White Dog. Come train with me 🥋",
-  2: "Leveled up to Corn Whiskey in the Bourbon Dojo 🌽 I've got the grain — now I'm learning the craft. Come train with me 🥋",
-  3: "First time in the barrel as a New Oak in the Bourbon Dojo 🪵 The journey begins. Come train with me 🥋",
-  4: "Bottled in Bond and loving it 🔖 Earned my Bonded belt in the Bourbon Dojo. Come train with me 🥋",
-  5: "Standing on my own as a Single Barrel in the Bourbon Dojo ⭐ A distinct voice is emerging. Come train with me 🥋",
-  6: "Refined, curated, and intentional — I've reached Small Batch in the Bourbon Dojo ✦ Come train with me 🥋",
-  7: "Full strength, Senpai 💪 Earned my Barrel Proof belt in the Bourbon Dojo. No water added. Come train with me 🥋",
-  8: "Rare and distinguished — I've reached the Wheated belt in the Bourbon Dojo ❋ Few reach this mash. Come train with me 🥋",
-  9: "The pinnacle of craft — Single Malt Senpai in the Bourbon Dojo ✺ Revered by all. Come train with me 🥋",
-  10: "LEGENDARY. The Sensei has arrived 👑 Earned Pappy status in the Bourbon Dojo. The ultimate bourbon achievement. Come train with me 🥋",
+  1: `Just earning my stripes in the Bourbon Dojo 🥃 Every master starts as a White Dog. ${SHARE_CTA}`,
+  2: `Leveled up to Corn Whiskey in the Bourbon Dojo 🌽 I've got the grain — now I'm learning the craft. ${SHARE_CTA}`,
+  3: `First time in the barrel as a New Oak in the Bourbon Dojo 🪵 The journey begins. ${SHARE_CTA}`,
+  4: `Bottled in Bond and loving it 🔖 Earned my Bonded belt in the Bourbon Dojo. ${SHARE_CTA}`,
+  5: `Standing on my own as a Single Barrel in the Bourbon Dojo ⭐ A distinct voice is emerging. ${SHARE_CTA}`,
+  6: `Refined, curated, and intentional — I've reached Small Batch in the Bourbon Dojo ✦ ${SHARE_CTA}`,
+  7: `Full strength, Senpai 💪 Earned my Barrel Proof belt in the Bourbon Dojo. No water added. ${SHARE_CTA}`,
+  8: `Rare and distinguished — I've reached the Wheated belt in the Bourbon Dojo ❋ Few reach this mash. ${SHARE_CTA}`,
+  9: `The pinnacle of craft — Single Malt Senpai in the Bourbon Dojo ✺ Revered by all. ${SHARE_CTA}`,
+  10: `LEGENDARY. The Sensei has arrived 👑 Earned Pappy status in the Bourbon Dojo. The ultimate bourbon achievement. ${SHARE_CTA}`,
 };
 
 /** Returns the human-readable label for a given XP event type, or the raw type as fallback. */

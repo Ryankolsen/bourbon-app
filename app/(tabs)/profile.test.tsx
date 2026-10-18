@@ -68,8 +68,7 @@ describe('ProfileScreen — Privacy Policy row', () => {
     const row = screen.getByRole('link', { name: 'Privacy Policy' });
     expect(row.props.accessibilityRole).toBe('link');
     fireEvent.press(row);
-    expect(spy).toHaveBeenCalledWith('https://rko-design.netlify.app/bourbon-dojo/privacy');
-    expect(PRIVACY_POLICY_URL).toBe('https://rko-design.netlify.app/bourbon-dojo/privacy');
+    expect(spy).toHaveBeenCalledWith(PRIVACY_POLICY_URL);
   });
 
   it('still renders Sign Out', () => {

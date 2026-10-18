@@ -1,5 +1,5 @@
 /**
- * Public URLs for BourbonVault, hosted on the rko-design site.
+ * Public URLs for Bourbon Dojo, hosted on the rko-design site.
  * The landing page carries the App Store and Play Store buttons.
  */
 export const WEBSITE_URL = 'https://rko-design.netlify.app/';

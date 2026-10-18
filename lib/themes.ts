@@ -1,5 +1,5 @@
 /**
- * Theme definitions for the BourbonVault app.
+ * Theme definitions for the Bourbon Dojo app.
  *
  * Component token roles discovered from source:
  *   brand-900 = main app background

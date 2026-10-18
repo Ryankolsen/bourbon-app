@@ -40,6 +40,19 @@ const THEME_OPTIONS: { label: string; value: ThemeMode }[] = [
   { label: "A11y",   value: "accessible" },
 ];
 
+/** Shown in both the loading and loaded states so the policy is always reachable. */
+function PrivacyPolicyRow() {
+  return (
+    <TouchableOpacity
+      onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+      accessibilityRole="link"
+      className="bg-brand-800 rounded-2xl py-4 items-center mb-4"
+    >
+      <Text className="text-brand-300 font-semibold">Privacy Policy</Text>
+    </TouchableOpacity>
+  );
+}
+
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const { data: profile, isLoading } = useProfile(user?.id);
@@ -114,13 +127,7 @@ export default function ProfileScreen() {
       <View className="flex-1 bg-brand-900 items-center justify-center">
         <ActivityIndicator color={colors.spinnerAmber} />
         <View className="mt-8 w-full px-6">
-        <TouchableOpacity
-          onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
-          accessibilityRole="link"
-          className="bg-brand-800 rounded-2xl py-4 items-center mb-4"
-        >
-          <Text className="text-brand-300 font-semibold">Privacy Policy</Text>
-        </TouchableOpacity>
+          <PrivacyPolicyRow />
         </View>
       </View>
     );
@@ -333,14 +340,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Privacy Policy */}
-        <TouchableOpacity
-          onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
-          accessibilityRole="link"
-          className="bg-brand-800 rounded-2xl py-4 items-center mb-4"
-        >
-          <Text className="text-brand-300 font-semibold">Privacy Policy</Text>
-        </TouchableOpacity>
+        <PrivacyPolicyRow />
 
         {/* Sign Out */}
         <TouchableOpacity

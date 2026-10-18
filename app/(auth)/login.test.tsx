@@ -70,6 +70,7 @@ jest.mock("react-native-safe-area-context", () => ({
 }));
 
 import LoginScreen from "./login";
+import { PRIVACY_POLICY_URL, WEBSITE_URL } from "@/lib/public-links";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -252,8 +253,6 @@ describe("email sign-in", () => {
 // ── Wordmark and links ───────────────────────────────────────────────────────
 
 describe("wordmark and links", () => {
-  const PRIVACY = "https://rko-design.netlify.app/bourbon-dojo/privacy";
-  const WEBSITE = "https://rko-design.netlify.app/";
   let openURL: jest.SpyInstance;
 
   beforeEach(() => {
@@ -261,31 +260,33 @@ describe("wordmark and links", () => {
   });
   afterEach(() => {
     openURL.mockRestore();
+    Platform.OS = originalOS;
   });
 
   it("opens the privacy policy when the link is pressed", () => {
     render(<LoginScreen />);
     fireEvent.press(screen.getByText("Privacy Policy"));
-    expect(openURL).toHaveBeenCalledWith(PRIVACY);
+    expect(openURL).toHaveBeenCalledWith(PRIVACY_POLICY_URL);
   });
 
   it("shows the Bourbon Dojo wordmark and the privacy notice", () => {
     render(<LoginScreen />);
     expect(screen.getByText("Bourbon Dojo")).toBeTruthy();
     expect(screen.queryByText("BourbonVault")).toBeNull();
-    expect(screen.getByText(/By continuing, you agree to our/)).toBeTruthy();
+    expect(screen.getByText("By continuing, you agree to our Privacy Policy")).toBeTruthy();
   });
 
   it("opens the website when Made by RKO Design is pressed", () => {
     render(<LoginScreen />);
     fireEvent.press(screen.getByText("Made by RKO Design"));
-    expect(openURL).toHaveBeenCalledWith(WEBSITE);
+    expect(openURL).toHaveBeenCalledWith(WEBSITE_URL);
   });
 
   it("does not mention Terms of Service and exposes both links by role", () => {
     render(<LoginScreen />);
     expect(screen.queryByText(/Terms of Service/)).toBeNull();
-    expect(screen.getAllByRole("link").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole("link", { name: "Privacy Policy" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Made by RKO Design" })).toBeTruthy();
   });
 
   it.each(["ios", "android"] as const)("shows the privacy link on %s", (os) => {

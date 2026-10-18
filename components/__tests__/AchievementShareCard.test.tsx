@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { AchievementShareCard } from '@/components/AchievementShareCard';
 import { BELTS } from '@/lib/belt-config';
+import { LANDING_PAGE_URL } from '@/lib/public-links';
 
 describe('AchievementShareCard', () => {
   // 1 — core wiring: renders belt name
@@ -16,8 +17,8 @@ describe('AchievementShareCard', () => {
       <AchievementShareCard belt={BELTS[0]} />,
     );
     expect(getByText(BELTS[0].flavor)).toBeTruthy();
-    expect(getByTestId('app-store-url')).toBeTruthy();
-    expect(getByText('https://rko-design.netlify.app/bourbon-dojo')).toBeTruthy();
+    expect(getByTestId('landing-url')).toBeTruthy();
+    expect(getByText(LANDING_PAGE_URL)).toBeTruthy();
   });
 
   // 3 — edge case: Pappy legendary treatment has "legendary-border" testID
@@ -30,5 +31,12 @@ describe('AchievementShareCard', () => {
   it('does not render legendary-border for belt 1', () => {
     const { queryByTestId } = render(<AchievementShareCard belt={BELTS[0]} />);
     expect(queryByTestId('legendary-border')).toBeNull();
+  });
+
+  // 5 — wordmark: shows the current brand name
+  it('renders the Bourbon Dojo wordmark', () => {
+    const { getByText, queryByText } = render(<AchievementShareCard belt={BELTS[0]} />);
+    expect(getByText('Bourbon Dojo')).toBeTruthy();
+    expect(queryByText('BourbonVault')).toBeNull();
   });
 });
