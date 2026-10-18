@@ -719,34 +719,6 @@ export interface Database {
           },
         ];
       };
-      user_push_tokens: {
-        Row: {
-          user_id: string;
-          token: string;
-          platform: 'ios' | 'android';
-          updated_at: string;
-        };
-        Insert: {
-          user_id: string;
-          token: string;
-          platform: 'ios' | 'android';
-          updated_at?: string;
-        };
-        Update: {
-          token?: string;
-          platform?: 'ios' | 'android';
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "user_push_tokens_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: true;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       xp_events: {
         Row: {
           id: string;

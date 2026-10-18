@@ -291,7 +291,6 @@ npx supabase db push --linked      # push to prod when ready
 | `groups` | Bourbon groups |
 | `group_members` | Group membership (owner / member, pending / accepted) |
 | `group_sale_alerts` | Sale alerts posted to a group (soft-deleted via `removed_at`) |
-| `user_push_tokens` | Push notification tokens per device |
 | `achievements` | Achievement definitions (title, tier, category, XP value) |
 | `user_achievements` | Earned achievements per user (written even when flag is off) |
 | `feature_flags` | Boolean flags gating new features from existing deployed bundles |
