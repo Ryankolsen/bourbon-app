@@ -46,7 +46,7 @@ You will generate the icon image using Nano Banana.
 ### Steps
 
 1. Go to [play.google.com/console/signup](https://play.google.com/console/signup)
-2. Sign in with a Google account (can be `ryankolsen@gmail.com` or a new one)
+2. Sign in with a Google account (the account is `rkolsen.design@gmail.com`)
 3. Pay the **one-time $25 registration fee**
 4. Fill in developer name (e.g. "Ryan Kolsen" or a studio name)
 5. Complete identity verification (takes minutes to hours)
