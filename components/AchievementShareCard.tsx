@@ -62,7 +62,7 @@ export function AchievementShareCard({ belt }: AchievementShareCardProps) {
 
       {/* Wordmark */}
       <Text style={[styles.wordmark, { color: belt.iconColor }]}>
-        BourbonVault
+        Bourbon Dojo
       </Text>
 
       {/* Share copy */}

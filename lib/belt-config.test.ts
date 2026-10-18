@@ -187,6 +187,27 @@ describe('BELT_SHARE_COPY', () => {
     }
   });
 
+  it('every entry ends with the Bourbon Dojo call to action', () => {
+    for (let level = 1; level <= 10; level++) {
+      expect(BELT_SHARE_COPY[level].endsWith('Come train with me 🥋')).toBe(true);
+    }
+  });
+
+  it('no entry mentions BourbonVault', () => {
+    for (let level = 1; level <= 10; level++) {
+      expect(BELT_SHARE_COPY[level]).not.toContain('BourbonVault');
+    }
+  });
+
+  it('keeps the belt-specific prefix for levels 4 and 10', () => {
+    expect(BELT_SHARE_COPY[4]).toBe(
+      'Bottled in Bond and loving it 🔖 Earned my Bonded belt in the Bourbon Dojo. Come train with me 🥋',
+    );
+    expect(BELT_SHARE_COPY[10]).toBe(
+      'LEGENDARY. The Sensei has arrived 👑 Earned Pappy status in the Bourbon Dojo. The ultimate bourbon achievement. Come train with me 🥋',
+    );
+  });
+
   it('every entry is a non-empty string', () => {
     for (let level = 1; level <= 10; level++) {
       expect(typeof BELT_SHARE_COPY[level]).toBe('string');
