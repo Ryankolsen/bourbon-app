@@ -125,21 +125,29 @@ describe("brand name in the real tree", () => {
   });
 
   const expo = JSON.parse(fs.readFileSync(path.join(root, "app.json"), "utf8")).expo;
+
+  // Collect every `*UsageDescription` string anywhere under `expo`
+  // (infoPlist, plugin configs, ...).
+  function collectUsageDescriptions(node: unknown, found: [string, string][] = []) {
+    if (Array.isArray(node)) {
+      node.forEach((child) => collectUsageDescriptions(child, found));
+    } else if (node && typeof node === "object") {
+      for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+        if (key.endsWith("UsageDescription") && typeof value === "string") {
+          found.push([key, value]);
+        } else {
+          collectUsageDescriptions(value, found);
+        }
+      }
+    }
+    return found;
+  }
+
   const fields: [string, string][] = [
-    ["expo.name", expo.name],
-    ["expo.description", expo.description],
-    ...Object.entries({
-      ...(expo.ios?.infoPlist ?? {}),
-      ...(expo.android?.infoPlist ?? {}),
-    })
-      .filter(([k]) => k.endsWith("UsageDescription"))
-      .map(([k, v]) => [k, String(v)] as [string, string]),
-    ...Object.entries(expo.plugins ?? [])
-      .flatMap(([, p]) => (Array.isArray(p) ? [p[1]] : []))
-      .flatMap((cfg) => Object.entries(cfg ?? {}))
-      .filter(([k]) => k.endsWith("UsageDescription") || k.endsWith("Permission"))
-      .map(([k, v]) => [k, String(v)] as [string, string]),
-  ].filter(([, v]) => typeof v === "string" && v !== "undefined");
+    ["expo.name", String(expo.name ?? "")],
+    ["expo.description", String(expo.description ?? "")],
+    ...collectUsageDescriptions(expo),
+  ];
 
   it.each(fields)("app.json %s has no old brand name", (_name, value) => {
     expect(value).not.toMatch(BANNED);
