@@ -1,12 +1,12 @@
-# BourbonDojo — Store Deployment Plan
+# Bourbon Dojo — Store Deployment Plan
 
-**App name:** BourbonDojo (bourbon + martial arts dojo theme — matches belt/XP progression in app)  
+**App name:** Bourbon Dojo (bourbon + martial arts dojo theme — matches belt/XP progression in app)  
 **App version:** 1.0.0  
 **Bundle ID:** `com.ryankolsen.bourbonvault`  
 **EAS project:** `3e15eee4-f1d6-49f2-8e6d-3f8ebc6223f4`
 
 > **Name must match across both stores.** Whatever name is approved on iOS, use the exact same name on Google Play.  
-> "Bourbon Vault" is already taken on the App Store. Top candidate: **BourbonDojo**.
+> "Bourbon Vault" is already taken on the App Store. Decided: **Bourbon Dojo**.
 
 ---
 
@@ -51,13 +51,13 @@ You will generate the icon image using Nano Banana.
 4. Fill in developer name (e.g. "Ryan Kolsen" or a studio name)
 5. Complete identity verification (takes minutes to hours)
 6. Once approved, create a new app:
-   - App name: **BourbonVault**
+   - App name: **Bourbon Dojo**
    - Default language: English (US)
    - App type: App
    - Free or paid: Free
 7. Complete the **Store listing** (see Phase 3)
 
-> Note: If you want a separate business identity (e.g. "BourbonVault LLC"), you can register as an organization instead of an individual.
+> Note: If you want a separate business identity (e.g. "RKO Design LLC"), you can register as an organization instead of an individual.
 
 ---
 
@@ -101,17 +101,17 @@ Prepare these before submitting:
 
 | Field | Value |
 |-------|-------|
-| Name | BourbonDojo (confirm availability first — try in App Store Connect name field) |
+| Name | Bourbon Dojo |
 | Subtitle | Rank up your bourbon game |
 | Category | Food & Drink |
 | Description | (see below) |
 | Keywords | bourbon, whiskey, dojo, collection, tasting, tracker, spirits, ranking |
-| Support URL | (your site or GitHub) |
+| Support URL | https://rko-design.netlify.app/bourbon-dojo |
 | Privacy Policy URL | https://rko-design.netlify.app/bourbon-dojo/privacy |
 
 **Suggested description:**
 ```
-BourbonDojo is your personal bourbon training ground. Build your collection, sharpen your palate with tasting notes, and climb the belt ranks as your bourbon knowledge grows.
+Bourbon Dojo is your personal bourbon training ground. Build your collection, sharpen your palate with tasting notes, and climb the belt ranks as your bourbon knowledge grows.
 
 Features:
 • Belt progression — earn ranks as you taste and collect
@@ -154,16 +154,15 @@ Both stores will use the icon from your build automatically. But you must also u
 
 ---
 
-## Phase 4 — Privacy Policy
+## Phase 4 — Privacy Policy ✅ Done
 
-Both stores require a privacy policy URL before submission.
+Both stores require a privacy policy URL before submission. The policy is hosted at
+https://rko-design.netlify.app/bourbon-dojo/privacy (source lives in the rko-design repo).
 
-**Quickest option:** Create a GitHub Pages site or use a free generator like [privacypolicygenerator.info](https://www.privacypolicygenerator.info/).
-
-Key disclosures needed:
+It discloses:
 - Authentication data (email, Google/Apple OAuth)
 - Collection/tasting data stored in Supabase (your servers)
-- Push notification tokens
+- No push notification tokens are collected and no pushes are sent
 - No advertising or third-party data selling
 
 ---

@@ -2,7 +2,7 @@
 
 A mobile app for tracking your bourbon collection, tasting notes, and wishlist.
 
-> Internal identifiers keep the old `bourbonvault` name: bundle ID `com.ryankolsen.bourbonvault` and URL scheme `bourbonvault://`.
+> Internal identifiers keep the old `bourbonvault` name: iOS bundle ID `com.ryankolsen.bourbonvault` and URL scheme `bourbonvault://`. The Android package is `com.ryankolsen.bourbondojo`.
 
 ## Tech Stack
 
@@ -130,7 +130,7 @@ Use this when you want to test on a real phone (e.g. to test Google Places autoc
 1. Enable **Developer Options** on your phone (Settings → About phone → tap Build Number 7 times)
 2. Enable **USB debugging** in Developer Options
 3. Connect via USB and tap **Allow** on the "Allow USB debugging?" prompt
-4. **Uninstall any production BourbonVault build** from your phone first (debug and release APKs have different signing certificates and can't coexist)
+4. **Uninstall any production Bourbon Dojo build** from your phone first (debug and release APKs have different signing certificates and can't coexist)
 5. Set `EXPO_PUBLIC_FORCE_PROD_DB=true` in `.env.local`
 
 ```bash
