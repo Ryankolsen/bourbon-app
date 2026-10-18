@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Platform, ActivityIndicator, ScrollView, TextInput, LayoutAnimation } from "react-native";
+import { View, Text, TouchableOpacity, Platform, ActivityIndicator, ScrollView, TextInput, LayoutAnimation, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import * as WebBrowser from "expo-web-browser";
@@ -8,6 +8,7 @@ import * as AppleAuthentication from "expo-apple-authentication";
 import { supabase } from "@/lib/supabase";
 import { DEV_USERS, DEV_PASSWORD } from "@/lib/dev-users";
 import { colors } from "@/lib/colors";
+import { PRIVACY_POLICY_URL, WEBSITE_URL } from "@/lib/public-links";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -133,7 +134,7 @@ export default function LoginScreen() {
       <View className="mb-12 items-center">
         <Text className="text-5xl mb-2">🥃</Text>
         <Text className="text-4xl font-bold text-brand-100 tracking-tight">
-          BourbonVault
+          Bourbon Dojo
         </Text>
         <Text className="text-brand-300 mt-2 text-base">
           Track your collection, tastings & wishlist
@@ -235,7 +236,22 @@ export default function LoginScreen() {
       </View>
 
       <Text className="text-brand-500 text-xs mt-8 text-center">
-        By continuing, you agree to our Terms of Service and Privacy Policy
+        By continuing, you agree to our{" "}
+        <Text
+          accessibilityRole="link"
+          className="text-brand-300 underline"
+          onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+        >
+          Privacy Policy
+        </Text>
+      </Text>
+
+      <Text
+        accessibilityRole="link"
+        className="text-brand-500 text-xs mt-2 text-center"
+        onPress={() => Linking.openURL(WEBSITE_URL)}
+      >
+        Made by RKO Design
       </Text>
 
       {!Device.isDevice && Platform.OS !== "ios" && (
