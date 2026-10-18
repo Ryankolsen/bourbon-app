@@ -269,7 +269,7 @@ describe('useShareAchievement', () => {
 
   // 13 — platform routing: bluesky — opens bsky.app intent URL with encoded text
   it('opens bsky.app intent URL with encoded shareText for bluesky platform', async () => {
-    const shareText = 'Check out BourbonVault! https://example.com';
+    const shareText = 'Come train with me 🥋 https://rko-design.netlify.app/bourbon-dojo';
     mockCaptureRef.mockResolvedValue('file:///tmp/share.png');
     mockRpc.mockResolvedValue(rpcResponse(100, false));
     const openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
