@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Linking,
 } from "react-native";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -30,6 +31,7 @@ import { StreakCard } from "@/components/StreakCard";
 import { DojoGuideModal } from "@/components/DojoGuideModal";
 import { AchievementSection } from "@/components/AchievementSection";
 import { getTomorrowXp } from "@/lib/streak-utils";
+import { PRIVACY_POLICY_URL } from "@/lib/public-links";
 
 const THEME_OPTIONS: { label: string; value: ThemeMode }[] = [
   { label: "System", value: "system" },
@@ -111,6 +113,15 @@ export default function ProfileScreen() {
     return (
       <View className="flex-1 bg-brand-900 items-center justify-center">
         <ActivityIndicator color={colors.spinnerAmber} />
+        <View className="mt-8 w-full px-6">
+        <TouchableOpacity
+          onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+          accessibilityRole="link"
+          className="bg-brand-800 rounded-2xl py-4 items-center mb-4"
+        >
+          <Text className="text-brand-300 font-semibold">Privacy Policy</Text>
+        </TouchableOpacity>
+        </View>
       </View>
     );
   }
@@ -321,6 +332,15 @@ export default function ProfileScreen() {
             ))}
           </View>
         </View>
+
+        {/* Privacy Policy */}
+        <TouchableOpacity
+          onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+          accessibilityRole="link"
+          className="bg-brand-800 rounded-2xl py-4 items-center mb-4"
+        >
+          <Text className="text-brand-300 font-semibold">Privacy Policy</Text>
+        </TouchableOpacity>
 
         {/* Sign Out */}
         <TouchableOpacity
