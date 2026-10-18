@@ -1,6 +1,8 @@
-# BourbonVault
+# Bourbon Dojo
 
 A mobile app for tracking your bourbon collection, tasting notes, and wishlist.
+
+> Internal identifiers keep the old `bourbonvault` name: bundle ID `com.ryankolsen.bourbonvault` and URL scheme `bourbonvault://`.
 
 ## Tech Stack
 
@@ -250,7 +252,7 @@ Requires Apple credentials and an App Store Connect app record for `com.ryankols
 
 | Document | URL |
 |----------|-----|
-| Privacy Policy | https://ryankolsen.github.io/bourbonvault-privacy/ |
+| Privacy Policy | https://rko-design.netlify.app/bourbon-dojo/privacy |
 
 ---
 
@@ -285,7 +287,7 @@ npx supabase db push --linked      # push to prod when ready
 | `bourbons` | Master bourbon catalog (~1,860 bottles) |
 | `user_collection` | Bottles a user owns |
 | `user_wishlist` | Bottles a user wants |
-| `tastings` | Tasting notes and ratings (0–100 scale) |
+| `tastings` | Tasting notes and ratings (1–5 stars) |
 | `groups` | Bourbon groups |
 | `group_members` | Group membership (owner / member, pending / accepted) |
 | `group_sale_alerts` | Sale alerts posted to a group (soft-deleted via `removed_at`) |
@@ -306,11 +308,12 @@ Feature flags in `public.feature_flags` protect existing deployed builds from ne
 
 | Flag | Status | Blocks |
 |------|--------|--------|
-| `achievements_live` | **OFF** — waiting for v1.1.0 bundle in both stores | XP awards + bell notifications for achievements |
+| `achievements_live` | **ON** (since 2026-05-16) | XP awards + bell notifications for achievements |
+| `daily_bonus_live` | **ON** (since 2026-05-31) | Daily bonus XP |
 
 ### How to flip a flag
 
-Once the v1.1.0 bundle is live in **both** the App Store and Play Store:
+To flip a flag (only once the bundle that uses it is live in **both** the App Store and Play Store), for example:
 
 ```bash
 npx supabase db query --linked \
@@ -324,7 +327,7 @@ npx supabase db query --linked \
   "select name, enabled from public.feature_flags;"
 ```
 
-> **Before flipping:** decide whether to backfill XP for users who earned achievements while the flag was off. Users have `user_achievements` rows but no `xp_events` entries for that period. Ask before running any backfill script.
+> **Achievements backfill: done.** XP for achievements earned while `achievements_live` was off was backfilled on production on 2026-10-17 using `scripts/backfill-achievement-xp.sql` (4 rows, 3 users, 115 XP). See [#220](https://github.com/Ryankolsen/bourbon-app/issues/220). Still ask before running any other backfill script.
 
 ### Supabase Studio (local)
 

@@ -1,14 +1,9 @@
-# BourbonVault / Bourbon Dojo — Marketing Brief
+# Bourbon Dojo — Marketing Brief
 
 This brief was written from the codebase as of v1.2.4 (2026-10-17). Items marked "(inferred)" are guesses rather than facts confirmed in the code.
 
-## 0. Resolve the name first
-The app goes by three names right now:
-- **BourbonVault** is on the login screen, share cards, README, privacy policy and iOS bundle ID.
-- **Bourbon Dojo** is the app's display name in its config, and the Android package is `com.ryankolsen.bourbondojo`.
-- **BourbonDojo** is in the deploy notes and the iOS photo-permission text. The deploy notes say "Bourbon Vault" was already taken on the App Store, so the store listing is probably BourbonDojo (inferred).
-
-Share cards still say "Join me on BourbonVault!". **Pick one name before any campaign.**
+## 0. The name
+The name is decided: **Bourbon Dojo**. It is used on the login screen, share cards, privacy policy and in the app's config. Internal identifiers keep the old name: iOS bundle ID `com.ryankolsen.bourbonvault` and link scheme `bourbonvault://`. The Android package is `com.ryankolsen.bourbondojo`.
 
 ## 1. Elevator summary
 A free iOS and Android app for bourbon fans. You track your bottle collection (the "vault"), keep a wishlist, and log tasting notes (nose, palate, finish) with 1–5 star ratings, using a catalog of about 1,860 bourbons and ryes. Around that sits a social layer: follow friends, a feed, likes and comments, and groups with shared ratings and **sale alerts** for bottles spotted at local stores. What makes it different is the **martial-arts "Dojo" game layer**: 10 belts named after bourbon terms (from White Dog up to Pappy), XP, daily streaks, 40 achievements with joke names, and two daily mini-games.
@@ -115,8 +110,8 @@ A free iOS and Android app for bourbon fans. You track your bottle collection (t
 - **Pour or Faker:** "Real bourbon or faker? Build your streak." You decide whether a name is real or invented, such as "Uncle Bob's Brown Liquor" or "Grandma's Secret Recipe Bourbon". Streak emojis go 💀 → ⚡ at 5 → 🔥 at 10 → 🏆 at 20.
 
 **Sharing:**
-- A branded belt or achievement image card, shared to Instagram Stories, Bluesky, Facebook, or the phone's share sheet.
-- Example copy: "Bottled in Bond and loving it 🔖 Earned my Bonded belt in the Bourbon Dojo. Join me on BourbonVault!" and "LEGENDARY. The Sensei has arrived 👑 Earned Pappy status in the Bourbon Dojo."
+- A branded belt or achievement image card, shared to Instagram Stories, Bluesky, Facebook, or the phone's share sheet. Share cards link to https://rko-design.netlify.app/bourbon-dojo (the landing page) with "Come train with me 🥋" copy.
+- Example copy: "Bottled in Bond and loving it 🔖 Earned my Bonded belt in the Bourbon Dojo. Come train with me 🥋" and "LEGENDARY. The Sensei has arrived 👑 Earned Pappy status in the Bourbon Dojo."
 
 **Profile:**
 - Avatar, display name, username, and follower and following counts.
@@ -126,7 +121,7 @@ A free iOS and Android app for bourbon fans. You track your bottle collection (t
 **Not in the app (don't claim these):** barcode or label scanning, bottle photos, AI recognition, data export, offline mode, a web app, any paid features, analytics.
 
 ## 5. User journey
-1. The login screen shows 🥃 **BourbonVault** with the tagline *"Track your collection, tastings & wishlist."* Sign in with Apple, Google or email.
+1. The login screen shows 🥃 **Bourbon Dojo** with the tagline *"Track your collection, tastings & wishlist."* Sign in with Apple, Google or email.
 2. The Daily Bonus "Claim" screen appears right away. There's no tutorial; the empty screens point you to Explore.
 3. Add a bottle, log a first tasting, get the share prompt, and earn XP until the first belt-up.
 4. From there: follow friends, join groups, play the daily games, and share belt cards.
@@ -181,7 +176,7 @@ A free iOS and Android app for bourbon fans. You track your bottle collection (t
   - Profiles and achievements: public.
   - Tastings: shown in followers' feeds and on public profiles. Whether they're private by default isn't clear, so confirm before making privacy claims.
 - **Account deletion:** in the app, with a 30-day grace period to cancel.
-- **Privacy policy:** https://ryankolsen.github.io/bourbonvault-privacy/. It's out of date: it still says deletion is by email request.
+- **Privacy policy:** current, at https://rko-design.netlify.app/bourbon-dojo/privacy. Linked from the Login and Profile screens. The login screen also links to the RKO Design website.
 
 ## 10. Platforms and history
 - iOS (including iPad) and Android, portrait only. Fixes can ship over the air without a store update.
@@ -223,19 +218,17 @@ A free iOS and Android app for bourbon fans. You track your bottle collection (t
 - The only open GitHub issues are about a dependency and Expo SDK upgrade.
 
 ## 14. Weak spots a marketer should know
-- The three-way name confusion.
-- **The App Store and Play Store links on share cards are placeholders**, so shared cards may carry dead links. Fix this before pushing sharing.
 - The catalog is patchy: many bottles have no proof or distillery, and there are no bottle images.
 - No barcode scanning, export or photos. Competitors may have these.
 - No onboarding tutorial.
-- The privacy policy is out of date.
 - A 21+ audience is stated but there's no age check.
 - It looks like a single-developer project (inferred). That could be an indie, built-by-a-fan story.
 
 ## 15. Raw facts
-- **Names:** BourbonVault / Bourbon Dojo / BourbonDojo.
+- **Name:** Bourbon Dojo.
 - **App IDs:** iOS bundle `com.ryankolsen.bourbonvault`, Android package `com.ryankolsen.bourbondojo`, link scheme `bourbonvault://`.
 - **Version:** 1.2.4. **App Store Connect ID:** 6762319810.
-- **Privacy policy:** https://ryankolsen.github.io/bourbonvault-privacy/
-- **Contact:** ryankolsen@gmail.com. The Google Play account is under "RKO Design" (rkolsen.design@gmail.com).
+- **Privacy policy:** https://rko-design.netlify.app/bourbon-dojo/privacy
+- **Landing page:** https://rko-design.netlify.app/bourbon-dojo
+- **Contact:** rkolsen.design@gmail.com. The Google Play account is under "RKO Design".
 - **Outside services:** Google Places (store lookup in sale alerts), Apple and Google sign-in, Supabase (backend).

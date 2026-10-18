@@ -107,7 +107,7 @@ Prepare these before submitting:
 | Description | (see below) |
 | Keywords | bourbon, whiskey, dojo, collection, tasting, tracker, spirits, ranking |
 | Support URL | (your site or GitHub) |
-| Privacy Policy URL | https://ryankolsen.github.io/bourbonvault-privacy/ |
+| Privacy Policy URL | https://rko-design.netlify.app/bourbon-dojo/privacy |
 
 **Suggested description:**
 ```
