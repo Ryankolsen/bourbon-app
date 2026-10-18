@@ -119,6 +119,24 @@ describe('useShareAchievement', () => {
     expect(mockShareAsync).toHaveBeenCalledWith(uri, { mimeType: 'image/png' });
   });
 
+  // 4b — capture at 1080x1920 for a crisp 9:16 story image
+  it('captures the card as a 1080x1920 png at quality 1', async () => {
+    mockCaptureRef.mockResolvedValue('file:///tmp/share.png');
+    mockRpc.mockResolvedValue(rpcResponse(100, false));
+    mockShareAsync.mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useShareAchievement('5'));
+
+    await act(async () => {
+      await result.current.share();
+    });
+
+    expect(mockCaptureRef).toHaveBeenCalledWith(
+      expect.anything(),
+      { format: 'png', quality: 1, width: 1080, height: 1920 },
+    );
+  });
+
   // 5 — content details: xpAwarded and alreadyClaimed populated after first share
   it('sets xpAwarded=100 and alreadyClaimed=false after first successful share', async () => {
     mockCaptureRef.mockResolvedValue('file:///tmp/share.png');

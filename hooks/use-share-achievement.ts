@@ -63,7 +63,12 @@ export function useShareAchievement(
 
       try {
         console.log('[share] step 1: capturing card, platform=', platform);
-        const uri = await captureRef(cardRef, { format: 'png', quality: 1 });
+        const uri = await captureRef(cardRef, {
+          format: 'png',
+          quality: 1,
+          width: 1080,
+          height: 1920,
+        });
         console.log('[share] step 1 done, uri=', uri);
 
         console.log('[share] step 2: awarding XP, key=', referenceKey);

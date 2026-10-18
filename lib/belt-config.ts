@@ -19,6 +19,12 @@ export interface BeltConfig {
   iconColor: string;
   /** Short unicode character used as the belt badge icon */
   icon: string;
+  /**
+   * Card-only: dark text color for the share card on light backgrounds.
+   * When set, the card uses it for all text and the icon and renders no scrim.
+   * When absent, the card uses iconColor on a dark scrim panel.
+   */
+  shareTextColor?: string;
 }
 
 /** Ordered list of all 10 belts, level 1 first. */
@@ -33,6 +39,7 @@ export const BELTS: BeltConfig[] = [
     bgColor: '#E5E7EB',
     iconColor: '#6B7280',
     icon: '○',
+    shareTextColor: '#374151',
   },
   {
     level: 2,
@@ -44,6 +51,7 @@ export const BELTS: BeltConfig[] = [
     bgColor: '#FCD34D',
     iconColor: '#92400E',
     icon: '◐',
+    shareTextColor: '#78350F',
   },
   {
     level: 3,
@@ -132,6 +140,7 @@ export const BELTS: BeltConfig[] = [
     bgColor: '#F59E0B',
     iconColor: '#78350F',
     icon: '⭐',
+    shareTextColor: '#451A03',
   },
 ];
 

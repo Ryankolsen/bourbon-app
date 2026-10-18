@@ -18,18 +18,50 @@ const CARD_WIDTH = 360;
 const CARD_HEIGHT = 640; // 9:16 ratio
 
 const PAPPY_LEVEL = 10;
+const WHITE_DOG_LEVEL = 1;
+
+/** Scrim over the belt background behind small white text (blend toward black). */
+export const SHARE_SCRIM_ALPHA = 0.4;
 
 export function AchievementShareCard({ belt }: AchievementShareCardProps) {
   const isPappy = belt.level === PAPPY_LEVEL;
+  const textColor = belt.shareTextColor ?? belt.iconColor;
+  // Light-background belts define shareTextColor and need no scrim; the rest
+  // keep white text on a dark scrim panel.
+  const hasScrim = belt.shareTextColor === undefined;
+  const filledIcon = belt.level === WHITE_DOG_LEVEL || isPappy;
+
+  const smallText = (
+    <>
+      {/* Belt flavor text */}
+      <Text allowFontScaling={false} style={[styles.flavor, { color: textColor }]}>
+        {belt.flavor}
+      </Text>
+
+      {/* Wordmark */}
+      <Text allowFontScaling={false} style={[styles.wordmark, { color: textColor }]}>
+        Bourbon Dojo
+      </Text>
+
+      {/* Share copy */}
+      <Text allowFontScaling={false} style={[styles.shareCopy, { color: textColor }]}>
+        {BELT_SHARE_COPY[belt.level]}
+      </Text>
+
+      {/* Landing page URL */}
+      <Text
+        testID="landing-url"
+        allowFontScaling={false}
+        style={[styles.landingUrl, { color: textColor }]}
+      >
+        {LANDING_PAGE_URL}
+      </Text>
+    </>
+  );
 
   return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: belt.bgColor },
-      ]}
-    >
-      {/* Legendary gold border for Pappy (belt 10) */}
+    <View style={[styles.card, { backgroundColor: belt.bgColor }]}>
+      {/* Legendary border for Pappy (belt 10) */}
       {isPappy && (
         <View
           testID="legendary-border"
@@ -38,45 +70,42 @@ export function AchievementShareCard({ belt }: AchievementShareCardProps) {
         />
       )}
 
-      {/* Belt icon */}
-      <Text
-        style={[
-          styles.icon,
-          { color: belt.iconColor },
-          isPappy && styles.legendaryIcon,
-        ]}
-        accessibilityLabel={`${belt.name} belt icon`}
-      >
-        {belt.icon}
-      </Text>
+      {/* Belt icon — White Dog and Pappy sit in a solid circle so they never look empty */}
+      {filledIcon ? (
+        <View
+          testID="share-icon-circle"
+          style={[styles.iconCircle, { backgroundColor: textColor }]}
+        >
+          <Text
+            allowFontScaling={false}
+            style={[styles.circleGlyph, { color: belt.bgColor }]}
+            accessibilityLabel={`${belt.name} belt icon`}
+          >
+            {isPappy ? belt.icon : '●'}
+          </Text>
+        </View>
+      ) : (
+        <Text
+          allowFontScaling={false}
+          style={[styles.icon, { color: textColor }]}
+          accessibilityLabel={`${belt.name} belt icon`}
+        >
+          {belt.icon}
+        </Text>
+      )}
 
       {/* Belt name */}
-      <Text style={[styles.beltName, { color: belt.iconColor }]}>
+      <Text allowFontScaling={false} style={[styles.beltName, { color: textColor }]}>
         {belt.name}
       </Text>
 
-      {/* Belt flavor text */}
-      <Text style={[styles.flavor, { color: belt.iconColor }]}>
-        {belt.flavor}
-      </Text>
-
-      {/* Wordmark */}
-      <Text style={[styles.wordmark, { color: belt.iconColor }]}>
-        Bourbon Dojo
-      </Text>
-
-      {/* Share copy */}
-      <Text style={[styles.shareCopy, { color: belt.iconColor }]}>
-        {BELT_SHARE_COPY[belt.level]}
-      </Text>
-
-      {/* Landing page URL */}
-      <Text
-        testID="landing-url"
-        style={[styles.landingUrl, { color: belt.iconColor }]}
-      >
-        {LANDING_PAGE_URL}
-      </Text>
+      {hasScrim ? (
+        <View testID="share-scrim" style={styles.scrim}>
+          {smallText}
+        </View>
+      ) : (
+        <View style={styles.plainBlock}>{smallText}</View>
+      )}
     </View>
   );
 }
@@ -99,15 +128,36 @@ const styles = StyleSheet.create({
     bottom: 0,
     borderRadius: 16,
     borderWidth: 6,
-    borderColor: '#FFD700',
+    borderColor: '#78350F',
   },
   icon: {
     fontSize: 72,
     marginBottom: 16,
     textAlign: 'center',
   },
-  legendaryIcon: {
-    fontSize: 96,
+  iconCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  circleGlyph: {
+    fontSize: 48,
+    textAlign: 'center',
+  },
+  scrim: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    backgroundColor: `rgba(0,0,0,${SHARE_SCRIM_ALPHA})`,
+    borderRadius: 12,
+    padding: 16,
+  },
+  plainBlock: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    padding: 16,
   },
   beltName: {
     fontSize: 32,
@@ -117,10 +167,9 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   flavor: {
-    fontSize: 16,
+    fontSize: 17,
     textAlign: 'center',
-    marginBottom: 32,
-    opacity: 0.85,
+    marginBottom: 24,
     fontStyle: 'italic',
   },
   wordmark: {
@@ -129,18 +178,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 2,
     marginBottom: 24,
-    opacity: 0.9,
   },
   shareCopy: {
-    fontSize: 13,
+    fontSize: 15,
     textAlign: 'center',
     marginBottom: 12,
-    opacity: 0.8,
-    lineHeight: 18,
+    lineHeight: 21,
   },
   landingUrl: {
-    fontSize: 11,
+    fontSize: 14,
+    fontWeight: '600',
     textAlign: 'center',
-    opacity: 0.65,
   },
 });

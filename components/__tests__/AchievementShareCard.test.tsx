@@ -3,6 +3,7 @@ import { render } from '@testing-library/react-native';
 import { AchievementShareCard } from '@/components/AchievementShareCard';
 import { BELTS } from '@/lib/belt-config';
 import { LANDING_PAGE_URL } from '@/lib/public-links';
+import { blendTowardBlack, contrastRatio } from '@/lib/contrast';
 
 describe('AchievementShareCard', () => {
   // 1 — core wiring: renders belt name
@@ -38,5 +39,42 @@ describe('AchievementShareCard', () => {
     const { getByText, queryByText } = render(<AchievementShareCard belt={BELTS[0]} />);
     expect(getByText('Bourbon Dojo')).toBeTruthy();
     expect(queryByText('BourbonVault')).toBeNull();
+  });
+
+  // 6 — scrim only for white-text belts
+  it('renders the scrim for a white-text belt (belt 5) but not for belt 1', () => {
+    const dark = render(<AchievementShareCard belt={BELTS[4]} />);
+    expect(dark.getByTestId('share-scrim')).toBeTruthy();
+    const light = render(<AchievementShareCard belt={BELTS[0]} />);
+    expect(light.queryByTestId('share-scrim')).toBeNull();
+  });
+
+  // 7 — contrast: effective text vs effective background >= 4.5 for every belt
+  it.each(BELTS.map((b) => [b.level, b.name, b] as const))(
+    'belt %i (%s) text contrast is >= 4.5:1',
+    (_level, _name, belt) => {
+      const hasScrim = belt.shareTextColor === undefined;
+      const text = belt.shareTextColor ?? belt.iconColor;
+      const bg = hasScrim ? blendTowardBlack(belt.bgColor, 0.4) : belt.bgColor;
+      expect(contrastRatio(text, bg)).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  // 8 — no opacity on text, fixed font scaling
+  it('uses no text opacity and disables font scaling on every Text', () => {
+    const { UNSAFE_getAllByType } = render(<AchievementShareCard belt={BELTS[4]} />);
+    const { Text } = require('react-native');
+    for (const t of UNSAFE_getAllByType(Text)) {
+      expect(t.props.allowFontScaling).toBe(false);
+      const flat = ([] as object[]).concat(...[t.props.style].flat(5).filter(Boolean)) as { opacity?: number }[];
+      expect(flat.some((st) => st.opacity !== undefined)).toBe(false);
+    }
+  });
+
+  // 9 — filled circle icon for White Dog and Pappy
+  it('renders the filled icon circle for belts 1 and 10 only', () => {
+    expect(render(<AchievementShareCard belt={BELTS[0]} />).getByTestId('share-icon-circle')).toBeTruthy();
+    expect(render(<AchievementShareCard belt={BELTS[9]} />).getByTestId('share-icon-circle')).toBeTruthy();
+    expect(render(<AchievementShareCard belt={BELTS[2]} />).queryByTestId('share-icon-circle')).toBeNull();
   });
 });
