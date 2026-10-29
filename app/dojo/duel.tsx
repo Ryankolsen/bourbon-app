@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   Animated,
@@ -21,6 +20,10 @@ import {
   type BourbonDossier,
 } from "@/lib/duel-question-generator";
 import { colors } from "@/lib/colors";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { AnswerChoice } from "@/components/AnswerChoice";
+import { Heading } from "@/components/Heading";
+import { announce } from "@/lib/announce";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -59,7 +62,7 @@ function HealthBar({
 }) {
   const { activeTheme } = useTheme();
   const c = activeTheme.colors;
-  const barColor = isPlayer ? c.tabActive : "#dc2626";
+  const barColor = isPlayer ? c.tabActive : c.answerWrong;
 
   return (
     <View style={{ flex: 1 }}>
@@ -103,61 +106,6 @@ function HealthBar({
         {Math.max(0, health)}
       </Text>
     </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// ChoiceButton
-// ---------------------------------------------------------------------------
-
-function ChoiceButton({
-  text,
-  onPress,
-  state,
-}: {
-  text: string;
-  onPress: () => void;
-  state: "idle" | "correct" | "wrong" | "disabled";
-}) {
-  const { activeTheme } = useTheme();
-  const c = activeTheme.colors;
-
-  const bgColor =
-    state === "correct"
-      ? "#16a34a"
-      : state === "wrong"
-      ? "#dc2626"
-      : c.brand800;
-
-  const borderColor =
-    state === "correct"
-      ? "#16a34a"
-      : state === "wrong"
-      ? "#dc2626"
-      : c.brand600;
-
-  const textColor =
-    state === "correct" || state === "wrong" ? c.white : c.brand100;
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={state === "disabled" || state === "correct" || state === "wrong"}
-      style={{
-        borderRadius: 14,
-        borderWidth: 1.5,
-        borderColor,
-        backgroundColor: bgColor,
-        paddingVertical: 14,
-        paddingHorizontal: 16,
-        marginBottom: 10,
-      }}
-      accessibilityRole="button"
-    >
-      <Text style={{ color: textColor, fontSize: 15, fontWeight: "500", textAlign: "center" }}>
-        {text}
-      </Text>
-    </TouchableOpacity>
   );
 }
 
@@ -236,7 +184,7 @@ function IdentificationRoundView({
       </View>
 
       {round.choices.map((choice) => (
-        <ChoiceButton
+        <AnswerChoice
           key={choice}
           text={choice}
           onPress={() => onAnswer(choice)}
@@ -301,7 +249,7 @@ function StatBattleRoundView({
       </View>
 
       {round.choices.map((choice) => (
-        <ChoiceButton
+        <AnswerChoice
           key={choice}
           text={choice}
           onPress={() => onAnswer(choice)}
@@ -363,60 +311,16 @@ function FakeNoteRoundView({
         </Text>
       </View>
 
-      {round.notes.map((note, i) => {
-        const noteState = getNoteState(note);
-        const bgColor =
-          noteState === "correct"
-            ? "#16a34a"
-            : noteState === "wrong"
-            ? "#dc2626"
-            : c.brand800;
-        const borderColor =
-          noteState === "correct"
-            ? "#16a34a"
-            : noteState === "wrong"
-            ? "#dc2626"
-            : c.brand600;
-
-        return (
-          <TouchableOpacity
-            key={i}
-            onPress={() => onAnswer(note.text)}
-            disabled={answered}
-            style={{
-              borderRadius: 14,
-              borderWidth: 1.5,
-              borderColor,
-              backgroundColor: bgColor,
-              padding: 16,
-              marginBottom: 10,
-            }}
-          >
-            <Text
-              style={{
-                color:
-                  noteState === "correct" || noteState === "wrong"
-                    ? "#ffffff"
-                    : c.brand100,
-                fontSize: 14,
-                lineHeight: 21,
-              }}
-            >
-              {note.text}
-            </Text>
-            {answered && noteState === "correct" && (
-              <Text style={{ color: "#86efac", fontSize: 12, marginTop: 6, fontWeight: "600" }}>
-                This was the fake ✓
-              </Text>
-            )}
-            {answered && noteState === "wrong" && (
-              <Text style={{ color: "#fca5a5", fontSize: 12, marginTop: 6, fontWeight: "600" }}>
-                Real note — not the fake ✗
-              </Text>
-            )}
-          </TouchableOpacity>
-        );
-      })}
+      {round.notes.map((note) => (
+        <AnswerChoice
+          key={note.text}
+          text={note.text}
+          onPress={() => onAnswer(note.text)}
+          state={getNoteState(note)}
+          correctNote="This was the fake ✓"
+          wrongNote="Real note — not the fake ✗"
+        />
+      ))}
     </View>
   );
 }
@@ -446,7 +350,7 @@ function VerdictScreen({
       ? "Victory!"
       : "Defeated";
   const outcomeColor =
-    verdict.outcome === "loss" ? "#dc2626" : "#16a34a";
+    verdict.outcome === "loss" ? c.answerWrong : c.answerCorrect;
 
   return (
     <ScrollView
@@ -571,7 +475,8 @@ function VerdictScreen({
       </View>
 
       {/* Action buttons */}
-      <TouchableOpacity
+      <AccessiblePressable
+        accessibilityLabel="Play Again"
         onPress={onPlayAgain}
         style={{
           backgroundColor: c.tabActive,
@@ -585,9 +490,10 @@ function VerdictScreen({
         <Text style={{ color: c.white, fontSize: 16, fontWeight: "700" }}>
           Play Again
         </Text>
-      </TouchableOpacity>
+      </AccessiblePressable>
 
-      <TouchableOpacity
+      <AccessiblePressable
+        accessibilityLabel="Back to Dojo"
         onPress={onBack}
         style={{
           borderRadius: 16,
@@ -601,7 +507,7 @@ function VerdictScreen({
         <Text style={{ color: c.brand300, fontSize: 16, fontWeight: "600" }}>
           Back to Dojo
         </Text>
-      </TouchableOpacity>
+      </AccessiblePressable>
     </ScrollView>
   );
 }
@@ -629,7 +535,6 @@ export default function DojoDuelScreen() {
   // Local UI state for answer feedback
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [answered, setAnswered] = useState(false);
-  const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset UI state when the round changes
   useEffect(() => {
@@ -637,20 +542,28 @@ export default function DojoDuelScreen() {
     setAnswered(false);
   }, [duel.state]);
 
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
-    };
-  }, []);
-
   function handleAnswer(answer: string) {
     if (answered) return;
     setSelectedAnswer(answer);
     setAnswered(true);
-    advanceTimerRef.current = setTimeout(() => {
-      duel.submitAnswer(answer);
-    }, 900);
+    const round = duel.questions?.rounds[getRoundIndex(duel.state)];
+    if (!round) return;
+    if (round.type === "fake_note") {
+      const fake = round.notes.find((n) => n.isFake);
+      const note = round.notes.find((n) => n.text === answer);
+      announce(note?.isFake ? "Correct" : `Wrong. The fake was: ${fake?.text ?? ""}`);
+    } else {
+      announce(
+        answer === round.correctAnswer
+          ? "Correct"
+          : `Wrong. The answer was ${round.correctAnswer}`
+      );
+    }
+  }
+
+  function handleNext() {
+    if (selectedAnswer === null) return;
+    duel.submitAnswer(selectedAnswer);
   }
 
   function handlePlayAgain() {
@@ -674,16 +587,17 @@ export default function DojoDuelScreen() {
         className="flex-row items-center px-4 py-3"
         style={{ borderBottomWidth: 1, borderBottomColor: c.brand800 }}
       >
-        <TouchableOpacity
+        <AccessiblePressable
+          accessibilityLabel="Back"
           onPress={() => router.back()}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Text style={{ color: c.brand400, fontSize: 16 }}>← Back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
         <View className="flex-1 items-center">
-          <Text style={{ color: c.brand100, fontSize: 17, fontWeight: "700" }}>
+          <Heading style={{ color: c.brand100, fontSize: 17, fontWeight: "700" }}>
             Dojo Duel
-          </Text>
+          </Heading>
           <Text style={{ color: c.brand400, fontSize: 12, textTransform: "capitalize" }}>
             {difficulty}
           </Text>
@@ -713,7 +627,8 @@ export default function DojoDuelScreen() {
           >
             {duel.error}
           </Text>
-          <TouchableOpacity
+          <AccessiblePressable
+            accessibilityLabel="Back to Dojo"
             onPress={() => router.back()}
             style={{
               backgroundColor: c.tabActive,
@@ -723,7 +638,7 @@ export default function DojoDuelScreen() {
             }}
           >
             <Text style={{ color: c.white, fontWeight: "700" }}>Back to Dojo</Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
         </View>
       )}
 
@@ -759,9 +674,9 @@ export default function DojoDuelScreen() {
               marginBottom: 20,
             }}
           >
-            <Text style={{ color: c.brand300, fontSize: 13, fontWeight: "600" }}>
+            <Heading style={{ color: c.brand300, fontSize: 13, fontWeight: "600" }}>
               {getRoundLabel(duel.state)}
-            </Text>
+            </Heading>
           </View>
 
           {/* Round content */}
@@ -788,6 +703,22 @@ export default function DojoDuelScreen() {
               answered={answered}
               selectedAnswer={selectedAnswer}
             />
+          )}
+
+          {answered && (
+            <AccessiblePressable
+              accessibilityLabel="Next"
+              onPress={handleNext}
+              style={{
+                backgroundColor: c.tabActive,
+                borderRadius: 16,
+                paddingVertical: 14,
+                alignItems: "center",
+                marginTop: 6,
+              }}
+            >
+              <Text style={{ color: c.white, fontSize: 16, fontWeight: "700" }}>Next</Text>
+            </AccessiblePressable>
           )}
         </ScrollView>
       )}
