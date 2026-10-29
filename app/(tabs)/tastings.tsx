@@ -1,4 +1,6 @@
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, ActivityIndicator } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useTastings } from "@/hooks/use-tastings";
@@ -34,7 +36,7 @@ export default function TastingsScreen() {
     return (
       <View className="flex-1 bg-brand-900 items-center justify-center px-8">
         <Text className="text-5xl mb-4">📓</Text>
-        <Text className="text-brand-100 text-xl font-bold mb-2">No tastings yet</Text>
+        <Heading className="text-brand-100 text-xl font-bold mb-2">No tastings yet</Heading>
         <Text className="text-brand-400 text-center text-sm">
           Open a bourbon's detail page to log your first tasting note.
         </Text>
@@ -51,7 +53,8 @@ export default function TastingsScreen() {
         renderItem={({ item }) => {
           const bourbon = (item as any).bourbons;
           return (
-            <TouchableOpacity
+            <AccessiblePressable
+              accessibilityLabel={`Tasting of ${bourbon?.name ?? "Unknown Bourbon"}`}
               className="bg-brand-800 rounded-2xl p-4"
               onPress={() => router.push(`/tasting/${item.id}`)}
             >
@@ -89,7 +92,7 @@ export default function TastingsScreen() {
               <Text className="text-brand-600 text-xs mt-2">
                 {formatDate(item.tasted_at)}
               </Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           );
         }}
       />

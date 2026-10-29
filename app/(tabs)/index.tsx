@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, ActivityIndicator } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
 import CollectionTab from "@/components/CollectionTab";
 import WishlistTab from "@/components/WishlistTab";
 import { FeedCard } from "@/components/FeedCard";
@@ -16,7 +18,7 @@ function FeedEmptyState() {
   return (
     <View className="flex-1 bg-brand-900 items-center justify-center px-8">
       <Text className="text-5xl mb-4">📰</Text>
-      <Text className="text-brand-100 text-xl font-bold mb-2">Nothing here yet</Text>
+      <Heading className="text-brand-100 text-xl font-bold mb-2">Nothing here yet</Heading>
       <Text className="text-brand-400 text-center text-sm">
         Follow some users to see their tastings here.
       </Text>
@@ -67,8 +69,9 @@ export default function HomeScreen() {
         {HOME_SEGMENTS.map((label, index) => {
           const isActive = index === activeIndex;
           return (
-            <TouchableOpacity
+            <AccessiblePressable
               key={label}
+              accessibilityLabel={label}
               onPress={() => setActiveIndex(index)}
               className="flex-1 py-2 items-center"
               style={{
@@ -86,7 +89,7 @@ export default function HomeScreen() {
               >
                 {label}
               </Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           );
         })}
       </View>
