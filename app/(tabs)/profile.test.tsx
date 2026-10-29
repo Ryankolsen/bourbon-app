@@ -5,6 +5,7 @@ import ProfileScreen from './profile';
 import { PRIVACY_POLICY_URL } from '@/lib/public-links';
 
 const mockSignOut = jest.fn();
+let mockUploadPending = false;
 let mockProfileState: { data: unknown; isLoading: boolean } = {
   data: { display_name: 'Tester', username: 'tester', avatar_url: null },
   isLoading: false,
@@ -21,7 +22,7 @@ jest.mock('@/hooks/use-auth', () => ({
 jest.mock('@/hooks/use-profile', () => ({
   useProfile: () => mockProfileState,
   useUpdateProfile: () => ({ mutate: jest.fn(), isPending: false }),
-  useUploadAvatar: () => ({ mutate: jest.fn(), isPending: false }),
+  useUploadAvatar: () => ({ mutate: jest.fn(), mutateAsync: jest.fn(), isPending: mockUploadPending }),
   useDeleteAccount: () => ({ mutate: jest.fn(), isPending: false }),
 }));
 
@@ -86,5 +87,42 @@ describe('ProfileScreen — Privacy Policy row', () => {
     mockProfileState = { data: null, isLoading: false };
     render(<ProfileScreen />);
     expect(screen.getByText('Privacy Policy')).toBeTruthy();
+  });
+});
+
+describe('ProfileScreen — accessibility', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUploadPending = false;
+    mockProfileState = {
+      data: { display_name: 'Tester', username: 'tester', avatar_url: null },
+      isLoading: false,
+    };
+  });
+
+  it('exposes the avatar button as "Change profile photo"', () => {
+    render(<ProfileScreen />);
+    const btn = screen.getByRole('button', { name: 'Change profile photo' });
+    expect(btn.props.accessibilityState?.disabled).toBeFalsy();
+  });
+
+  it('disables the avatar button while uploading', () => {
+    mockUploadPending = true;
+    render(<ProfileScreen />);
+    const btn = screen.getByRole('button', { name: 'Change profile photo' });
+    expect(btn.props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+  });
+
+  it('renders the display name and section titles as headings', () => {
+    render(<ProfileScreen />);
+    expect(screen.getByRole('header', { name: 'Tester' })).toBeTruthy();
+    expect(screen.getByRole('header', { name: 'Appearance' })).toBeTruthy();
+  });
+
+  it('finds the edit inputs by label', () => {
+    render(<ProfileScreen />);
+    fireEvent.press(screen.getByRole('button', { name: 'Edit Profile' }));
+    expect(screen.getByLabelText('Display Name')).toBeTruthy();
+    expect(screen.getByLabelText('Username')).toBeTruthy();
   });
 });

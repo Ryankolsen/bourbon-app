@@ -2,8 +2,6 @@ import { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
-  TextInput,
   Image,
   ActivityIndicator,
   ScrollView,
@@ -12,6 +10,9 @@ import {
   Alert,
   Linking,
 } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { LabeledTextInput } from "@/components/LabeledTextInput";
+import { Heading } from "@/components/Heading";
 import { useAuth } from "@/hooks/use-auth";
 import {
   useProfile,
@@ -43,13 +44,14 @@ const THEME_OPTIONS: { label: string; value: ThemeMode }[] = [
 /** Shown in both the loading and loaded states so the policy is always reachable. */
 function PrivacyPolicyRow() {
   return (
-    <TouchableOpacity
+    <AccessiblePressable
       onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+      accessibilityLabel="Privacy Policy"
       accessibilityRole="link"
       className="bg-brand-800 rounded-2xl py-4 items-center mb-4"
     >
       <Text className="text-brand-300 font-semibold">Privacy Policy</Text>
-    </TouchableOpacity>
+    </AccessiblePressable>
   );
 }
 
@@ -145,7 +147,8 @@ export default function ProfileScreen() {
       >
         {/* Avatar */}
         <View className="items-center mb-6">
-          <TouchableOpacity
+          <AccessiblePressable
+            accessibilityLabel="Change profile photo"
             onPress={handleAvatarPress}
             disabled={uploadAvatar.isPending}
             className="relative"
@@ -166,27 +169,34 @@ export default function ProfileScreen() {
               {uploadAvatar.isPending ? (
                 <ActivityIndicator size="small" color={colors.white} />
               ) : (
-                <Text className="text-white text-xs font-bold">✎</Text>
+                <Text
+                  className="text-white text-xs font-bold"
+                  accessible={false}
+                  importantForAccessibility="no"
+                  accessibilityElementsHidden
+                >
+                  ✎
+                </Text>
               )}
             </View>
-          </TouchableOpacity>
+          </AccessiblePressable>
           <Text className="text-brand-400 text-xs mt-2">Tap to change photo</Text>
         </View>
 
         {/* Bourbon Dojo */}
         <View className="bg-brand-800 rounded-2xl p-4 mb-4">
           <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-brand-400 text-xs uppercase tracking-widest">
+            <Heading className="text-brand-400 text-xs uppercase tracking-widest">
               Bourbon Dojo
-            </Text>
-            <TouchableOpacity
+            </Heading>
+            <AccessiblePressable
               testID="dojo-guide-trigger"
               onPress={() => setDojoGuideVisible(true)}
               accessibilityLabel="Bourbon Dojo Guide"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text className="text-brand-400 text-base">ⓘ</Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           </View>
           {xp.isLoading ? (
             <ActivityIndicator color={colors.spinnerAmber} />
@@ -235,10 +245,9 @@ export default function ProfileScreen() {
         <View className="bg-brand-800 rounded-2xl p-5 mb-4">
           {editing ? (
             <>
-              <Text className="text-brand-400 text-xs uppercase tracking-widest mb-1">
-                Display Name
-              </Text>
-              <TextInput
+              <LabeledTextInput
+                label="Display Name"
+                labelClassName="text-brand-400 text-xs uppercase tracking-widest mb-1"
                 value={displayName}
                 onChangeText={setDisplayName}
                 placeholder="Your display name"
@@ -246,10 +255,9 @@ export default function ProfileScreen() {
                 className="text-brand-100 text-base border-b border-brand-600 pb-2 mb-4"
               />
 
-              <Text className="text-brand-400 text-xs uppercase tracking-widest mb-1">
-                Username
-              </Text>
-              <TextInput
+              <LabeledTextInput
+                label="Username"
+                labelClassName="text-brand-400 text-xs uppercase tracking-widest mb-1"
                 value={username}
                 onChangeText={setUsername}
                 placeholder="your_username"
@@ -260,13 +268,15 @@ export default function ProfileScreen() {
               />
 
               <View className="flex-row gap-3 mt-5">
-                <TouchableOpacity
+                <AccessiblePressable
+                  accessibilityLabel="Cancel"
                   onPress={cancelEditing}
                   className="flex-1 border border-brand-600 rounded-xl py-3 items-center"
                 >
                   <Text className="text-brand-400 font-semibold">Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </AccessiblePressable>
+                <AccessiblePressable
+                  accessibilityLabel="Save"
                   onPress={saveProfile}
                   disabled={updateProfile.isPending}
                   className="flex-1 bg-brand-600 rounded-xl py-3 items-center"
@@ -276,7 +286,7 @@ export default function ProfileScreen() {
                   ) : (
                     <Text className="text-white font-semibold">Save</Text>
                   )}
-                </TouchableOpacity>
+                </AccessiblePressable>
               </View>
             </>
           ) : (
@@ -284,9 +294,9 @@ export default function ProfileScreen() {
               <Text className="text-brand-400 text-xs uppercase tracking-widest mb-1">
                 Display Name
               </Text>
-              <Text className="text-brand-100 font-semibold text-base mb-4">
+              <Heading className="text-brand-100 font-semibold text-base mb-4">
                 {profile?.display_name ?? "—"}
-              </Text>
+              </Heading>
 
               <Text className="text-brand-400 text-xs uppercase tracking-widest mb-1">
                 Username
@@ -302,25 +312,28 @@ export default function ProfileScreen() {
                 {user?.email ?? "—"}
               </Text>
 
-              <TouchableOpacity
+              <AccessiblePressable
+                accessibilityLabel="Edit Profile"
                 onPress={startEditing}
                 className="mt-5 border border-brand-500 rounded-xl py-3 items-center"
               >
                 <Text className="text-brand-300 font-semibold">Edit Profile</Text>
-              </TouchableOpacity>
+              </AccessiblePressable>
             </>
           )}
         </View>
 
         {/* Theme Selector */}
         <View className="bg-brand-800 rounded-2xl p-5 mb-4">
-          <Text className="text-brand-400 text-xs uppercase tracking-widest mb-3">
+          <Heading className="text-brand-400 text-xs uppercase tracking-widest mb-3">
             Appearance
-          </Text>
+          </Heading>
           <View className="flex-row gap-2">
             {THEME_OPTIONS.map((opt) => (
-              <TouchableOpacity
+              <AccessiblePressable
                 key={opt.value}
+                accessibilityLabel={`${opt.label} theme`}
+                accessibilityState={{ selected: themeMode === opt.value }}
                 onPress={() => setThemeMode(opt.value)}
                 className={`flex-1 py-2 rounded-xl items-center border ${
                   themeMode === opt.value
@@ -335,7 +348,7 @@ export default function ProfileScreen() {
                 >
                   {opt.label}
                 </Text>
-              </TouchableOpacity>
+              </AccessiblePressable>
             ))}
           </View>
         </View>
@@ -343,19 +356,21 @@ export default function ProfileScreen() {
         <PrivacyPolicyRow />
 
         {/* Sign Out */}
-        <TouchableOpacity
+        <AccessiblePressable
+          accessibilityLabel="Sign Out"
           onPress={signOut}
           className="bg-red-900/60 border border-red-800 rounded-2xl py-4 items-center mb-4"
         >
           <Text className="text-red-300 font-semibold">Sign Out</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
 
         {/* Danger Zone */}
         <View className="bg-brand-800 rounded-2xl p-5 mb-8">
-          <Text className="text-red-400 text-xs uppercase tracking-widest mb-3">
+          <Heading className="text-red-400 text-xs uppercase tracking-widest mb-3">
             Danger Zone
-          </Text>
-          <TouchableOpacity
+          </Heading>
+          <AccessiblePressable
+            accessibilityLabel="Delete Account"
             onPress={handleDeleteAccount}
             disabled={deleteAccount.isPending}
             className="bg-red-900/60 border border-red-800 rounded-xl py-3 items-center"
@@ -365,7 +380,7 @@ export default function ProfileScreen() {
             ) : (
               <Text className="text-red-300 font-semibold">Delete Account</Text>
             )}
-          </TouchableOpacity>
+          </AccessiblePressable>
         </View>
       </ScrollView>
 

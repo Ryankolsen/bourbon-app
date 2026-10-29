@@ -2,15 +2,16 @@ import { colors } from "@/lib/colors";
 import {
   View,
   Text,
-  TouchableOpacity,
   ActivityIndicator,
-  TextInput,
   Modal,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { LabeledTextInput } from "@/components/LabeledTextInput";
+import { Heading } from "@/components/Heading";
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -156,9 +157,9 @@ export default function GroupsScreen() {
         {/* Join Notifications */}
         {unreadNotifications.length > 0 && (
           <View className="mb-6">
-            <Text className="text-brand-400 text-xs font-semibold uppercase mb-3">
+            <Heading className="text-brand-400 text-xs font-semibold uppercase mb-3">
               New Members
-            </Text>
+            </Heading>
             {unreadNotifications.map((notif) => {
               const joinerName =
                 notif.profiles?.display_name ??
@@ -176,22 +177,24 @@ export default function GroupsScreen() {
                       {joinerName} joined{" "}
                       <Text className="text-brand-300">{groupName}</Text>
                     </Text>
-                    <TouchableOpacity
+                    <AccessiblePressable
+                      accessibilityLabel={`Manage ${groupName}`}
                       onPress={() => router.push(`/group/${groupId}`)}
                       className="mt-1"
                     >
                       <Text className="text-brand-500 text-xs font-semibold">
                         Manage Group →
                       </Text>
-                    </TouchableOpacity>
+                    </AccessiblePressable>
                   </View>
-                  <TouchableOpacity
+                  <AccessiblePressable
+                    accessibilityLabel="Close"
                     onPress={() => handleDismissNotification(notif.id)}
                     className="ml-3 p-1"
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
                     <Text className="text-brand-500 text-base">✕</Text>
-                  </TouchableOpacity>
+                  </AccessiblePressable>
                 </View>
               );
             })}
@@ -201,9 +204,9 @@ export default function GroupsScreen() {
         {/* Pending invites */}
         {pendingInvites.length > 0 && (
           <View className="mb-6">
-            <Text className="text-brand-400 text-xs font-semibold uppercase mb-3">
+            <Heading className="text-brand-400 text-xs font-semibold uppercase mb-3">
               Pending Invites
-            </Text>
+            </Heading>
             {pendingInvites.map((invite) => {
               const group = invite.groups as
                 | { id: string; name: string; description: string | null }
@@ -233,7 +236,8 @@ export default function GroupsScreen() {
                     Invited by {inviterName}
                   </Text>
                   <View className="flex-row gap-3">
-                    <TouchableOpacity
+                    <AccessiblePressable
+                      accessibilityLabel={`Accept invite to ${group?.name ?? "Unknown Group"}`}
                       onPress={() => handleAccept(invite.group_id)}
                       disabled={acceptInvite.isPending}
                       className="flex-1 bg-brand-600 rounded-xl py-2.5 items-center"
@@ -241,8 +245,9 @@ export default function GroupsScreen() {
                       <Text className="text-white font-semibold text-sm">
                         Accept
                       </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </AccessiblePressable>
+                    <AccessiblePressable
+                      accessibilityLabel={`Decline invite to ${group?.name ?? "Unknown Group"}`}
                       onPress={() => handleDecline(invite.group_id)}
                       disabled={declineInvite.isPending}
                       className="flex-1 border border-brand-600 rounded-xl py-2.5 items-center"
@@ -250,7 +255,7 @@ export default function GroupsScreen() {
                       <Text className="text-brand-400 font-semibold text-sm">
                         Decline
                       </Text>
-                    </TouchableOpacity>
+                    </AccessiblePressable>
                   </View>
                 </View>
               );
@@ -260,15 +265,16 @@ export default function GroupsScreen() {
 
         {/* My Groups header + create button */}
         <View className="flex-row items-center justify-between mb-3">
-          <Text className="text-brand-400 text-xs font-semibold uppercase">
+          <Heading className="text-brand-400 text-xs font-semibold uppercase">
             My Groups
-          </Text>
-          <TouchableOpacity
+          </Heading>
+          <AccessiblePressable
+            accessibilityLabel="New group"
             onPress={() => setModalVisible(true)}
             className="bg-brand-600 rounded-full px-4 py-1.5"
           >
             <Text className="text-white text-xs font-semibold">+ New</Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
         </View>
 
         {/* Groups list */}
@@ -289,8 +295,9 @@ export default function GroupsScreen() {
               | null
               | undefined;
             return (
-              <TouchableOpacity
+              <AccessiblePressable
                 key={item.group_id}
+                accessibilityLabel={group?.name ?? "Group"}
                 onPress={() => router.push(`/group/${item.group_id}`)}
                 className="bg-brand-800 rounded-2xl p-4 mb-3"
               >
@@ -312,7 +319,7 @@ export default function GroupsScreen() {
                     {group.description}
                   </Text>
                 ) : null}
-              </TouchableOpacity>
+              </AccessiblePressable>
             );
           })
         )}
@@ -337,12 +344,13 @@ export default function GroupsScreen() {
               contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 40 }}
               className="bg-brand-900 rounded-t-3xl"
             >
-              <Text className="text-brand-100 text-xl font-bold mb-5">
+              <Heading className="text-brand-100 text-xl font-bold mb-5">
                 Create Group
-              </Text>
+              </Heading>
 
-              <Text className="text-brand-300 text-sm mb-1">Name *</Text>
-              <TextInput
+              <LabeledTextInput
+                label="Name (required)"
+                labelClassName="text-brand-300 text-sm mb-1"
                 value={groupName}
                 onChangeText={setGroupName}
                 placeholder="e.g. Friday Night Pours"
@@ -351,10 +359,9 @@ export default function GroupsScreen() {
                 maxLength={100}
               />
 
-              <Text className="text-brand-300 text-sm mb-1">
-                Description (optional)
-              </Text>
-              <TextInput
+              <LabeledTextInput
+                label="Description (optional)"
+                labelClassName="text-brand-300 text-sm mb-1"
                 value={groupDescription}
                 onChangeText={setGroupDescription}
                 placeholder="A short description of your group"
@@ -365,7 +372,8 @@ export default function GroupsScreen() {
                 maxLength={500}
               />
 
-              <TouchableOpacity
+              <AccessiblePressable
+                accessibilityLabel="Create Group"
                 onPress={handleCreate}
                 disabled={!groupName.trim() || createGroup.isPending}
                 className={`rounded-2xl py-4 items-center ${
@@ -383,9 +391,10 @@ export default function GroupsScreen() {
                     Create Group
                   </Text>
                 )}
-              </TouchableOpacity>
+              </AccessiblePressable>
 
-              <TouchableOpacity
+              <AccessiblePressable
+                accessibilityLabel="Cancel"
                 onPress={() => {
                   setModalVisible(false);
                   setGroupName("");
@@ -394,7 +403,7 @@ export default function GroupsScreen() {
                 className="mt-3 py-3 items-center"
               >
                 <Text className="text-brand-400 text-base">Cancel</Text>
-              </TouchableOpacity>
+              </AccessiblePressable>
             </ScrollView>
           </View>
         </KeyboardAvoidingView>
