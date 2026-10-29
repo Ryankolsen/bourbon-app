@@ -4,7 +4,6 @@ import {
   Text,
   Modal,
   FlatList,
-  TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,6 +11,8 @@ import { useMyGroups } from '@/hooks/use-groups';
 import { useShareTastingToGroup } from '@/hooks/use-group-feed';
 import { useToast } from '@/lib/toast-provider';
 import { colors } from '@/lib/colors';
+import { AccessiblePressable } from '@/components/AccessiblePressable';
+import { Heading } from '@/components/Heading';
 
 interface ShareToGroupSheetProps {
   tastingId: string;
@@ -64,10 +65,14 @@ export function ShareToGroupSheet({
       <SafeAreaView className="flex-1 bg-brand-900">
         {/* Header */}
         <View className="flex-row items-center justify-between px-4 py-3 border-b border-brand-700">
-          <Text className="text-brand-100 font-bold text-base">Share to Group</Text>
-          <TouchableOpacity onPress={onClose} testID="share-sheet-close">
+          <Heading className="text-brand-100 font-bold text-base">Share to Group</Heading>
+          <AccessiblePressable
+            onPress={onClose}
+            accessibilityLabel="Close"
+            testID="share-sheet-close"
+          >
             <Text className="text-brand-400 text-base">✕</Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
         </View>
 
         {isLoading ? (
@@ -87,7 +92,8 @@ export function ShareToGroupSheet({
               const isPending = sharingGroupId === item.group_id;
 
               return (
-                <TouchableOpacity
+                <AccessiblePressable
+                  accessibilityLabel={`Share to ${groupName}`}
                   className="flex-row items-center px-4 py-4 border-b border-brand-800"
                   onPress={() => handleShare(item.group_id)}
                   disabled={isPending || shareMutation.isPending}
@@ -101,7 +107,7 @@ export function ShareToGroupSheet({
                   ) : (
                     <Text className="text-brand-400 text-sm">Share →</Text>
                   )}
-                </TouchableOpacity>
+                </AccessiblePressable>
               );
             }}
             ListEmptyComponent={

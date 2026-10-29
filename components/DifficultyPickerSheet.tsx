@@ -1,8 +1,10 @@
-import { View, Text, Modal, TouchableOpacity } from "react-native";
+import { View, Text, Modal, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useTheme } from "@/lib/theme-provider";
 import { type Difficulty } from "@/lib/duel-question-generator";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -81,14 +83,14 @@ export function DifficultyPickerSheet({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <TouchableOpacity
-        className="flex-1 justify-end bg-black/60"
-        activeOpacity={1}
-        onPress={onClose}
-      >
-        <TouchableOpacity
+      <View className="flex-1 justify-end bg-black/60">
+        <AccessiblePressable
+          accessibilityLabel="Close"
           activeOpacity={1}
-          onPress={() => {}}
+          onPress={onClose}
+          style={StyleSheet.absoluteFill}
+        />
+        <View
           style={{
             backgroundColor: c.brand900,
             borderTopLeftRadius: 24,
@@ -111,19 +113,20 @@ export function DifficultyPickerSheet({
           {/* Header */}
           <View className="flex-row items-center justify-between px-5 py-4">
             <View>
-              <Text style={{ color: c.brand100, fontSize: 20, fontWeight: "700" }}>
+              <Heading style={{ color: c.brand100, fontSize: 20, fontWeight: "700" }}>
                 Choose Difficulty
-              </Text>
+              </Heading>
               <Text style={{ color: c.brand400, fontSize: 13, marginTop: 2 }}>
                 {gameTitle}
               </Text>
             </View>
-            <TouchableOpacity
+            <AccessiblePressable
               onPress={onClose}
+              accessibilityLabel="Close"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text style={{ color: c.brand400, fontSize: 20 }}>✕</Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           </View>
 
           {/* Options */}
@@ -131,11 +134,12 @@ export function DifficultyPickerSheet({
             {DIFFICULTIES.map((opt) => {
               const isSelected = selected === opt.value;
               return (
-                <TouchableOpacity
+                <AccessiblePressable
                   key={opt.value}
+                  accessibilityLabel={`${opt.label}, ${opt.xpLabel}. ${opt.subtitle}`}
                   onPress={() => setSelected(opt.value)}
                   accessibilityRole="radio"
-                  accessibilityState={{ checked: isSelected }}
+                  accessibilityState={{ checked: isSelected, selected: isSelected }}
                   style={{
                     borderRadius: 16,
                     borderWidth: 2,
@@ -213,24 +217,24 @@ export function DifficultyPickerSheet({
                       />
                     )}
                   </View>
-                </TouchableOpacity>
+                </AccessiblePressable>
               );
             })}
           </View>
 
           {/* Start button */}
-          <TouchableOpacity
+          <AccessiblePressable
             onPress={handleStart}
+            accessibilityLabel="Start"
             className="mx-4 mt-5 rounded-2xl py-4 items-center"
             style={{ backgroundColor: c.tabActive }}
-            accessibilityRole="button"
           >
             <Text style={{ color: c.white, fontSize: 16, fontWeight: "700" }}>
               Start
             </Text>
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </TouchableOpacity>
+          </AccessiblePressable>
+        </View>
+      </View>
     </Modal>
   );
 }

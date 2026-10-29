@@ -15,7 +15,6 @@ import {
   Modal,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,6 +23,8 @@ import { LANDING_PAGE_URL } from '@/lib/public-links';
 import { useShareAchievement } from '@/hooks/use-share-achievement';
 import { AchievementShareCard } from '@/components/AchievementShareCard';
 import { colors } from '@/lib/colors';
+import { AccessiblePressable } from '@/components/AccessiblePressable';
+import { Heading } from '@/components/Heading';
 
 export interface AchievementShareSheetProps {
   visible: boolean;
@@ -65,14 +66,15 @@ export function AchievementShareSheet({
       <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Share Your Achievement</Text>
-          <TouchableOpacity
+          <Heading style={styles.title}>Share Your Achievement</Heading>
+          <AccessiblePressable
             onPress={onClose}
+            accessibilityLabel="Close"
             testID="achievement-share-sheet-close"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Text style={styles.closeIcon}>✕</Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
         </View>
 
         {/* Belt name subtitle */}
@@ -89,8 +91,9 @@ export function AchievementShareSheet({
         {/* Platform buttons */}
         <View style={styles.buttonList}>
           {PLATFORMS.map(({ key: platformKey, label, emoji }) => (
-            <TouchableOpacity
+            <AccessiblePressable
               key={platformKey}
+              accessibilityLabel={label}
               style={[styles.platformButton, isSharing && styles.platformButtonDisabled]}
               onPress={() => share(platformKey)}
               disabled={isSharing}
@@ -101,7 +104,7 @@ export function AchievementShareSheet({
               <Text style={[styles.platformLabel, isSharing && styles.platformLabelDisabled]}>
                 {label}
               </Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           ))}
         </View>
 

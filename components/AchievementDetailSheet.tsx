@@ -1,6 +1,8 @@
-import { Modal, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { Modal, View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Database } from '@/types/database';
+import { AccessiblePressable } from '@/components/AccessiblePressable';
+import { Heading } from '@/components/Heading';
 
 type AchievementRow = Database['public']['Tables']['achievements']['Row'];
 
@@ -43,16 +45,17 @@ export function AchievementDetailSheet({
     >
       <SafeAreaView className="flex-1 bg-brand-900">
         <View className="flex-row items-center justify-between px-5 py-4 border-b border-brand-700">
-          <Text className="text-brand-100 text-lg font-bold flex-1 mr-3" numberOfLines={1}>
+          <Heading className="text-brand-100 text-lg font-bold flex-1 mr-3" numberOfLines={1}>
             {achievement.title}
-          </Text>
-          <TouchableOpacity
+          </Heading>
+          <AccessiblePressable
             onPress={onClose}
+            accessibilityLabel="Close"
             testID="achievement-detail-close"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Text className="text-brand-400 text-lg">✕</Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
         </View>
 
         <ScrollView className="flex-1 px-5 pt-4">
