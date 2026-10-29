@@ -294,9 +294,9 @@ export default function ProfileScreen() {
               <Text className="text-brand-400 text-xs uppercase tracking-widest mb-1">
                 Display Name
               </Text>
-              <Heading className="text-brand-100 font-semibold text-base mb-4">
+              <Text className="text-brand-100 font-semibold text-base mb-4">
                 {profile?.display_name ?? "—"}
-              </Heading>
+              </Text>
 
               <Text className="text-brand-400 text-xs uppercase tracking-widest mb-1">
                 Username

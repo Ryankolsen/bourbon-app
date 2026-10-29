@@ -113,9 +113,10 @@ describe('ProfileScreen — accessibility', () => {
     expect(btn.props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
   });
 
-  it('renders the display name and section titles as headings', () => {
+  it('renders section titles as headings but not the display name value', () => {
     render(<ProfileScreen />);
-    expect(screen.getByRole('header', { name: 'Tester' })).toBeTruthy();
+    expect(screen.queryByRole('header', { name: 'Tester' })).toBeNull();
+    expect(screen.getByText('Tester')).toBeTruthy();
     expect(screen.getByRole('header', { name: 'Appearance' })).toBeTruthy();
   });
 

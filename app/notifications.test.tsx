@@ -204,3 +204,12 @@ describe('NotificationsScreen — row accessibility', () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 });
+
+describe('NotificationsScreen — accessibility', () => {
+  it('renders the screen title as a heading', () => {
+    mockUseSocialNotificationsRealtime.mockImplementation(() => {});
+    mockUseSocialNotifications.mockReturnValue({ data: [], isLoading: false });
+    render(<NotificationsScreen />);
+    expect(screen.getByRole('header', { name: 'Notifications' })).toBeTruthy();
+  });
+});

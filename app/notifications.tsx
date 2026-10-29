@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { AccessiblePressable } from '@/components/AccessiblePressable';
+import { Heading } from '@/components/Heading';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/use-auth';
@@ -157,7 +158,7 @@ export default function NotificationsScreen() {
         >
           <Text className="text-brand-400 text-base">‹ Back</Text>
         </AccessiblePressable>
-        <Text className="text-brand-100 text-lg font-bold flex-1">Notifications</Text>
+        <Heading className="text-brand-100 text-lg font-bold flex-1">Notifications</Heading>
       </View>
 
       {isLoading ? (

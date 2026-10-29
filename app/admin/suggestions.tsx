@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
 import {
   View,
   Text,
@@ -246,9 +247,9 @@ export default function SuggestionsScreen() {
         >
           <Text className="text-brand-400 text-base">‹ Back</Text>
         </AccessiblePressable>
-        <Text className="text-brand-100 text-lg font-bold flex-1">
+        <Heading className="text-brand-100 text-lg font-bold flex-1">
           Pending Suggestions
-        </Text>
+        </Heading>
         {suggestions.length > 0 && (
           <View
             style={{
