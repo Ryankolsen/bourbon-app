@@ -3,9 +3,7 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -22,6 +20,9 @@ import { useMyGroups, useRecommendBourbon } from "@/hooks/use-groups";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { useToast } from "@/lib/toast-provider";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
+import { LabeledTextInput } from "@/components/LabeledTextInput";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { buildAddToWishlistPayload } from "@/lib/wishlist";
 import { buildAddToCollectionPayload } from "@/lib/collection";
@@ -86,9 +87,9 @@ export default function BourbonDetailScreen() {
         <Text className="text-red-400 text-center text-base">
           Failed to load bourbon details.
         </Text>
-        <TouchableOpacity onPress={() => router.back()} className="mt-4">
+        <AccessiblePressable accessibilityLabel="Go back" onPress={() => router.back()} className="mt-4">
           <Text className="text-brand-400 text-sm">Go back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </View>
     );
   }
@@ -185,24 +186,26 @@ export default function BourbonDetailScreen() {
         className="px-4 pb-2 flex-row items-center justify-between gap-3"
         style={{ paddingTop: insets.top + 8 }}
       >
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+        <AccessiblePressable accessibilityLabel="Back" onPress={() => router.back()} hitSlop={8}>
           <Text className="text-brand-400 text-base">← Back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
         {isAdmin ? (
           <View className="flex-row gap-4">
-            <TouchableOpacity
+            <AccessiblePressable
+              accessibilityLabel="Edit"
               onPress={() => router.push(`/bourbon/edit?id=${id}` as never)}
               hitSlop={8}
             >
               <Text className="text-brand-400 text-base">Edit</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </AccessiblePressable>
+            <AccessiblePressable
+              accessibilityLabel="Delete bourbon"
               onPress={handleDelete}
               disabled={deleteBourbon.isPending}
               hitSlop={8}
             >
               <Text className="text-red-400 text-base">Delete</Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           </View>
         ) : null}
       </View>
@@ -214,7 +217,7 @@ export default function BourbonDetailScreen() {
       <ScrollView contentContainerClassName="px-4 pb-8" keyboardShouldPersistTaps="handled">
         {/* Title block */}
         <View className="mb-6">
-          <Text className="text-brand-100 text-2xl font-bold">{bourbon.name}</Text>
+          <Heading className="text-brand-100 text-2xl font-bold">{bourbon.name}</Heading>
           {bourbon.distillery && (
             <Text className="text-brand-400 text-base mt-1">{bourbon.distillery}</Text>
           )}
@@ -235,9 +238,9 @@ export default function BourbonDetailScreen() {
         {/* Community Rating */}
         <View className="bg-brand-800 rounded-2xl p-4 mb-4 flex-row items-center justify-between">
           <View>
-            <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-1">
+            <Heading className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-1">
               Community Rating
-            </Text>
+            </Heading>
             {ratingStats && ratingStats.rating_count > 0 ? (
               <View className="flex-row items-baseline gap-2">
                 <Text className="text-brand-100 text-3xl font-bold">
@@ -272,9 +275,9 @@ export default function BourbonDetailScreen() {
         {hasGroups && (
           <View className="bg-brand-800 rounded-2xl p-4 mb-4">
             <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider">
+              <Heading className="text-brand-400 text-xs font-semibold uppercase tracking-wider">
                 Group Rating
-              </Text>
+              </Heading>
               {myGroups.length > 1 && (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View className="flex-row gap-2">
@@ -282,15 +285,17 @@ export default function BourbonDetailScreen() {
                       const gm = m as { group_id: string; groups: { name: string } | null };
                       const isActive = activeGroupId === gm.group_id;
                       return (
-                        <TouchableOpacity
+                        <AccessiblePressable
                           key={gm.group_id}
+                          accessibilityLabel={gm.groups?.name ?? "Group"}
+                          accessibilityState={{ selected: isActive }}
                           onPress={() => setSelectedGroupId(gm.group_id)}
                           className={`px-3 py-1 rounded-full ${isActive ? "bg-brand-600" : "bg-brand-700"}`}
                         >
                           <Text className={`text-xs font-medium ${isActive ? "text-white" : "text-surface-text"}`}>
                             {gm.groups?.name ?? "Group"}
                           </Text>
-                        </TouchableOpacity>
+                        </AccessiblePressable>
                       );
                     })}
                   </View>
@@ -334,9 +339,9 @@ export default function BourbonDetailScreen() {
 
         {/* Stats grid */}
         <View className="bg-brand-800 rounded-2xl p-4 mb-4">
-          <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
+          <Heading className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
             Specs
-          </Text>
+          </Heading>
           <View className="flex-row flex-wrap gap-y-4">
             {bourbon.proof != null && (
               <StatItem label="Proof" value={`${bourbon.proof}`} />
@@ -359,9 +364,9 @@ export default function BourbonDetailScreen() {
         {/* Description */}
         {bourbon.description && (
           <View className="bg-brand-800 rounded-2xl p-4 mb-4">
-            <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-2">
+            <Heading className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-2">
               About
-            </Text>
+            </Heading>
             <Text className="text-brand-200 text-sm leading-relaxed">
               {bourbon.description}
             </Text>
@@ -370,7 +375,8 @@ export default function BourbonDetailScreen() {
 
         {/* Actions */}
         <View className="gap-3 mt-2">
-          <TouchableOpacity
+          <AccessiblePressable
+            accessibilityLabel={addToCollection.isPending ? "Adding to Collection" : "Add to Collection"}
             onPress={() => {
               if (!user) return;
               addToCollection.mutate(
@@ -397,16 +403,19 @@ export default function BourbonDetailScreen() {
             <Text className="text-white font-semibold text-base">
               {addToCollection.isPending ? "Adding..." : "+ Add to Collection"}
             </Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
 
-          <TouchableOpacity
+          <AccessiblePressable
+            accessibilityLabel="Log Tasting"
             onPress={() => router.push(`/tasting/new?bourbonId=${bourbon.id}`)}
             className="bg-brand-700 rounded-2xl py-4 items-center"
           >
             <Text className="text-surface-text font-semibold text-base">📓 Log Tasting</Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
 
-          <TouchableOpacity
+          <AccessiblePressable
+            accessibilityLabel={wishlistItem ? "Remove from Wishlist" : "Add to Wishlist"}
+            accessibilityState={{ selected: !!wishlistItem }}
             onPress={() => {
               if (!user) return;
               if (wishlistItem) {
@@ -425,22 +434,25 @@ export default function BourbonDetailScreen() {
             <Text className="text-surface-text font-semibold text-base">
               {wishlistItem ? "★ Remove from Wishlist" : "☆ Add to Wishlist"}
             </Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
 
           {/* Edit button for authenticated non-admin users */}
           {user && !isAdmin && (
-            <TouchableOpacity
+            <AccessiblePressable
+              accessibilityLabel="Edit"
               onPress={() => router.push(`/bourbon/edit?id=${id}` as never)}
               className="bg-brand-700 rounded-2xl py-4 items-center"
             >
               <Text className="text-surface-text font-semibold text-base">Edit</Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           )}
 
           {/* Recommend to Group (only if user belongs to at least one group) */}
           {hasGroups && (
             <>
-              <TouchableOpacity
+              <AccessiblePressable
+                accessibilityLabel="Recommend to Group"
+                accessibilityState={myGroups.length > 1 ? { expanded: showRecommendPicker } : undefined}
                 onPress={() => {
                   if (myGroups.length === 1) {
                     handleRecommend((myGroups[0] as { group_id: string }).group_id);
@@ -454,26 +466,27 @@ export default function BourbonDetailScreen() {
                 <Text className="text-surface-text font-semibold text-base">
                   {recommendBourbon.isPending ? "Recommending…" : "👍 Recommend to Group"}
                 </Text>
-              </TouchableOpacity>
+              </AccessiblePressable>
 
               {/* Group picker for multi-group members */}
               {showRecommendPicker && myGroups.length > 1 && (
                 <View className="bg-brand-800 rounded-2xl p-4 gap-2">
-                  <Text className="text-brand-400 text-xs font-semibold uppercase mb-1">
+                  <Heading className="text-brand-400 text-xs font-semibold uppercase mb-1">
                     Choose a group
-                  </Text>
+                  </Heading>
                   {myGroups.map((m) => {
                     const gm = m as { group_id: string; groups: { name: string } | null };
                     return (
-                      <TouchableOpacity
+                      <AccessiblePressable
                         key={gm.group_id}
+                        accessibilityLabel={`Recommend to ${gm.groups?.name ?? "Group"}`}
                         onPress={() => handleRecommend(gm.group_id)}
                         className="bg-brand-700 rounded-xl py-3 items-center"
                       >
                         <Text className="text-brand-100 text-sm font-medium">
                           {gm.groups?.name ?? "Group"}
                         </Text>
-                      </TouchableOpacity>
+                      </AccessiblePressable>
                     );
                   })}
                 </View>
@@ -484,37 +497,43 @@ export default function BourbonDetailScreen() {
 
         {/* ── COMMENTS ── */}
         <View className="mt-8">
-          <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
+          <Heading className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
             Community Comments
-          </Text>
+          </Heading>
 
           {/* Comment composer */}
           <View className="bg-brand-800 rounded-2xl p-3 mb-4">
             {/* Visibility toggle */}
             {hasGroups && (
               <View className="flex-row gap-2 mb-2">
-                <TouchableOpacity
+                <AccessiblePressable
+                  accessibilityLabel="Public"
+                  accessibilityState={{ selected: commentVisibility === "public" }}
                   onPress={() => setCommentVisibility("public")}
                   className={`px-3 py-1 rounded-full ${commentVisibility === "public" ? "bg-brand-600" : "bg-brand-700"}`}
                 >
                   <Text className={`text-xs font-medium ${commentVisibility === "public" ? "text-white" : "text-surface-text"}`}>
                     Public
                   </Text>
-                </TouchableOpacity>
+                </AccessiblePressable>
                 {activeGroupId && (
-                  <TouchableOpacity
+                  <AccessiblePressable
+                    accessibilityLabel={activeGroup?.groups?.name ?? "Group only"}
+                    accessibilityState={{ selected: commentVisibility === "group" }}
                     onPress={() => setCommentVisibility("group")}
                     className={`px-3 py-1 rounded-full ${commentVisibility === "group" ? "bg-brand-600" : "bg-brand-700"}`}
                   >
                     <Text className={`text-xs font-medium ${commentVisibility === "group" ? "text-white" : "text-surface-text"}`}>
                       {activeGroup?.groups?.name ?? "Group only"}
                     </Text>
-                  </TouchableOpacity>
+                  </AccessiblePressable>
                 )}
               </View>
             )}
 
-            <TextInput
+            <LabeledTextInput
+              label="Comment"
+              hideLabel
               value={commentBody}
               onChangeText={setCommentBody}
               placeholder={
@@ -527,7 +546,8 @@ export default function BourbonDetailScreen() {
               maxLength={1000}
               className="text-brand-100 text-sm min-h-[56px]"
             />
-            <TouchableOpacity
+            <AccessiblePressable
+              accessibilityLabel="Post comment"
               onPress={handlePostComment}
               disabled={!commentBody.trim() || addComment.isPending}
               className="mt-2 self-end bg-brand-600 px-4 py-2 rounded-xl"
@@ -535,7 +555,7 @@ export default function BourbonDetailScreen() {
               <Text className="text-white text-sm font-medium">
                 {addComment.isPending ? "Posting…" : "Post"}
               </Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           </View>
 
           {/* Public comment list */}
@@ -568,11 +588,12 @@ export default function BourbonDetailScreen() {
                     <View className="flex-row items-center gap-2">
                       <Text className="text-brand-500 text-xs">{date}</Text>
                       {isOwn && (
-                        <TouchableOpacity
+                        <AccessiblePressable
+                          accessibilityLabel={`Delete comment by ${author}`}
                           onPress={() => handleDeleteComment(comment.id, comment.group_id)}
                         >
                           <Text className="text-red-400 text-xs">Delete</Text>
-                        </TouchableOpacity>
+                        </AccessiblePressable>
                       )}
                     </View>
                   </View>
@@ -588,9 +609,9 @@ export default function BourbonDetailScreen() {
         {/* ── GROUP COMMENTS ── */}
         {hasGroups && activeGroupId && (
           <View className="mt-6">
-            <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            <Heading className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
               {activeGroup?.groups?.name ? `${activeGroup.groups.name} — Group Comments` : "Group Comments"}
-            </Text>
+            </Heading>
 
             {groupCommentsLoading ? (
               <ActivityIndicator color={colors.spinnerDefault} />
@@ -621,11 +642,12 @@ export default function BourbonDetailScreen() {
                       <View className="flex-row items-center gap-2">
                         <Text className="text-brand-500 text-xs">{date}</Text>
                         {isOwn && (
-                          <TouchableOpacity
+                          <AccessiblePressable
+                            accessibilityLabel={`Delete comment by ${author}`}
                             onPress={() => handleDeleteComment(comment.id, comment.group_id)}
                           >
                             <Text className="text-red-400 text-xs">Delete</Text>
-                          </TouchableOpacity>
+                          </AccessiblePressable>
                         )}
                       </View>
                     </View>

@@ -90,8 +90,9 @@ jest.mock('@/hooks/use-bourbons', () => ({
   useDeleteBourbon: () => ({ mutate: mockDeleteMutate, isPending: false }),
 }));
 
+const mockAddToCollectionMutate = jest.fn();
 jest.mock('@/hooks/use-collection', () => ({
-  useAddToCollection: () => ({ mutate: jest.fn(), isPending: false }),
+  useAddToCollection: () => ({ mutate: mockAddToCollectionMutate, isPending: false }),
 }));
 
 jest.mock('@/hooks/use-wishlist', () => ({
@@ -112,8 +113,9 @@ jest.mock('@/hooks/use-ratings', () => ({
   useGroupRatingStats: () => ({ data: null }),
 }));
 
+let mockMyGroups: unknown[] = [];
 jest.mock('@/hooks/use-groups', () => ({
-  useMyGroups: () => ({ data: [] }),
+  useMyGroups: () => ({ data: mockMyGroups }),
   useRecommendBourbon: () => ({ mutate: jest.fn(), isPending: false }),
 }));
 
@@ -174,7 +176,7 @@ describe('BourbonDetailScreen — admin delete flow', () => {
     render(<BourbonDetailScreen />);
 
     // Before pressing Delete, the header Delete button is the only one
-    const headerDeleteButton = screen.getByText('Delete');
+    const headerDeleteButton = screen.getByRole('button', { name: 'Delete bourbon' });
     expect(headerDeleteButton).toBeTruthy();
 
     fireEvent.press(headerDeleteButton);
@@ -190,7 +192,7 @@ describe('BourbonDetailScreen — admin delete flow', () => {
     mockIsAdmin = true;
 
     render(<BourbonDetailScreen />);
-    fireEvent.press(screen.getByText('Delete'));
+    fireEvent.press(screen.getByRole('button', { name: 'Delete bourbon' }));
 
     // Modal is now visible; press Cancel
     const cancelButton = screen.getByLabelText('Cancel');
@@ -205,7 +207,7 @@ describe('BourbonDetailScreen — admin delete flow', () => {
     mockIsAdmin = true;
 
     render(<BourbonDetailScreen />);
-    fireEvent.press(screen.getByText('Delete'));
+    fireEvent.press(screen.getByRole('button', { name: 'Delete bourbon' }));
 
     // Modal is now visible; confirm via the Delete confirm button (accessibilityLabel)
     const confirmButton = screen.getByLabelText('Delete');
@@ -250,7 +252,7 @@ describe('BourbonDetailScreen — Edit button', () => {
     };
 
     render(<BourbonDetailScreen />);
-    expect(screen.getByText('Edit')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeTruthy();
     expect(screen.queryByText('Add Missing Info')).toBeNull();
   });
 
@@ -278,7 +280,7 @@ describe('BourbonDetailScreen — Edit button', () => {
     };
 
     render(<BourbonDetailScreen />);
-    expect(screen.getByText('Edit')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeTruthy();
   });
 
   // Test 6 — admin sees "Edit" in header, action section Edit not shown
@@ -305,7 +307,65 @@ describe('BourbonDetailScreen — Edit button', () => {
     };
 
     render(<BourbonDetailScreen />);
-    expect(screen.getByText('Edit')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeTruthy();
     expect(screen.queryByText('Add Missing Info')).toBeNull();
+  });
+});
+
+// ── Accessibility (issue #248) ───────────────────────────────────────────────
+
+describe('BourbonDetailScreen — accessibility', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockIsAdmin = false;
+    mockMyGroups = [];
+  });
+
+  it('exposes the bourbon name as a header', () => {
+    render(<BourbonDetailScreen />);
+    expect(screen.getByRole('header', { name: "Blanton's Original" })).toBeTruthy();
+  });
+
+  it('exposes section titles as headers', () => {
+    render(<BourbonDetailScreen />);
+    expect(screen.getByRole('header', { name: 'Specs' })).toBeTruthy();
+    expect(screen.getByRole('header', { name: 'Community Comments' })).toBeTruthy();
+  });
+
+  it('finds Back, Add to Collection and Log Tasting by role and name and presses them', () => {
+    render(<BourbonDetailScreen />);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+    expect(mockRouterBack).toHaveBeenCalled();
+
+    fireEvent.press(screen.getByRole('button', { name: 'Log Tasting' }));
+    expect(mockRouterPush).toHaveBeenCalledWith('/tasting/new?bourbonId=bourbon-delete-id');
+
+    fireEvent.press(screen.getByRole('button', { name: 'Add to Collection' }));
+    expect(mockAddToCollectionMutate).toHaveBeenCalled();
+  });
+
+  it('finds the wishlist toggle and Post buttons by role and name', () => {
+    render(<BourbonDetailScreen />);
+    expect(screen.getByRole('button', { name: 'Add to Wishlist' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Post comment' })).toBeTruthy();
+  });
+
+  it('labels the comment input', () => {
+    render(<BourbonDetailScreen />);
+    expect(screen.getByLabelText('Comment')).toBeTruthy();
+  });
+
+  it('recommend picker expander flips its expanded state on press', () => {
+    mockMyGroups = [
+      { group_id: 'g1', groups: { id: 'g1', name: 'Group One' } },
+      { group_id: 'g2', groups: { id: 'g2', name: 'Group Two' } },
+    ];
+    render(<BourbonDetailScreen />);
+
+    const expander = () => screen.getByRole('button', { name: 'Recommend to Group' });
+    expect(expander().props.accessibilityState).toMatchObject({ expanded: false });
+    fireEvent.press(expander());
+    expect(expander().props.accessibilityState).toMatchObject({ expanded: true });
   });
 });
