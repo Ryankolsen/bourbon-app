@@ -9,7 +9,7 @@ export const colors = {
   brand50:  "#f0f9ff",
   brand100: "#e0f2fe",
   brand200: "#bae6fd",
-  brand300: "#7dd3fc",
+  brand300: "#bae8fd",
   brand400: "#38bdf8",
   brand500: "#0ea5e9",
   brand600: "#0284c7",
@@ -21,15 +21,17 @@ export const colors = {
   tabBar:      "#0a0a0a",
   tabBorder:   "#2a2a2a",
   tabActive:   "#38bdf8",
-  tabInactive: "#4a4a4a",
+  tabInactive: "#797979",
   headerTint:  "#e0f2fe",
 
   // Feedback / alerts
   badgeError:   "#dc2626",
-  toastSuccess: "#0284c7",
+  toastSuccess: "#027dbc",
   toastError:   "#b91c1c",
-  toastAction:  "#bae6fd",
+  toastAction:  "#057dbc",
   errorDefault: "#ef4444",
+  answerCorrect: "#15803d",
+  answerWrong:   "#dc2626",
 
   // Sliders / toggles
   sliderThumb:        "#38bdf8",

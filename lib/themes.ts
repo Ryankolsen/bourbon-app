@@ -45,6 +45,10 @@ export type ThemeColors = {
   toastError: string;
   toastAction: string;
   errorDefault: string;
+  /** Dojo quiz — correct-answer fill; white text on it must be >= 4.5:1 */
+  answerCorrect: string;
+  /** Dojo quiz — wrong-answer fill; white text on it must be >= 4.5:1 */
+  answerWrong: string;
 
   sliderThumb: string;
   sliderTrackFilled: string;
@@ -105,7 +109,7 @@ const charcoal: Theme = {
     brand50:  "#f0f9ff",
     brand100: "#e0f2fe",
     brand200: "#bae6fd",
-    brand300: "#7dd3fc",
+    brand300: "#bae8fd",
     brand400: "#38bdf8",
     brand500: "#0ea5e9",
     brand600: "#0284c7",
@@ -115,13 +119,15 @@ const charcoal: Theme = {
     tabBar:       "#0a0a0a",
     tabBorder:    "#2a2a2a",
     tabActive:    "#38bdf8",
-    tabInactive:  "#4a4a4a",
+    tabInactive:  "#797979",
     headerTint:   "#e0f2fe",
     badgeError:   "#dc2626",
-    toastSuccess: "#0284c7",
+    toastSuccess: "#027dbc",
     toastError:   "#b91c1c",
-    toastAction:  "#bae6fd",
+    toastAction:  "#057dbc",
     errorDefault: "#ef4444",
+    answerCorrect: "#15803d",
+    answerWrong:   "#dc2626",
     sliderThumb:       "#38bdf8",
     sliderTrackFilled: "#0ea5e9",
     sliderTrackEmpty:  "#2a2a2a",
@@ -163,19 +169,21 @@ const highContrast: Theme = {
     brand400: "#ffec40",
     brand500: "#ffd700",
     brand600: "#000000",  // black buttons — white text gives 21:1 contrast ✓
-    brand700: "#ffd700",  // yellow secondary surfaces — textOnBg gives black text ✓
+    brand700: "#7f6b00",  // dark gold secondary surfaces — textOnBg gives black text ✓
     brand800: "#0a0a0a",
     brand900: "#000000",
     tabBar:       "#000000",
     tabBorder:    "#3a3a00",
     tabActive:    "#ffd700",
-    tabInactive:  "#666600",
+    tabInactive:  "#797900",
     headerTint:   "#fff176",
     badgeError:   "#ff4444",
-    toastSuccess: "#ccac00",
+    toastSuccess: "#8b7500",
     toastError:   "#cc0000",
-    toastAction:  "#fff176",
+    toastAction:  "#857700",
     errorDefault: "#ff4444",
+    answerCorrect: "#15803d",
+    answerWrong:   "#dc2626",
     sliderThumb:       "#ffd700",
     sliderTrackFilled: "#ccac00",
     sliderTrackEmpty:  "#1a1a1a",
@@ -225,7 +233,7 @@ const navyFlax: Theme = {
     brand50:  "#060810",
     brand100: "#0a1624",  // near-black navy — primary text
     brand200: "#142040",
-    brand300: "#1c2e54",  // dark navy: 11:1 on white ✓, ~4:1 on brand-700 ✓
+    brand300: "#101a30",  // dark navy: 11:1 on white ✓, ~4:1 on brand-700 ✓
     brand400: "#2a4470",  // secondary text: 8:1 on white ✓
     brand500: "#3a5a96",
     brand600: "#1e4080",  // vivid accent — active chips
@@ -242,6 +250,8 @@ const navyFlax: Theme = {
     toastError:   "#b91c1c",
     toastAction:  "#1c2e54",
     errorDefault: "#b91c1c",
+    answerCorrect: "#15803d",
+    answerWrong:   "#dc2626",
     sliderThumb:       "#1e4080",
     sliderTrackFilled: "#2a4470",
     sliderTrackEmpty:  "#d0cac0",
@@ -250,7 +260,7 @@ const navyFlax: Theme = {
     spinnerDefault: "#1e4080",
     spinnerAmber:   "#2a4470",
     starFilled: "#b8691a",  // warm amber — 4.6:1 on brand-800 #ffffff ✓
-    starEmpty:  "#b0a090",  // warm tan — 1.9:1 on white (large icon, AA-large OK) ✓
+    starEmpty:  "#a4927f",  // warm tan — 1.9:1 on white (large icon, AA-large OK) ✓
     placeholderDark:   "#4a6080",
     placeholderMuted:  "#5a7090",
     // Light — needs to be near-white on brand-700 #6a84aa (medium steel blue)
@@ -310,6 +320,8 @@ export function themeColorsToCssVars(c: ThemeColors): Record<string, string> {
     "--toast-error":   c.toastError,
     "--toast-action":  c.toastAction,
     "--error-default": c.errorDefault,
+    "--answer-correct": c.answerCorrect,
+    "--answer-wrong":   c.answerWrong,
     "--slider-thumb":        c.sliderThumb,
     "--slider-track-filled": c.sliderTrackFilled,
     "--slider-track-empty":  c.sliderTrackEmpty,

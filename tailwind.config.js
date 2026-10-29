@@ -34,6 +34,8 @@ module.exports = {
         "toast-error":    "var(--toast-error)",
         "toast-action":   "var(--toast-action)",
         "error-default":  "var(--error-default)",
+        "answer-correct": "var(--answer-correct)",
+        "answer-wrong":   "var(--answer-wrong)",
         // Semantic tokens — sliders / toggles
         "slider-thumb":         "var(--slider-thumb)",
         "slider-track-filled":  "var(--slider-track-filled)",
