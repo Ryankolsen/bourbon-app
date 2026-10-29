@@ -2,8 +2,6 @@ import {
   View,
   Text,
   ScrollView,
-  TextInput,
-  TouchableOpacity,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -15,15 +13,10 @@ import { useTasting, useUpdateTasting } from "@/hooks/use-tastings";
 import { useAuth } from "@/hooks/use-auth";
 import { colors } from "@/lib/colors";
 import { useToast } from "@/lib/toast-provider";
-
-const RATING_STEPS = [1, 2, 3, 4, 5];
-const STAR_LABELS: Record<number, string> = {
-  1: "Poor",
-  2: "Fair",
-  3: "Good",
-  4: "Great",
-  5: "Exceptional",
-};
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
+import { LabeledTextInput } from "@/components/LabeledTextInput";
+import { StarRatingInput, STAR_LABELS } from "@/components/StarRatingInput";
 
 export default function TastingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -98,9 +91,9 @@ export default function TastingDetailScreen() {
     return (
       <View className="flex-1 bg-brand-900 items-center justify-center px-8">
         <Text className="text-red-400 text-center">Failed to load tasting.</Text>
-        <TouchableOpacity onPress={() => router.back()} className="mt-4">
+        <AccessiblePressable onPress={() => router.back()} className="mt-4" accessibilityLabel="Go back">
           <Text className="text-brand-400 text-sm">Go back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </View>
     );
   }
@@ -120,24 +113,28 @@ export default function TastingDetailScreen() {
         className="px-4 pb-2 flex-row items-center justify-between"
         style={{ paddingTop: insets.top + 8 }}
       >
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+        <AccessiblePressable onPress={() => router.back()} hitSlop={8} accessibilityLabel="Back">
           <Text className="text-brand-400 text-base">← Back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
         {isOwner && !editing && (
-          <TouchableOpacity onPress={startEditing}>
+          <AccessiblePressable onPress={startEditing} accessibilityLabel="Edit">
             <Text className="text-brand-400 text-base">Edit</Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
         )}
         {editing && (
           <View className="flex-row gap-4">
-            <TouchableOpacity onPress={cancelEditing}>
+            <AccessiblePressable onPress={cancelEditing} accessibilityLabel="Cancel">
               <Text className="text-brand-400 text-base">Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleSave} disabled={updateTasting.isPending}>
+            </AccessiblePressable>
+            <AccessiblePressable
+              onPress={handleSave}
+              disabled={updateTasting.isPending}
+              accessibilityLabel="Save"
+            >
               <Text className="text-brand-400 text-base">
                 {updateTasting.isPending ? "Saving..." : "Save"}
               </Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           </View>
         )}
       </View>
@@ -160,30 +157,11 @@ export default function TastingDetailScreen() {
 
         {/* Rating */}
         <View className="bg-brand-800 rounded-2xl p-4 mb-4">
-          <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
+          <Heading className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
             Rating
-          </Text>
+          </Heading>
           {editing ? (
-            <>
-              <View className="flex-row gap-3 justify-center">
-                {RATING_STEPS.map((r) => (
-                  <TouchableOpacity
-                    key={r}
-                    onPress={() => setRating(rating === r ? null : r)}
-                    className="items-center"
-                  >
-                    <Text className={`text-3xl ${rating !== null && r <= rating ? "opacity-100" : "opacity-30"}`}>
-                      ★
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              {rating !== null && (
-                <Text className="text-brand-300 text-sm mt-3 text-center">
-                  {rating}/5 — {STAR_LABELS[rating]}
-                </Text>
-              )}
-            </>
+            <StarRatingInput value={rating} onChange={setRating} labels={STAR_LABELS} />
           ) : (
             <View>
               <Text className="text-brand-100 text-2xl font-bold">
@@ -228,24 +206,26 @@ export default function TastingDetailScreen() {
         />
 
         {editing && (
-          <TouchableOpacity
+          <AccessiblePressable
             onPress={handleSave}
             disabled={updateTasting.isPending}
+            accessibilityLabel="Save Changes"
             className="bg-brand-600 rounded-2xl py-4 items-center mt-2"
           >
             <Text className="text-white font-semibold text-base">
               {updateTasting.isPending ? "Saving..." : "Save Changes"}
             </Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
         )}
 
         {!editing && isOwner && (
-          <TouchableOpacity
+          <AccessiblePressable
+            accessibilityLabel="View bourbon"
             onPress={() => router.push(`/bourbon/${tasting.bourbon_id}`)}
             className="mt-4 items-center"
           >
             <Text className="text-brand-500 text-sm">View bourbon →</Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
         )}
       </ScrollView>
       </KeyboardAvoidingView>
@@ -272,11 +252,13 @@ function NoteField({
 
   return (
     <View className="bg-brand-800 rounded-2xl p-4 mb-4">
-      <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-2">
+      <Heading className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-2">
         {label}
-      </Text>
+      </Heading>
       {editing ? (
-        <TextInput
+        <LabeledTextInput
+          label={label}
+          hideLabel
           value={value}
           onChangeText={onChange}
           placeholder={placeholder}

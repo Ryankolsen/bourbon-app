@@ -162,3 +162,11 @@ describe('NewTastingScreen — first tasting share prompt', () => {
     expect(queryByTestId('share-sheet')).toBeNull();
   });
 });
+
+describe('NewTastingScreen — accessibility', () => {
+  it('exposes a Log Tasting header and an adjustable Rating', () => {
+    const { getByRole } = render(<NewTastingScreen />);
+    expect(getByRole('header', { name: 'Log Tasting' })).toBeTruthy();
+    expect(getByRole('adjustable', { name: 'Rating' })).toBeTruthy();
+  });
+});

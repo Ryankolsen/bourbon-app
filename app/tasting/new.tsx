@@ -2,10 +2,8 @@ import {
   Modal,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
   ScrollView,
-  TextInput,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -22,15 +20,10 @@ import { colors } from "@/lib/colors";
 import { useToast } from "@/lib/toast-provider";
 import { AchievementShareSheet } from "@/components/AchievementShareSheet";
 import { BELTS } from "@/lib/belt-config";
-
-const RATING_STEPS = [1, 2, 3, 4, 5];
-const STAR_LABELS: Record<number, string> = {
-  1: "Poor",
-  2: "Fair",
-  3: "Good",
-  4: "Great",
-  5: "Exceptional",
-};
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
+import { LabeledTextInput } from "@/components/LabeledTextInput";
+import { StarRatingInput, STAR_LABELS } from "@/components/StarRatingInput";
 
 // White Dog belt used as the display config for the first-tasting share card.
 const FIRST_TASTING_BELT = BELTS[0];
@@ -98,9 +91,13 @@ export default function NewTastingScreen() {
         className="px-4 pb-2 flex-row items-center gap-3"
         style={{ paddingTop: insets.top + 8 }}
       >
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+        <AccessiblePressable
+          onPress={() => router.back()}
+          hitSlop={8}
+          accessibilityLabel="Back"
+        >
           <Text className="text-brand-400 text-base">← Back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </View>
 
       <KeyboardAvoidingView
@@ -110,7 +107,7 @@ export default function NewTastingScreen() {
       <ScrollView contentContainerClassName="px-4 pb-8" keyboardShouldPersistTaps="handled">
         {/* Title */}
         <View className="mb-6">
-          <Text className="text-brand-100 text-2xl font-bold">Log Tasting</Text>
+          <Heading className="text-brand-100 text-2xl font-bold">Log Tasting</Heading>
           {bourbon && (
             <Text className="text-brand-400 text-base mt-1">{bourbon.name}</Text>
           )}
@@ -118,27 +115,10 @@ export default function NewTastingScreen() {
 
         {/* Rating */}
         <View className="bg-brand-800 rounded-2xl p-4 mb-4">
-          <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
+          <Heading className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
             Rating
-          </Text>
-          <View className="flex-row gap-3 justify-center">
-            {RATING_STEPS.map((r) => (
-              <TouchableOpacity
-                key={r}
-                onPress={() => setRating(rating === r ? null : r)}
-                className="items-center"
-              >
-                <Text className={`text-3xl ${rating !== null && r <= rating ? "text-star-filled" : "text-star-empty"}`}>
-                  ★
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          {rating !== null && (
-            <Text className="text-brand-300 text-sm mt-3 text-center">
-              {rating}/5 — {STAR_LABELS[rating]}
-            </Text>
-          )}
+          </Heading>
+          <StarRatingInput value={rating} onChange={setRating} labels={STAR_LABELS} />
         </View>
 
         {/* Nose */}
@@ -175,15 +155,16 @@ export default function NewTastingScreen() {
         />
 
         {/* Save */}
-        <TouchableOpacity
+        <AccessiblePressable
           onPress={handleSubmit}
           disabled={logTasting.isPending}
+          accessibilityLabel="Save Tasting"
           className="bg-brand-600 rounded-2xl py-4 items-center mt-2"
         >
           <Text className="text-white font-semibold text-base">
             {logTasting.isPending ? "Saving..." : "Save Tasting"}
           </Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </ScrollView>
       </KeyboardAvoidingView>
 
@@ -203,23 +184,25 @@ export default function NewTastingScreen() {
               to join the Bourbon Dojo.
             </Text>
 
-            <TouchableOpacity
+            <AccessiblePressable
+              accessibilityLabel="Share"
               style={styles.shareButton}
               onPress={() => setShowShareSheet(true)}
               testID="first-tasting-share-cta"
               activeOpacity={0.85}
             >
               <Text style={styles.shareButtonText}>Share</Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
 
-            <TouchableOpacity
+            <AccessiblePressable
+              accessibilityLabel="Skip"
               style={styles.skipButton}
               onPress={handleSkip}
               testID="first-tasting-skip"
               activeOpacity={0.75}
             >
               <Text style={styles.skipText}>Skip</Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           </View>
         </View>
 
@@ -249,10 +232,12 @@ function NoteField({
 }) {
   return (
     <View className="bg-brand-800 rounded-2xl p-4 mb-4">
-      <Text className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-2">
+      <Heading className="text-brand-400 text-xs font-semibold uppercase tracking-wider mb-2">
         {label}
-      </Text>
-      <TextInput
+      </Heading>
+      <LabeledTextInput
+        label={label}
+        hideLabel
         value={value}
         onChangeText={onChange}
         placeholder={placeholder}
