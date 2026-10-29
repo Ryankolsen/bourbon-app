@@ -5,9 +5,11 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated, StyleSheet, Text, View } from "react-native";
 import { enqueueToast, advanceQueue } from "@/lib/toast";
 import type { ToastQueue, ToastType } from "@/lib/toast";
+import { announce } from "@/lib/announce";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
 import { colors } from "@/lib/colors";
 
 interface ToastContextValue {
@@ -32,6 +34,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const showToast = useCallback(
     (message: string, type: ToastType = "success", onPress?: () => void) => {
+      announce(message);
       const id = nextToastId();
       setQueue((prev) => enqueueToast(prev, message, type, id, onPress));
 
@@ -70,7 +73,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           pointerEvents={current.onPress ? "auto" : "none"}
         >
           {current.onPress ? (
-            <TouchableOpacity
+            <AccessiblePressable
+              accessibilityLabel={current.message}
               onPress={current.onPress}
               activeOpacity={0.85}
               style={[
@@ -80,7 +84,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             >
               <Text style={styles.text}>{current.message}</Text>
               <Text style={styles.actionText}>Manage →</Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           ) : (
             <View
               style={[

@@ -36,7 +36,10 @@ jest.mock("@/context/xp-context", () => ({
   }),
 }));
 
+jest.mock("@/lib/announce", () => ({ announce: jest.fn() }));
+
 import { XpToast } from "../XpToast";
+import { announce } from "@/lib/announce";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -157,5 +160,35 @@ describe("XpToast", () => {
     mockCurrent = makeCheckinNotification({ tomorrowXp: null, streakDays: 2 });
     const { queryByTestId } = render(<XpToast />);
     expect(queryByTestId("streak-line")).toBeNull();
+  });
+
+  // ── Announcements ──────────────────────────────────────────────────────────
+
+  it("announces the points and label when a notification appears", () => {
+    mockCurrent = makeNotification();
+    render(<XpToast />);
+    expect(announce).toHaveBeenCalledWith("+25 Barrel Points, Tasting logged");
+  });
+
+  it("appends the streak line to the announcement for daily_checkin", () => {
+    mockCurrent = makeCheckinNotification();
+    const { getByTestId } = render(<XpToast />);
+    const streak = getByTestId("streak-line").props.children;
+    expect(announce).toHaveBeenCalledWith(
+      `+25 Barrel Points, Daily check-in. ${streak}`
+    );
+  });
+
+  it("does not announce when xpAwarded is 0", () => {
+    mockCurrent = makeNotification({ xpAwarded: 0 });
+    render(<XpToast />);
+    expect(announce).not.toHaveBeenCalled();
+  });
+
+  it("announces each notification once across re-renders", () => {
+    mockCurrent = makeNotification();
+    const { rerender } = render(<XpToast />);
+    rerender(<XpToast />);
+    expect(announce).toHaveBeenCalledTimes(1);
   });
 });
