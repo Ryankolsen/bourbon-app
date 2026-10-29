@@ -14,6 +14,7 @@ import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import { useXpNotification } from "@/context/xp-context";
 import { XpBurst, XpBurstHandle } from "@/components/XpBurst";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { announce } from "@/lib/announce";
 import { TomorrowXp } from "@/lib/streak-utils";
 
@@ -42,6 +43,7 @@ export function XpToast() {
   const opacity = useRef(new Animated.Value(0)).current;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const burstRef = useRef<XpBurstHandle>(null);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (!current || current.xpAwarded === 0) return;
@@ -58,12 +60,18 @@ export function XpToast() {
     );
 
     // Slide in
+    // With Reduce Motion on, skip the slide: show at final position, fade only.
+    if (reducedMotion) translateY.setValue(0);
     Animated.parallel([
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      }),
+      ...(reducedMotion
+        ? []
+        : [
+            Animated.timing(translateY, {
+              toValue: 0,
+              duration: 250,
+              useNativeDriver: true,
+            }),
+          ]),
       Animated.timing(opacity, {
         toValue: 1,
         duration: 250,
@@ -74,18 +82,22 @@ export function XpToast() {
     // Auto-dismiss: advance the queue after the display window, then animate out
     timerRef.current = setTimeout(() => {
       Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: 80,
-          duration: 200,
-          useNativeDriver: true,
-        }),
+        ...(reducedMotion
+          ? []
+          : [
+              Animated.timing(translateY, {
+                toValue: 80,
+                duration: 200,
+                useNativeDriver: true,
+              }),
+            ]),
         Animated.timing(opacity, {
           toValue: 0,
           duration: 200,
           useNativeDriver: true,
         }),
       ]).start();
-      translateY.setValue(80);
+      translateY.setValue(reducedMotion ? 0 : 80);
       opacity.setValue(0);
       advance();
     }, AUTO_DISMISS_MS);

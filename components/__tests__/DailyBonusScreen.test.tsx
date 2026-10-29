@@ -45,6 +45,11 @@ jest.mock("@/lib/theme-provider", () => ({
   }),
 }));
 
+let mockReduced = false;
+jest.mock("@/hooks/use-reduced-motion", () => ({
+  useReducedMotion: () => mockReduced,
+}));
+
 import { DailyBonusScreen } from "../DailyBonusScreen";
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -54,6 +59,7 @@ describe("DailyBonusScreen", () => {
     jest.clearAllMocks();
     jest.useFakeTimers();
     mockDailyBonus = null;
+    mockReduced = false;
     mockThemeColors = { ...mockDefaultColors };
   });
 
@@ -66,6 +72,15 @@ describe("DailyBonusScreen", () => {
     mockDailyBonus = { shouldShow: true, awardedPoints: 5, streakDays: 5 };
     const { getByText } = render(<DailyBonusScreen />);
     expect(getByText("+5 Barrel Points")).toBeTruthy();
+  });
+
+  it("with Reduce Motion on, claim shows full points and claims without timers", () => {
+    mockReduced = true;
+    mockDailyBonus = { shouldShow: true, awardedPoints: 50, streakDays: 5 };
+    const { getByTestId, getByText } = render(<DailyBonusScreen />);
+    fireEvent.press(getByTestId("claim-btn"));
+    expect(getByText("+50 Barrel Points")).toBeTruthy();
+    expect(mockClaimDailyBonus).toHaveBeenCalledTimes(1);
   });
 
   // 2 — content details: Claim button triggers animation then calls claimDailyBonus
