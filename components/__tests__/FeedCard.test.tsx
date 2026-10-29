@@ -5,12 +5,13 @@
  */
 
 import React from "react";
-import { render, screen } from "@testing-library/react-native";
+import { render, screen, fireEvent, within } from "@testing-library/react-native";
 
 // ── Mock dependencies ─────────────────────────────────────────────────────────
 
+const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: jest.fn() }),
+  useRouter: () => ({ push: mockPush }),
 }));
 
 jest.mock("@/lib/theme-provider", () => ({
@@ -107,5 +108,17 @@ describe("FeedCard — accessibility", () => {
   it("does not make the card container accessible (would swallow inner buttons)", () => {
     render(<FeedCard item={makeFeedItem()} currentUserId="current-user" />);
     expect(screen.getByTestId("feed-card").props.accessible).toBe(false);
+  });
+
+  it("exposes an accessible 'Open <bourbon>' button that is a sibling of the inner buttons", () => {
+    mockPush.mockClear();
+    render(<FeedCard item={makeFeedItem()} currentUserId="current-user" />);
+    const open = screen.getByRole("button", { name: "Open Buffalo Trace" });
+    expect(open.props.accessible).not.toBe(false);
+    expect(within(open).queryByRole("button", { name: "Like" })).toBeNull();
+    expect(within(open).queryByRole("button", { name: "Comment" })).toBeNull();
+    expect(within(open).queryByRole("button", { name: "Share to group" })).toBeNull();
+    fireEvent.press(open);
+    expect(mockPush).toHaveBeenCalledWith("/bourbon/bourbon-1");
   });
 });

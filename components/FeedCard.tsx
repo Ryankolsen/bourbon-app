@@ -66,15 +66,25 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
     }
   }
 
+  function openBourbon() {
+    router.push(`/bourbon/${item.bourbon_id}` as never);
+  }
+
   return (
     <AccessiblePressable
       // Not accessible itself: it wraps the like/comment/share buttons, which must stay focusable.
       accessible={false}
-      accessibilityLabel={`Open ${item.bourbon_name}`}
+      accessibilityLabel={`${item.bourbon_name} card`}
       className="bg-brand-800 rounded-2xl p-4 mx-4 mb-3"
-      onPress={() => router.push(`/bourbon/${item.bourbon_id}` as never)}
+      onPress={openBourbon}
       testID="feed-card"
     >
+      {/* Open target: header + title, a sibling of (not a wrapper around) the action buttons */}
+      <AccessiblePressable
+        accessibilityLabel={`Open ${item.bourbon_name}`}
+        onPress={openBourbon}
+        testID="feed-card-open"
+      >
       {/* Header: avatar + name/username + date */}
       <View className="flex-row items-center mb-3">
         {/* Avatar */}
@@ -105,6 +115,7 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
       <Text className="text-brand-100 font-bold text-base mb-1" numberOfLines={1}>
         {item.bourbon_name}
       </Text>
+      </AccessiblePressable>
 
       {/* Star rating */}
       <View className="mb-3">
