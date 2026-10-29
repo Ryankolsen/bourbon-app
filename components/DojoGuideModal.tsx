@@ -18,10 +18,11 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
 import { BELTS, getBeltForXp, XP_AWARD_AMOUNTS, STREAK_MILESTONE_BONUSES } from "@/lib/belt-config";
 import { useTheme } from "@/lib/theme-provider";
 
@@ -61,17 +62,17 @@ export function DojoGuideModal({ totalXp, visible, onClose }: DojoGuideModalProp
       <SafeAreaView style={[styles.container, { backgroundColor: c.brand900 }]}>
         {/* ── Header ── */}
         <View style={[styles.header, { borderBottomColor: c.brand700 }]}>
-          <Text style={[styles.headerTitle, { color: c.brand100 }]}>
+          <Heading style={[styles.headerTitle, { color: c.brand100 }]}>
             Bourbon Dojo Guide
-          </Text>
-          <TouchableOpacity
+          </Heading>
+          <AccessiblePressable
             onPress={onClose}
             testID="dojo-guide-close"
             style={styles.closeButton}
             accessibilityLabel="Close"
           >
             <Text style={[styles.closeIcon, { color: c.brand100 }]}>✕</Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
         </View>
 
         {/* ── Tab bar ── */}
@@ -80,8 +81,10 @@ export function DojoGuideModal({ totalXp, visible, onClose }: DojoGuideModalProp
             const label = tab === "belts" ? "Belts" : "How to Earn";
             const isActive = activeTab === tab;
             return (
-              <TouchableOpacity
+              <AccessiblePressable
                 key={tab}
+                accessibilityLabel={label}
+                accessibilityState={{ selected: isActive }}
                 onPress={() => setActiveTab(tab)}
                 style={[
                   styles.tabButton,
@@ -96,7 +99,7 @@ export function DojoGuideModal({ totalXp, visible, onClose }: DojoGuideModalProp
                 >
                   {label}
                 </Text>
-              </TouchableOpacity>
+              </AccessiblePressable>
             );
           })}
         </View>
@@ -278,9 +281,9 @@ function HowToEarnTab({ c }: { c: Record<string, string> }) {
           testID={`earn-category-${category.title.toLowerCase()}`}
           style={styles.earnCategory}
         >
-          <Text style={[styles.earnCategoryHeader, { color: c.brand100 }]}>
+          <Heading style={[styles.earnCategoryHeader, { color: c.brand100 }]}>
             {category.title}
-          </Text>
+          </Heading>
           {category.actions.map((action) => (
             <View key={action.label} style={styles.earnRow}>
               <Text style={[styles.earnLabel, { color: c.brand100 }]}>

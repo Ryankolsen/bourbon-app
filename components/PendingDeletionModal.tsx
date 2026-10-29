@@ -13,9 +13,10 @@ import {
   Modal,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
 import { usePendingDeletion } from "@/hooks/use-profile";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -81,9 +82,9 @@ export function PendingDeletionModal() {
         <View style={styles.card}>
           <Text style={styles.icon}>⚠️</Text>
 
-          <Text style={styles.headline} testID="pending-deletion-headline">
+          <Heading style={styles.headline} testID="pending-deletion-headline">
             Account Scheduled for Deletion
-          </Text>
+          </Heading>
 
           <Text style={styles.body} testID="pending-deletion-body">
             Your account is scheduled to be permanently deleted on{" "}
@@ -97,7 +98,8 @@ export function PendingDeletionModal() {
             You can cancel the deletion now to keep your account.
           </Text>
 
-          <TouchableOpacity
+          <AccessiblePressable
+            accessibilityLabel="Cancel deletion"
             style={[styles.button, styles.cancelButton]}
             onPress={handleCancelDeletion}
             disabled={cancelling || signingOut}
@@ -109,9 +111,10 @@ export function PendingDeletionModal() {
             ) : (
               <Text style={styles.cancelButtonText}>Cancel Deletion</Text>
             )}
-          </TouchableOpacity>
+          </AccessiblePressable>
 
-          <TouchableOpacity
+          <AccessiblePressable
+            accessibilityLabel="Sign out"
             style={[styles.button, styles.signOutButton]}
             onPress={handleSignOut}
             disabled={cancelling || signingOut}
@@ -123,7 +126,7 @@ export function PendingDeletionModal() {
             ) : (
               <Text style={styles.signOutButtonText}>Sign Out</Text>
             )}
-          </TouchableOpacity>
+          </AccessiblePressable>
         </View>
       </View>
     </Modal>

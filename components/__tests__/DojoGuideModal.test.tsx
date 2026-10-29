@@ -6,7 +6,7 @@
  */
 
 import React from "react";
-import { render, fireEvent, within } from "@testing-library/react-native";
+import { render, fireEvent, within, screen } from "@testing-library/react-native";
 
 jest.mock("@/lib/theme-provider", () => ({
   useTheme: () => ({
@@ -90,6 +90,14 @@ describe("DojoGuideModal", () => {
     expect(queryByText(/to next belt/i)).toBeNull();
   });
 
+  it("exposes the guide title and section titles as headers", () => {
+    render(<DojoGuideModal visible totalXp={0} onClose={jest.fn()} />);
+    expect(screen.getByRole("header", { name: "Bourbon Dojo Guide" })).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "How to Earn" }));
+    expect(screen.getByRole("header", { name: "Tasting" })).toBeTruthy();
+    expect(screen.getByRole("header", { name: "Social" })).toBeTruthy();
+  });
+
   // 5 — Close button calls onClose
   it("calls onClose when the close button is pressed", () => {
     const onClose = jest.fn();
@@ -97,7 +105,7 @@ describe("DojoGuideModal", () => {
       <DojoGuideModal visible totalXp={0} onClose={onClose} />
     );
 
-    fireEvent.press(getByTestId("dojo-guide-close"));
+    fireEvent.press(screen.getByRole("button", { name: "Close" }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -111,7 +119,7 @@ describe("DojoGuideModal", () => {
     expect(getByText("How to Earn")).toBeTruthy();
 
     // Switch tabs — should not throw
-    fireEvent.press(getByText("How to Earn"));
+    fireEvent.press(screen.getByRole("button", { name: "How to Earn" }));
   });
 
   // ── How to Earn tab tests ────────────────────────────────────────────────────
@@ -122,7 +130,7 @@ describe("DojoGuideModal", () => {
       <DojoGuideModal visible totalXp={0} onClose={jest.fn()} />
     );
 
-    fireEvent.press(getByText("How to Earn"));
+    fireEvent.press(screen.getByRole("button", { name: "How to Earn" }));
 
     expect(getByText("Tasting")).toBeTruthy();
     expect(getByText("Social")).toBeTruthy();
@@ -134,7 +142,7 @@ describe("DojoGuideModal", () => {
       <DojoGuideModal visible totalXp={0} onClose={jest.fn()} />
     );
 
-    fireEvent.press(getByText("How to Earn"));
+    fireEvent.press(screen.getByRole("button", { name: "How to Earn" }));
 
     expect(getByText("Log a tasting")).toBeTruthy();
     expect(getByText("+25 XP")).toBeTruthy();
@@ -149,7 +157,7 @@ describe("DojoGuideModal", () => {
       <DojoGuideModal visible totalXp={0} onClose={jest.fn()} />
     );
 
-    fireEvent.press(getByText("How to Earn"));
+    fireEvent.press(screen.getByRole("button", { name: "How to Earn" }));
 
     // Both the action label and the explanatory note reference "streak day"
     const matches = getAllByText(/streak day/i);
@@ -162,7 +170,7 @@ describe("DojoGuideModal", () => {
       <DojoGuideModal visible totalXp={0} onClose={jest.fn()} />
     );
 
-    fireEvent.press(getByText("How to Earn"));
+    fireEvent.press(screen.getByRole("button", { name: "How to Earn" }));
 
     const streaksSection = getByTestId("earn-category-streaks");
 

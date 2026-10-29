@@ -7,7 +7,7 @@
  */
 
 import React from "react";
-import { render, act, waitFor, fireEvent } from "@testing-library/react-native";
+import { render, act, waitFor, fireEvent, screen } from "@testing-library/react-native";
 import { XpProvider } from "@/context/xp-context";
 import { BeltUpModal } from "../BeltUpModal";
 
@@ -145,7 +145,7 @@ describe("BeltUpModal", () => {
 
     await waitFor(() => expect(getByTestId("belt-up-modal")).toBeTruthy());
 
-    fireEvent.press(getByTestId("belt-up-cta"));
+    fireEvent.press(screen.getByRole("button", { name: "Dismiss belt promotion" }));
 
     await waitFor(() => {
       expect(queryByTestId("belt-up-modal")).toBeNull();
@@ -160,7 +160,7 @@ describe("BeltUpModal", () => {
       firePromotion(2, "promo-cta-style");
     });
 
-    await waitFor(() => expect(getByTestId("belt-up-cta")).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole("button", { name: "Dismiss belt promotion" })).toBeTruthy());
 
     const flat = Object.assign(
       {},
@@ -181,7 +181,7 @@ describe("BeltUpModal", () => {
 
     await waitFor(() => expect(getByTestId("belt-up-modal")).toBeTruthy());
 
-    fireEvent.press(getByTestId("belt-up-cta"));
+    fireEvent.press(screen.getByRole("button", { name: "Dismiss belt promotion" }));
     await waitFor(() => expect(queryByTestId("belt-up-modal")).toBeNull());
 
     // Same id fires again — modal should NOT reappear
@@ -204,7 +204,7 @@ describe("BeltUpModal", () => {
 
     await waitFor(() => expect(getByTestId("belt-up-modal")).toBeTruthy());
 
-    fireEvent.press(getByTestId("belt-up-cta"));
+    fireEvent.press(screen.getByRole("button", { name: "Dismiss belt promotion" }));
     await waitFor(() => expect(queryByTestId("belt-up-modal")).toBeNull());
 
     act(() => {
@@ -223,6 +223,16 @@ describe("BeltUpModal", () => {
     expect(queryByTestId("belt-up-modal")).toBeNull();
   });
 
+  it("exposes the belt headline as a header", async () => {
+    renderModal();
+    act(() => {
+      firePromotion(3, "promo-header");
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("header", { name: /New Oak/ })).toBeTruthy();
+    });
+  });
+
   // 4a — share button: renders in modal
   it("renders the Share Your Achievement button", async () => {
     const { getByTestId } = renderModal();
@@ -232,7 +242,7 @@ describe("BeltUpModal", () => {
     });
 
     await waitFor(() => {
-      expect(getByTestId("belt-up-share")).toBeTruthy();
+      expect(screen.getByRole("button", { name: "Share your achievement" })).toBeTruthy();
     });
   });
 
@@ -246,7 +256,7 @@ describe("BeltUpModal", () => {
 
     await waitFor(() => expect(getByTestId("belt-up-modal")).toBeTruthy());
 
-    fireEvent.press(getByTestId("belt-up-share"));
+    fireEvent.press(screen.getByRole("button", { name: "Share your achievement" }));
 
     expect(getByTestId("mock-achievement-share-sheet")).toBeTruthy();
   });
@@ -261,7 +271,7 @@ describe("BeltUpModal", () => {
 
     await waitFor(() => expect(getByTestId("belt-up-modal")).toBeTruthy());
 
-    fireEvent.press(getByTestId("belt-up-share"));
+    fireEvent.press(screen.getByRole("button", { name: "Share your achievement" }));
     expect(getByTestId("mock-achievement-share-sheet")).toBeTruthy();
 
     fireEvent.press(getByTestId("mock-share-sheet-close"));

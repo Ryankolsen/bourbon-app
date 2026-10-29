@@ -15,13 +15,14 @@ import {
   Modal,
   StyleSheet,
   Text,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { useXpNotification } from "@/context/xp-context";
 import { BeltBadge } from "@/components/BeltBadge";
 import { getBeltConfig, getBeltPromotionCopy } from "@/lib/belt-config";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
 import { AchievementShareSheet } from "@/components/AchievementShareSheet";
 
 export function BeltUpModal() {
@@ -65,13 +66,13 @@ export function BeltUpModal() {
             <View style={styles.card}>
               <BeltBadge level={promotion.belt} size={60} />
 
-              <Text style={styles.headline} testID="belt-up-headline">
+              <Heading style={styles.headline} testID="belt-up-headline">
                 {belt.senpai
                   ? `Senpai · ${belt.name}`
                   : belt.sensei
                     ? `Sensei · ${belt.name}`
                     : belt.name}
-              </Text>
+              </Heading>
 
               <Text style={styles.flavor} testID="belt-up-flavor">
                 {belt.flavor}
@@ -81,7 +82,8 @@ export function BeltUpModal() {
                 {copy}
               </Text>
 
-              <TouchableOpacity
+              <AccessiblePressable
+                accessibilityLabel="Dismiss belt promotion"
                 style={[styles.ctaButton, { backgroundColor: belt.bgColor }]}
                 onPress={dismiss}
                 testID="belt-up-cta"
@@ -90,16 +92,17 @@ export function BeltUpModal() {
                 <Text style={[styles.ctaText, { color: belt.iconColor }]}>
                   Let&apos;s go!
                 </Text>
-              </TouchableOpacity>
+              </AccessiblePressable>
 
-              <TouchableOpacity
+              <AccessiblePressable
+                accessibilityLabel="Share your achievement"
                 style={styles.shareButton}
                 onPress={() => setShareOpen(true)}
                 testID="belt-up-share"
                 activeOpacity={0.75}
               >
                 <Text style={styles.shareText}>Share Your Achievement</Text>
-              </TouchableOpacity>
+              </AccessiblePressable>
             </View>
           </TouchableWithoutFeedback>
         </View>

@@ -4,9 +4,10 @@ import {
   Modal,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
 import { useXpNotification } from "@/context/xp-context";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { useTheme } from "@/lib/theme-provider";
@@ -95,9 +96,9 @@ export function DailyBonusScreen() {
             resizeMode="contain"
           />
 
-          <Text style={[styles.heading, { color: c.accentAmber }]}>
+          <Heading style={[styles.heading, { color: c.accentAmber }]}>
             Daily Bonus
-          </Text>
+          </Heading>
 
           <Text style={[styles.points, { color: c.brand100 }]}>
             +{displayPoints} Barrel Points
@@ -120,13 +121,14 @@ export function DailyBonusScreen() {
             </Text>
           )}
 
-          <TouchableOpacity
+          <AccessiblePressable
+            accessibilityLabel="Claim daily bonus"
             style={[styles.claimBtn, { backgroundColor: c.brand500 }]}
             onPress={handleClaim}
             testID="claim-btn"
           >
             <Text style={[styles.claimText, { color: c.white }]}>Claim</Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
         </View>
       </View>
     </Modal>

@@ -7,7 +7,7 @@
 
 import React from "react";
 import { StyleSheet } from "react-native";
-import { render, fireEvent, act } from "@testing-library/react-native";
+import { render, fireEvent, act, screen } from "@testing-library/react-native";
 
 // ── Mock XpContext ────────────────────────────────────────────────────────────
 
@@ -78,16 +78,22 @@ describe("DailyBonusScreen", () => {
     mockReduced = true;
     mockDailyBonus = { shouldShow: true, awardedPoints: 50, streakDays: 5 };
     const { getByTestId, getByText } = render(<DailyBonusScreen />);
-    fireEvent.press(getByTestId("claim-btn"));
+    fireEvent.press(screen.getByRole("button", { name: "Claim daily bonus" }));
     expect(getByText("+50 Barrel Points")).toBeTruthy();
     expect(mockClaimDailyBonus).toHaveBeenCalledTimes(1);
+  });
+
+  it("exposes the title as a header", () => {
+    mockDailyBonus = { shouldShow: true, awardedPoints: 5, streakDays: 5 };
+    render(<DailyBonusScreen />);
+    expect(screen.getByRole("header", { name: "Daily Bonus" })).toBeTruthy();
   });
 
   // 2 — content details: Claim button triggers animation then calls claimDailyBonus
   it("calls claimDailyBonus after count-up animation completes on Claim press", () => {
     mockDailyBonus = { shouldShow: true, awardedPoints: 5, streakDays: 5 };
     const { getByTestId } = render(<DailyBonusScreen />);
-    fireEvent.press(getByTestId("claim-btn"));
+    fireEvent.press(screen.getByRole("button", { name: "Claim daily bonus" }));
     act(() => {
       jest.advanceTimersByTime(1000);
     });
@@ -142,7 +148,7 @@ describe("DailyBonusScreen", () => {
     mockDailyBonus = { shouldShow: true, awardedPoints: 5, streakDays: 5 };
     const { getByTestId, queryByText } = render(<DailyBonusScreen />);
 
-    fireEvent.press(getByTestId("claim-btn"));
+    fireEvent.press(screen.getByRole("button", { name: "Claim daily bonus" }));
 
     // Check synchronously, before any timers have fired.
     expect(queryByText("+0 Barrel Points")).toBeNull();
@@ -153,7 +159,7 @@ describe("DailyBonusScreen", () => {
     mockDailyBonus = { shouldShow: true, awardedPoints: 5, streakDays: 1 };
     const { getByTestId, getByText } = render(<DailyBonusScreen />);
 
-    fireEvent.press(getByTestId("claim-btn"));
+    fireEvent.press(screen.getByRole("button", { name: "Claim daily bonus" }));
 
     act(() => {
       jest.advanceTimersByTime(1000);
