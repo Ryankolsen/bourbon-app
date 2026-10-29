@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
 import { StarRating } from "@/components/StarRating";
 
 export interface BourbonCardProps {
@@ -34,7 +35,8 @@ export function BourbonCard({
   const hasRow2 = proof != null || age != null;
 
   return (
-    <TouchableOpacity
+    <AccessiblePressable
+      accessibilityLabel={distillery ? `${name}, ${distillery}` : name}
       className="bg-brand-800 rounded-2xl p-4"
       onPress={onPress}
       testID="bourbon-card"
@@ -80,6 +82,6 @@ export function BourbonCard({
 
       {/* Page-specific controls */}
       {children}
-    </TouchableOpacity>
+    </AccessiblePressable>
   );
 }

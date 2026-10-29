@@ -6,8 +6,22 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react-native";
 import { Text } from "react-native";
 import { BourbonCard } from "./BourbonCard";
+import { bourbonFactory } from "@/lib/test-utils/factories";
 
 const noop = () => {};
+
+describe("BourbonCard — accessibility", () => {
+  it("is a button named with the bourbon name and distillery", () => {
+    const b = bourbonFactory({ name: "Blanton's", distillery: "Buffalo Trace" });
+    render(<BourbonCard name={b.name} distillery={b.distillery} onPress={noop} />);
+    expect(screen.getByRole("button", { name: "Blanton's, Buffalo Trace" })).toBeTruthy();
+  });
+
+  it("is named with just the bourbon name when distillery is null", () => {
+    render(<BourbonCard name="Blanton's" distillery={null} onPress={noop} />);
+    expect(screen.getByRole("button", { name: "Blanton's" })).toBeTruthy();
+  });
+});
 
 describe("BourbonCard", () => {
   // 1. Core wiring — renders bourbon name

@@ -98,4 +98,17 @@ describe('AchievementCard', () => {
     expect(screen.queryByText('Bonded')).toBeNull();
     expect(screen.queryByText('Single Barrel')).toBeNull();
   });
+
+  // 6 — Accessibility: lock state is in the accessible name
+  it('is a button named "<title>, locked" when not earned', () => {
+    render(<AchievementCard achievement={mockAchievement} earnedAt={null} onPress={() => {}} />);
+    expect(screen.getByRole('button', { name: 'Freshman Sipper, locked' })).toBeTruthy();
+  });
+
+  it('is a button named "<title>" when earned', () => {
+    render(
+      <AchievementCard achievement={mockAchievement} earnedAt="2026-01-01T00:00:00Z" onPress={() => {}} />
+    );
+    expect(screen.getByRole('button', { name: 'Freshman Sipper' })).toBeTruthy();
+  });
 });

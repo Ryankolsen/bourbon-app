@@ -1,4 +1,5 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text } from 'react-native';
+import { AccessiblePressable } from './AccessiblePressable';
 import { Database } from '@/types/database';
 
 type AchievementRow = Database['public']['Tables']['achievements']['Row'];
@@ -20,7 +21,8 @@ export function AchievementCard({ achievement, earnedAt, onPress }: AchievementC
   const tierLabel = achievement.tier ? TIER_LABELS[achievement.tier] : null;
 
   return (
-    <TouchableOpacity
+    <AccessiblePressable
+      accessibilityLabel={isEarned ? achievement.title : `${achievement.title}, locked`}
       onPress={onPress}
       testID="achievement-card"
       className={`flex-row items-center p-3 mb-2 rounded-xl bg-brand-700 ${!isEarned ? 'opacity-50' : ''}`}
@@ -39,6 +41,6 @@ export function AchievementCard({ achievement, earnedAt, onPress }: AchievementC
       {isEarned && (
         <Text className="text-surface-text text-xs">✓</Text>
       )}
-    </TouchableOpacity>
+    </AccessiblePressable>
   );
 }

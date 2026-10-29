@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { render, screen } from "@testing-library/react-native";
 
 // ── Mock dependencies ─────────────────────────────────────────────────────────
 
@@ -93,5 +93,19 @@ describe("FeedCard — BeltBadge", () => {
       <FeedCard item={item} currentUserId="current-user" />
     );
     expect(getByLabelText("White Dog belt")).toBeTruthy();
+  });
+});
+
+describe("FeedCard — accessibility", () => {
+  it("exposes like, comment and share as separate buttons by role and name", () => {
+    render(<FeedCard item={makeFeedItem()} currentUserId="current-user" />);
+    expect(screen.getByRole("button", { name: "Like" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Comment" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Share to group" })).toBeTruthy();
+  });
+
+  it("does not make the card container accessible (would swallow inner buttons)", () => {
+    render(<FeedCard item={makeFeedItem()} currentUserId="current-user" />);
+    expect(screen.getByTestId("feed-card").props.accessible).toBe(false);
   });
 });

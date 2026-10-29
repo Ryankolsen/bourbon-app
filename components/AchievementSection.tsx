@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
+import { AccessiblePressable } from './AccessiblePressable';
+import { Heading } from './Heading';
 import { useAchievements, useAchievementsRealtime } from '@/hooks/use-achievements';
 import { useEarnedAchievements } from '@/hooks/use-earned-achievements';
 import { AchievementCard } from './AchievementCard';
@@ -45,14 +47,16 @@ export function AchievementSection({ userId, isOwnProfile }: AchievementSectionP
   return (
     <View className="bg-brand-800 rounded-2xl p-4 mb-4">
       <View className="flex-row items-center justify-between">
-        <Text className="text-brand-400 text-xs uppercase tracking-widest">Achievements</Text>
-        <TouchableOpacity
+        <Heading className="text-brand-400 text-xs uppercase tracking-widest">Achievements</Heading>
+        <AccessiblePressable
           testID="achievement-expand-button"
+          accessibilityLabel={expanded ? 'Collapse achievements' : 'Expand achievements'}
+          accessibilityState={{ expanded }}
           onPress={() => setExpanded((e) => !e)}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Text className="text-brand-400 text-sm">{expanded ? '▲' : '▼'}</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </View>
 
       {expanded && (
@@ -64,8 +68,10 @@ export function AchievementSection({ userId, isOwnProfile }: AchievementSectionP
             className="mt-3 mb-2"
           >
             {CATEGORIES.map((cat) => (
-              <TouchableOpacity
+              <AccessiblePressable
                 key={cat}
+                accessibilityLabel={cat}
+                accessibilityState={{ selected: activeCategory === cat }}
                 testID={`achievement-tab-${cat.toLowerCase()}`}
                 onPress={() => setActiveCategory(cat)}
                 className={`mr-2 px-3 py-1.5 rounded-full border ${
@@ -79,7 +85,7 @@ export function AchievementSection({ userId, isOwnProfile }: AchievementSectionP
                 >
                   {cat}
                 </Text>
-              </TouchableOpacity>
+              </AccessiblePressable>
             ))}
           </ScrollView>
 
