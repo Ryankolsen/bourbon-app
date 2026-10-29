@@ -122,9 +122,9 @@ const charcoal: Theme = {
     tabInactive:  "#797979",
     headerTint:   "#e0f2fe",
     badgeError:   "#dc2626",
-    toastSuccess: "#027dbc",
+    toastSuccess: "#02689d",
     toastError:   "#b91c1c",
-    toastAction:  "#057dbc",
+    toastAction:  "#bae6fd",
     errorDefault: "#ef4444",
     answerCorrect: "#15803d",
     answerWrong:   "#dc2626",
@@ -178,9 +178,9 @@ const highContrast: Theme = {
     tabInactive:  "#797900",
     headerTint:   "#fff176",
     badgeError:   "#ff4444",
-    toastSuccess: "#8b7500",
+    toastSuccess: "#7e6b00",
     toastError:   "#cc0000",
-    toastAction:  "#857700",
+    toastAction:  "#fff176",
     errorDefault: "#ff4444",
     answerCorrect: "#15803d",
     answerWrong:   "#dc2626",
@@ -233,7 +233,7 @@ const navyFlax: Theme = {
     brand50:  "#060810",
     brand100: "#0a1624",  // near-black navy — primary text
     brand200: "#142040",
-    brand300: "#101a30",  // dark navy: 11:1 on white ✓, ~4:1 on brand-700 ✓
+    brand300: "#101a30",  // dark navy: 17.3:1 on white ✓, 4.53:1 on brand-700 ✓
     brand400: "#2a4470",  // secondary text: 8:1 on white ✓
     brand500: "#3a5a96",
     brand600: "#1e4080",  // vivid accent — active chips
@@ -248,7 +248,7 @@ const navyFlax: Theme = {
     badgeError:   "#b91c1c",
     toastSuccess: "#1e4080",
     toastError:   "#b91c1c",
-    toastAction:  "#1c2e54",
+    toastAction:  "#dce8f8",
     errorDefault: "#b91c1c",
     answerCorrect: "#15803d",
     answerWrong:   "#dc2626",
@@ -260,7 +260,7 @@ const navyFlax: Theme = {
     spinnerDefault: "#1e4080",
     spinnerAmber:   "#2a4470",
     starFilled: "#b8691a",  // warm amber — 4.6:1 on brand-800 #ffffff ✓
-    starEmpty:  "#a4927f",  // warm tan — 1.9:1 on white (large icon, AA-large OK) ✓
+    starEmpty:  "#a4927f",  // warm tan — 3.0:1 on white (icon threshold) ✓
     placeholderDark:   "#4a6080",
     placeholderMuted:  "#5a7090",
     // Light — needs to be near-white on brand-700 #6a84aa (medium steel blue)

@@ -18,7 +18,9 @@ const PAIRS: Pair[] = [
   { fg: "headerTint", bg: "brand900", min: TEXT },
   { fg: "white", bg: "toastSuccess", min: TEXT },
   { fg: "white", bg: "toastError", min: TEXT },
-  { fg: "white", bg: "toastAction", min: TEXT },
+  // "Manage →" action text (12px, weight 500: normal text) renders on the toast pill
+  { fg: "toastAction", bg: "toastSuccess", min: TEXT },
+  { fg: "toastAction", bg: "toastError", min: TEXT },
   { fg: "white", bg: "answerCorrect", min: TEXT },
   { fg: "white", bg: "answerWrong", min: TEXT },
   { fg: "starFilled", bg: "brand800", min: NON_TEXT },

@@ -26,9 +26,9 @@ export const colors = {
 
   // Feedback / alerts
   badgeError:   "#dc2626",
-  toastSuccess: "#027dbc",
+  toastSuccess: "#02689d",
   toastError:   "#b91c1c",
-  toastAction:  "#057dbc",
+  toastAction:  "#bae6fd",
   errorDefault: "#ef4444",
   answerCorrect: "#15803d",
   answerWrong:   "#dc2626",
