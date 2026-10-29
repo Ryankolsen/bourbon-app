@@ -75,4 +75,34 @@ describe("StarRating", () => {
     const filledStar = getByTestId("star-0-filled");
     expect(filledStar.props.className).toMatch(/brand/);
   });
+
+  // Accessibility — the row is one element with a spoken value
+  describe("accessibility", () => {
+    it("labels a half-star value as one element", () => {
+      render(<StarRating value={3.5} variant="personal" />);
+      expect(screen.getByLabelText("3.5 out of 5 stars")).toBeTruthy();
+    });
+
+    it("prints whole numbers without a decimal, with role image", () => {
+      render(<StarRating value={3} variant="personal" />);
+      const row = screen.getByLabelText("3 out of 5 stars");
+      expect(row.props.accessibilityRole).toBe("image");
+      expect(row.props.accessible).toBe(true);
+    });
+
+    it("uses count in the label", () => {
+      render(<StarRating value={7} count={10} variant="personal" />);
+      expect(screen.getByLabelText("7 out of 10 stars")).toBeTruthy();
+    });
+
+    it("reads 1 as '1 out of 5 stars'", () => {
+      render(<StarRating value={1} variant="personal" />);
+      expect(screen.getByLabelText("1 out of 5 stars")).toBeTruthy();
+    });
+
+    it("reads null as 'Not rated'", () => {
+      render(<StarRating value={null} variant="personal" />);
+      expect(screen.getByLabelText("Not rated")).toBeTruthy();
+    });
+  });
 });
