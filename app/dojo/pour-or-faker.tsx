@@ -1,4 +1,5 @@
-import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView } from "react-native";
+import { useEffect, useRef } from "react";
+import { View, Text, ActivityIndicator, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/hooks/use-auth";
@@ -7,6 +8,9 @@ import { usePourOrFaker } from "@/hooks/use-pour-or-faker";
 import { type Difficulty } from "@/lib/faker-names";
 import { colors } from "@/lib/colors";
 import { useGameDailySession } from "@/hooks/use-game-daily-session";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
+import { announce } from "@/lib/announce";
 
 const VALID_DIFFICULTIES: Difficulty[] = ["training", "standard", "challenge"];
 
@@ -32,6 +36,12 @@ function GameOverScreen({
   const { activeTheme } = useTheme();
   const c = activeTheme.colors;
 
+  const title = verdict.streak === 0 ? "No Streak" : `Streak: ${verdict.streak}`;
+
+  useEffect(() => {
+    announce(title);
+  }, [title]);
+
   const streakEmoji = verdict.streak >= 20 ? "🏆" : verdict.streak >= 10 ? "🔥" : verdict.streak >= 5 ? "⚡" : "💀";
 
   return (
@@ -41,11 +51,11 @@ function GameOverScreen({
     >
       <Text style={{ fontSize: 72, marginBottom: 12 }}>{streakEmoji}</Text>
 
-      <Text
+      <Heading
         style={{ color: c.brand100, fontSize: 28, fontWeight: "800", marginBottom: 4 }}
       >
-        {verdict.streak === 0 ? "No Streak" : `Streak: ${verdict.streak}`}
-      </Text>
+        {title}
+      </Heading>
 
       {/* XP badge */}
       <View
@@ -89,14 +99,15 @@ function GameOverScreen({
         >
           {verdict.cardName}
         </Text>
-        <Text style={{ color: verdict.wasReal ? "#16a34a" : "#dc2626", fontSize: 14, fontWeight: "600" }}>
+        <Text style={{ color: verdict.wasReal ? c.answerCorrect : c.answerWrong, fontSize: 14, fontWeight: "600" }}>
           {verdict.wasReal ? "✓ Real bourbon" : "✗ Fake name"}
         </Text>
       </View>
 
       {/* Action buttons */}
       {canRetry && (
-        <TouchableOpacity
+        <AccessiblePressable
+          accessibilityLabel="Retry"
           onPress={onRetry}
           style={{
             backgroundColor: c.tabActive,
@@ -110,10 +121,11 @@ function GameOverScreen({
           <Text style={{ color: c.white, fontSize: 16, fontWeight: "700" }}>
             Retry
           </Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       )}
 
-      <TouchableOpacity
+      <AccessiblePressable
+        accessibilityLabel="Back to Dojo"
         onPress={onBack}
         style={{
           borderRadius: 16,
@@ -127,7 +139,7 @@ function GameOverScreen({
         <Text style={{ color: c.brand300, fontSize: 16, fontWeight: "600" }}>
           Back to Dojo
         </Text>
-      </TouchableOpacity>
+      </AccessiblePressable>
     </ScrollView>
   );
 }
@@ -195,35 +207,35 @@ function PlayingScreen({
 
       {/* Answer buttons */}
       <View style={{ paddingBottom: 24, gap: 12 }}>
-        <TouchableOpacity
+        <AccessiblePressable
+          accessibilityLabel="Real"
           onPress={() => onGuess("real")}
           style={{
-            backgroundColor: "#16a34a",
+            backgroundColor: c.answerCorrect,
             borderRadius: 16,
             paddingVertical: 16,
             alignItems: "center",
           }}
-          accessibilityRole="button"
         >
-          <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+          <Text style={{ color: c.white, fontSize: 18, fontWeight: "700" }}>
             Real
           </Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
 
-        <TouchableOpacity
+        <AccessiblePressable
+          accessibilityLabel="Fake"
           onPress={() => onGuess("fake")}
           style={{
-            backgroundColor: "#dc2626",
+            backgroundColor: c.answerWrong,
             borderRadius: 16,
             paddingVertical: 16,
             alignItems: "center",
           }}
-          accessibilityRole="button"
         >
-          <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "700" }}>
+          <Text style={{ color: c.white, fontSize: 18, fontWeight: "700" }}>
             Fake
           </Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </View>
     </View>
   );
@@ -243,6 +255,13 @@ export default function PourOrFakerScreen() {
   const c = activeTheme.colors;
 
   const game = usePourOrFaker({ userId: user?.id ?? null });
+  const prevStreak = useRef(game.streak);
+  useEffect(() => {
+    if (game.streak > prevStreak.current) {
+      announce(`Correct. Streak ${game.streak}`);
+    }
+    prevStreak.current = game.streak;
+  }, [game.streak]);
   const session = useGameDailySession(user?.id, "pour_or_faker");
 
   // Kick off game load immediately if idle (difficulty comes from route param)
@@ -265,16 +284,22 @@ export default function PourOrFakerScreen() {
         className="flex-row items-center px-4 py-3"
         style={{ borderBottomWidth: 1, borderBottomColor: c.brand800 }}
       >
-        <TouchableOpacity
+        <AccessiblePressable
+          accessibilityLabel="Back"
           onPress={() => router.back()}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Text style={{ color: c.brand400, fontSize: 16 }}>← Back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
         <View className="flex-1 items-center">
-          <Text style={{ color: c.brand100, fontSize: 17, fontWeight: "700" }}>
-            Pour or Faker
-          </Text>
+          {/* On game over the verdict title is the screen's single header. */}
+          {game.state === "game_over" ? (
+            <Text style={{ color: c.brand100, fontSize: 17, fontWeight: "700" }}>Pour or Faker</Text>
+          ) : (
+            <Heading style={{ color: c.brand100, fontSize: 17, fontWeight: "700" }}>
+              Pour or Faker
+            </Heading>
+          )}
           <Text style={{ color: c.brand400, fontSize: 12, textTransform: "capitalize" }}>
             {difficulty}
           </Text>
@@ -304,7 +329,8 @@ export default function PourOrFakerScreen() {
           >
             {game.error}
           </Text>
-          <TouchableOpacity
+          <AccessiblePressable
+            accessibilityLabel="Back to Dojo"
             onPress={() => router.back()}
             style={{
               backgroundColor: c.tabActive,
@@ -314,7 +340,7 @@ export default function PourOrFakerScreen() {
             }}
           >
             <Text style={{ color: c.white, fontWeight: "700" }}>Back to Dojo</Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
         </View>
       )}
 
