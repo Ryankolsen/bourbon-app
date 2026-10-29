@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { render, screen, fireEvent } from '@testing-library/react-native';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -14,9 +14,12 @@ jest.mock('@/hooks/use-auth', () => ({
   useAuth: () => ({ user: { id: 'user-1', email: 'test@example.com' } }),
 }));
 
+const mockDismiss = jest.fn();
+const mockPush = jest.fn();
+
 jest.mock('@/hooks/use-social-notifications', () => ({
   useSocialNotifications: jest.fn(),
-  useDismissSocialNotification: () => ({ mutate: jest.fn() }),
+  useDismissSocialNotification: () => ({ mutate: mockDismiss }),
   useSocialNotificationsRealtime: jest.fn(),
 }));
 
@@ -35,7 +38,7 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ back: jest.fn(), push: jest.fn() }),
+  useRouter: () => ({ back: jest.fn(), push: mockPush }),
 }));
 
 import {
@@ -130,7 +133,7 @@ describe('NotificationsScreen — achievement_unlocked type', () => {
     render(<NotificationsScreen />);
 
     expect(
-      screen.getByRole('button', { name: /Achievement Unlocked: Freshman Sipper/ })
+      screen.getByRole('button', { name: 'Achievement Unlocked: Freshman Sipper' })
     ).toBeTruthy();
   });
 
@@ -154,7 +157,50 @@ describe('NotificationsScreen — achievement_unlocked type', () => {
 
     render(<NotificationsScreen />);
 
-    expect(screen.getByRole('button', { name: /@alice is now following you/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '@alice is now following you' })).toBeTruthy();
     expect(screen.getByTestId('actor-avatar').props.accessible).toBe(false);
+  });
+});
+
+describe('NotificationsScreen — row accessibility', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseSocialNotificationsRealtime.mockImplementation(() => {});
+    mockUseSocialNotifications.mockReturnValue({
+      data: [
+        {
+          id: 'notif-1',
+          recipient_id: 'user-1',
+          actor_id: 'actor-1',
+          type: 'new_follower' as const,
+          tasting_id: null,
+          metadata: null,
+          created_at: '2026-01-01T00:00:00Z',
+          dismissed_at: null,
+          profiles: { display_name: 'Alice', username: 'alice', avatar_url: null },
+        },
+      ],
+      isLoading: false,
+    });
+  });
+
+  it('leaves the outer row inaccessible so Dismiss stays focusable', () => {
+    render(<NotificationsScreen />);
+    expect(screen.getByTestId('notification-row').props.accessible).toBe(false);
+  });
+
+  it('opens the notification via the labelled open target', () => {
+    render(<NotificationsScreen />);
+    fireEvent.press(screen.getByRole('button', { name: '@alice is now following you' }));
+    expect(mockPush).toHaveBeenCalledWith('/user/actor-1');
+  });
+
+  it('dismisses via a button whose label names the row', () => {
+    render(<NotificationsScreen />);
+    fireEvent.press(
+      screen.getByRole('button', { name: 'Dismiss notification: @alice is now following you' })
+    );
+    expect(mockDismiss).toHaveBeenCalledWith({ notificationId: 'notif-1' });
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

@@ -10,12 +10,14 @@
  */
 
 import React from "react";
+import { Linking } from "react-native";
 import { render, fireEvent } from "@testing-library/react-native";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
+const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ push: jest.fn() }),
+  useRouter: () => ({ push: mockPush }),
 }));
 
 jest.mock("@/lib/theme-provider", () => ({
@@ -160,12 +162,54 @@ describe("SaleAlertCard", () => {
     expect(queryByTestId("sale-alert-remove")).toBeNull();
   });
 
-  it("exposes card, directions and remove as labelled buttons", () => {
-    const { getByRole, getByLabelText } = render(
+  it("leaves the outer card inaccessible so the action buttons stay focusable", () => {
+    const { getByTestId } = render(
       <SaleAlertCard alert={makeAlert()} currentUserId="user-1" />
     );
-    expect(getByRole("button", { name: "Sale alert for Buffalo Trace" })).toBeTruthy();
-    expect(getByLabelText("Get directions").props.accessibilityRole).toBe("button");
-    expect(getByLabelText("Remove sale alert").props.accessibilityRole).toBe("button");
+    expect(getByTestId("sale-alert-card").props.accessible).toBe(false);
+  });
+
+  it("names the open target with the bourbon, price, store and note", () => {
+    const { getByRole } = render(
+      <SaleAlertCard alert={makeAlert({ note: "only 3 left" })} currentUserId="user-1" />
+    );
+    expect(
+      getByRole("button", {
+        name: "Sale alert for Buffalo Trace, Buffalo Trace Distillery, $28 at Total Wine & More, 123 Main St, Louisville, KY, only 3 left",
+      })
+    ).toBeTruthy();
+  });
+
+  it("opens the bourbon from the open target", () => {
+    mockPush.mockClear();
+    const { getByRole } = render(
+      <SaleAlertCard alert={makeAlert()} currentUserId="user-1" />
+    );
+    fireEvent.press(
+      getByRole("button", {
+        name: /^Sale alert for Buffalo Trace/,
+      })
+    );
+    expect(mockPush).toHaveBeenCalledWith("/bourbon/bourbon-1");
+  });
+
+  it("Get directions is its own button and opens maps without opening the bourbon", () => {
+    mockPush.mockClear();
+    const open = jest.spyOn(Linking, "openURL").mockResolvedValue(true);
+    const { getByRole } = render(
+      <SaleAlertCard alert={makeAlert()} currentUserId="user-1" />
+    );
+    fireEvent.press(getByRole("button", { name: "Get directions" }));
+    expect(open).toHaveBeenCalledTimes(1);
+    expect(mockPush).not.toHaveBeenCalled();
+    open.mockRestore();
+  });
+
+  it("Remove sale alert is its own button and opens the confirmation", () => {
+    const { getByRole, getByTestId } = render(
+      <SaleAlertCard alert={makeAlert()} currentUserId="user-1" />
+    );
+    fireEvent.press(getByRole("button", { name: "Remove sale alert" }));
+    expect(getByTestId("modal-confirm")).toBeTruthy();
   });
 });

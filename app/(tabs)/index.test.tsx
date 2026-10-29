@@ -115,14 +115,8 @@ jest.mock('@/components/ActiveFilterChips', () => ({
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-// The bourbon card's own button also contains this label via its children,
-// so select the button whose own label is exact.
 function pressRemoveFromVault() {
-  const label = `Remove ${BOURBON_NAME} from vault`;
-  const button = screen
-    .getAllByRole('button', { name: label })
-    .find((e) => e.props.accessibilityLabel === label)!;
-  fireEvent.press(button);
+  fireEvent.press(screen.getByRole('button', { name: `Remove ${BOURBON_NAME} from vault` }));
 }
 
 describe('CollectionTab — Remove from Vault confirmation', () => {

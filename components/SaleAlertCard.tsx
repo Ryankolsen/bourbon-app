@@ -46,14 +46,28 @@ export function SaleAlertCard({ alert, currentUserId }: SaleAlertCardProps) {
     setConfirmVisible(false);
   }
 
+  const openBourbon = () => router.push(`/bourbon/${alert.bourbon_id}` as never);
+  const openLabel =
+    `Sale alert for ${[alert.bourbon_name, alert.bourbon_distillery].filter(Boolean).join(", ")}, ` +
+    `${alert.price} at ${alert.place_name}, ${alert.place_address}` +
+    (alert.note ? `, ${alert.note}` : "");
+
   return (
     <AccessiblePressable
+      // Not accessible itself: it wraps the Directions/Remove buttons, which must stay focusable.
+      accessible={false}
       className="rounded-2xl p-4 mx-4 mb-3 border border-amber-600/30"
       style={{ backgroundColor: activeTheme.colors.brand800 }}
-      onPress={() => router.push(`/bourbon/${alert.bourbon_id}` as never)}
+      onPress={openBourbon}
       accessibilityLabel={`Sale alert for ${alert.bourbon_name}`}
       testID="sale-alert-card"
     >
+      {/* Open target: descriptive content, a sibling of (not a wrapper around) the action buttons */}
+      <AccessiblePressable
+        accessibilityLabel={openLabel}
+        onPress={openBourbon}
+        testID="sale-alert-open"
+      >
       {/* Sale Alert badge */}
       <View className="flex-row items-center mb-3">
         <View
@@ -105,6 +119,7 @@ export function SaleAlertCard({ alert, currentUserId }: SaleAlertCardProps) {
           "{alert.note}"
         </Text>
       ) : null}
+      </AccessiblePressable>
 
       {/* Footer: poster + action buttons */}
       <View className="flex-row items-center">

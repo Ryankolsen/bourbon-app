@@ -41,11 +41,7 @@ describe('WishlistScreen — accessibility', () => {
       },
     ];
     render(<WishlistScreen />);
-    // The card's own button also contains this label via its children, so pick the exact one.
-    const label = "Remove Blanton's from wishlist";
-    const remove = screen
-      .getAllByRole('button', { name: label })
-      .find((e) => e.props.accessibilityLabel === label)!;
+    const remove = screen.getByRole('button', { name: "Remove Blanton's from wishlist" });
     fireEvent.press(remove);
     expect(mockRemove).toHaveBeenCalledWith({ id: 'w1', userId: 'user-1', bourbonId: 'b1' });
   });

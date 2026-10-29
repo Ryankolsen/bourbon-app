@@ -64,33 +64,43 @@ function NotificationRow({
 
   return (
     <AccessiblePressable
+      // Not accessible itself: it wraps the Dismiss button, which must stay focusable.
+      accessible={false}
       className="flex-row items-center bg-brand-800 rounded-2xl p-4 mx-4 mb-3"
       onPress={handlePress}
       accessibilityLabel={label}
       testID="notification-row"
     >
-      {!isAchievement && item.actor_id && (
-        <View
-          testID="actor-avatar"
-          className="mr-3"
-          accessible={false}
-          importantForAccessibility="no"
-        >
-          <Text className="text-brand-400 text-base">👤</Text>
+      {/* Open target: row content, a sibling of (not a wrapper around) Dismiss */}
+      <AccessiblePressable
+        className="flex-1 flex-row items-center"
+        onPress={handlePress}
+        accessibilityLabel={label}
+        testID="notification-open"
+      >
+        {!isAchievement && item.actor_id && (
+          <View
+            testID="actor-avatar"
+            className="mr-3"
+            accessible={false}
+            importantForAccessibility="no"
+          >
+            <Text className="text-brand-400 text-base">👤</Text>
+          </View>
+        )}
+        <View className="flex-1">
+          <Text className="text-brand-100 text-sm font-medium" numberOfLines={2}>
+            {label}
+          </Text>
+          <Text className="text-brand-400 text-xs mt-1">{formatDate(item.created_at)}</Text>
         </View>
-      )}
-      <View className="flex-1">
-        <Text className="text-brand-100 text-sm font-medium" numberOfLines={2}>
-          {label}
-        </Text>
-        <Text className="text-brand-400 text-xs mt-1">{formatDate(item.created_at)}</Text>
-      </View>
+      </AccessiblePressable>
       <AccessiblePressable
         onPress={(e) => {
-          e.stopPropagation();
+          e?.stopPropagation();
           onDismiss(item.id);
         }}
-        accessibilityLabel="Dismiss notification"
+        accessibilityLabel={`Dismiss notification: ${label}`}
         testID="dismiss-notification"
         className="ml-3 p-1"
       >

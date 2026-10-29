@@ -5,6 +5,7 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react-native";
 import { Text } from "react-native";
+import { AccessiblePressable } from "./AccessiblePressable";
 import { BourbonCard } from "./BourbonCard";
 import { bourbonFactory } from "@/lib/test-utils/factories";
 
@@ -20,6 +21,57 @@ describe("BourbonCard — accessibility", () => {
   it("is named with just the bourbon name when distillery is null", () => {
     render(<BourbonCard name="Blanton's" distillery={null} onPress={noop} />);
     expect(screen.getByRole("button", { name: "Blanton's" })).toBeTruthy();
+  });
+});
+
+describe("BourbonCard — nested actions", () => {
+  it("keeps the outer wrapper out of the accessibility tree and still opens on tap", () => {
+    const onPress = jest.fn();
+    render(<BourbonCard name="Blanton's" onPress={onPress} />);
+    const outer = screen.getByTestId("bourbon-card");
+    expect(outer.props.accessible).toBe(false);
+    fireEvent.press(outer);
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it("names the open target with the card details", () => {
+    render(
+      <BourbonCard
+        name="Blanton's"
+        distillery="Buffalo Trace"
+        type="Single Barrel"
+        proof={93}
+        age={8}
+        onPress={noop}
+      />
+    );
+    expect(
+      screen.getByRole("button", {
+        name: "Blanton's, Buffalo Trace, Single Barrel, 93 proof, 8 yr",
+      })
+    ).toBeTruthy();
+  });
+
+  it("opens via the open target", () => {
+    const onPress = jest.fn();
+    render(<BourbonCard name="Blanton's" onPress={onPress} />);
+    fireEvent.press(screen.getByRole("button", { name: "Blanton's" }));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it("exposes child actions as separate buttons that fire only their own handler", () => {
+    const onPress = jest.fn();
+    const onRemove = jest.fn();
+    render(
+      <BourbonCard name="Blanton's" onPress={onPress}>
+        <AccessiblePressable accessibilityLabel="Remove Blanton's" onPress={onRemove}>
+          <Text>Remove</Text>
+        </AccessiblePressable>
+      </BourbonCard>
+    );
+    fireEvent.press(screen.getByRole("button", { name: "Remove Blanton's" }));
+    expect(onRemove).toHaveBeenCalledTimes(1);
+    expect(onPress).not.toHaveBeenCalled();
   });
 });
 

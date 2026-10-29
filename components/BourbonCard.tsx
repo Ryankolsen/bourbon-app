@@ -34,13 +34,27 @@ export function BourbonCard({
   const hasRow1 = distillery || type;
   const hasRow2 = proof != null || age != null;
 
+  const label = [
+    name,
+    distillery,
+    type,
+    proof != null ? `${proof} proof` : null,
+    age != null ? `${age} yr` : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
   return (
     <AccessiblePressable
-      accessibilityLabel={distillery ? `${name}, ${distillery}` : name}
+      // Not accessible itself: callers put action buttons in children, which must stay focusable.
+      accessible={false}
+      accessibilityLabel={label}
       className="bg-brand-800 rounded-2xl p-4"
       onPress={onPress}
       testID="bourbon-card"
     >
+      {/* Open target: the card's own content, a sibling of (not a wrapper around) children */}
+      <AccessiblePressable accessibilityLabel={label} onPress={onPress} testID="bourbon-card-open">
       {/* Bourbon name */}
       <Text className="text-brand-100 font-bold text-base">{name}</Text>
 
@@ -79,6 +93,7 @@ export function BourbonCard({
           <StarRating value={communityRating ?? null} variant="community" size="sm" />
         </View>
       </View>
+      </AccessiblePressable>
 
       {/* Page-specific controls */}
       {children}
