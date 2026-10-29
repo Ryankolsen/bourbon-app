@@ -12,6 +12,8 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react-nativ
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
+jest.mock("@/lib/announce", () => ({ announce: jest.fn() }));
+
 const mockAuth = {
   signInWithOAuth: jest.fn(),
   setSession: jest.fn(),
@@ -69,6 +71,7 @@ jest.mock("react-native-safe-area-context", () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
 
+import { announce } from "@/lib/announce";
 import LoginScreen from "./login";
 import { PRIVACY_POLICY_URL, WEBSITE_URL } from "@/lib/public-links";
 
@@ -266,6 +269,17 @@ describe("email sign-in fields", () => {
     fireEvent.changeText(screen.getByLabelText("Password"), "bad");
     fireEvent.press(screen.getByText("Sign In"));
     expect(await screen.findByText("Invalid login")).toBeTruthy();
+  });
+
+  it("announces the sign-in error for iOS screen readers", async () => {
+    mockAuth.signInWithPassword.mockResolvedValue({ error: new Error("Invalid login") });
+    render(<LoginScreen />);
+    fireEvent.press(screen.getByText("Sign in with email"));
+    fireEvent.changeText(screen.getByLabelText("Email"), "a@b.co");
+    fireEvent.changeText(screen.getByLabelText("Password"), "bad");
+    fireEvent.press(screen.getByText("Sign In"));
+    await screen.findByText("Invalid login");
+    expect(announce).toHaveBeenCalledWith("Invalid login");
   });
 });
 

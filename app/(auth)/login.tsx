@@ -1,6 +1,6 @@
 import { View, Text, Platform, ActivityIndicator, ScrollView, LayoutAnimation, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import * as Device from "expo-device";
 import { makeRedirectUri } from "expo-auth-session";
@@ -10,6 +10,7 @@ import { DEV_USERS, DEV_PASSWORD } from "@/lib/dev-users";
 import { AccessiblePressable } from "@/components/AccessiblePressable";
 import { LabeledTextInput } from "@/components/LabeledTextInput";
 import { colors } from "@/lib/colors";
+import { announce } from "@/lib/announce";
 import { PRIVACY_POLICY_URL, WEBSITE_URL } from "@/lib/public-links";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -25,6 +26,11 @@ export default function LoginScreen() {
   const [passwordInput, setPasswordInput] = useState("");
   const [emailSignInLoading, setEmailSignInLoading] = useState(false);
   const [emailSignInError, setEmailSignInError] = useState<string | null>(null);
+
+  // accessibilityLiveRegion is Android-only; announce so iOS VoiceOver speaks it too.
+  useEffect(() => {
+    if (emailSignInError) announce(emailSignInError);
+  }, [emailSignInError]);
 
   function toggleEmailExpanded() {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);

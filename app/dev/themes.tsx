@@ -9,6 +9,7 @@
  */
 
 import { ScrollView, Text, View } from "react-native";
+import { Heading } from "@/components/Heading";
 import { AccessiblePressable } from "@/components/AccessiblePressable";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/lib/theme-provider";
@@ -37,9 +38,9 @@ export default function DevThemePickerScreen() {
         <AccessiblePressable onPress={() => router.back()} className="mr-4 p-2" accessibilityLabel="Go back">
           <Text className="text-brand-300 text-base">← Back</Text>
         </AccessiblePressable>
-        <Text className="text-brand-100 font-bold text-lg flex-1">
+        <Heading className="text-brand-100 font-bold text-lg flex-1">
           Dev: Theme Picker
-        </Text>
+        </Heading>
         <Text className="text-brand-400 text-xs">
           {THEMES.length} themes
         </Text>
@@ -187,7 +188,7 @@ function ThemeCard({
       {/* Apply button */}
       <AccessiblePressable
         onPress={onApply}
-        accessibilityLabel={isActive ? "Active theme" : "Apply theme"}
+        accessibilityLabel={isActive ? "Active theme" : `Apply ${theme.name} theme`}
         style={{
           margin: 12,
           marginTop: 0,
