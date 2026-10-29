@@ -110,11 +110,11 @@ describe('NewBourbonScreen — accessibility', () => {
 
   it('finds text fields by label and accepts input', () => {
     render(<NewBourbonScreen />);
-    for (const label of ['Name *', 'Proof *', 'Age Statement (years)', 'Mashbill', 'MSRP ($)', 'Description', 'City']) {
+    for (const label of ['Name, required', 'Proof, required', 'Age Statement (years)', 'Mashbill', 'MSRP ($)', 'Description', 'City']) {
       expect(screen.getByLabelText(label)).toBeTruthy();
     }
-    fireEvent.changeText(screen.getByLabelText('Name *'), "Blanton's");
-    expect(screen.getByLabelText('Name *').props.value).toBe("Blanton's");
+    fireEvent.changeText(screen.getByLabelText('Name, required'), "Blanton's");
+    expect(screen.getByLabelText('Name, required').props.value).toBe("Blanton's");
   });
 
   it('renders the title as a header', () => {

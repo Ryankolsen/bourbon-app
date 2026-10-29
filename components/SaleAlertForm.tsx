@@ -248,7 +248,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
           >
             {/* ── Bourbon search ──────────────────────────────────────────── */}
             <LabeledTextInput
-              label="Bourbon *"
+              label="Bourbon" required
               labelClassName="text-brand-300 text-sm font-semibold"
               value={bourbonQuery}
               onChangeText={handleBourbonQueryChange}
@@ -450,7 +450,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
 
             {/* ── Price ──────────────────────────────────────────────────────── */}
             <LabeledTextInput
-              label="Price *"
+              label="Price" required
               labelClassName="text-brand-300 text-sm font-semibold mt-2"
               value={price}
               onChangeText={setPrice}

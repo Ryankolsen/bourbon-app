@@ -216,14 +216,14 @@ describe('EditBourbonScreen — admin mode', () => {
 
   it('finds every admin text field by label', () => {
     render(<EditBourbonScreen />);
-    for (const label of ['Name *', 'Proof', 'Age Statement (years)', 'Mashbill', 'MSRP ($)', 'Description', 'Image URL', 'City']) {
+    for (const label of ['Name, required', 'Proof', 'Age Statement (years)', 'Mashbill', 'MSRP ($)', 'Description', 'Image URL', 'City']) {
       expect(screen.getByLabelText(label)).toBeTruthy();
     }
   });
 
   it('shows the name error once and announces it when name is cleared', async () => {
     render(<EditBourbonScreen />);
-    fireEvent.changeText(screen.getByLabelText('Name *'), '');
+    fireEvent.changeText(screen.getByLabelText('Name, required'), '');
     fireEvent.press(screen.getByRole('button', { name: 'Save Changes' }));
     expect(await screen.findAllByText('Name is required')).toHaveLength(1);
     expect(announce).toHaveBeenCalledWith('Name is required');

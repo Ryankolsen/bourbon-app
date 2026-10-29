@@ -195,10 +195,10 @@ test("renders manual store name + address inputs when no Places API key", () => 
 test("inputs are found by label and Close calls onClose", () => {
   const onClose = jest.fn();
   const { getByLabelText, getByRole } = renderForm({ onClose });
-  expect(getByLabelText("Bourbon *")).toBeTruthy();
+  expect(getByLabelText("Bourbon, required")).toBeTruthy();
   expect(getByLabelText("Store name")).toBeTruthy();
   expect(getByLabelText("Store address")).toBeTruthy();
-  expect(getByLabelText("Price *")).toBeTruthy();
+  expect(getByLabelText("Price, required")).toBeTruthy();
   expect(getByLabelText("Note")).toBeTruthy();
   fireEvent.press(getByRole("button", { name: "Close" }));
   expect(onClose).toHaveBeenCalledTimes(1);

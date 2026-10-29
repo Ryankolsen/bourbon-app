@@ -141,7 +141,7 @@ export default function NewBourbonScreen() {
           name="name"
           render={({ field: { onChange, onBlur, value } }) => (
             <LabeledTextInput
-              label="Name *"
+              label="Name" required
               error={errors.name?.message}
               className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
               placeholderTextColor={colors.placeholderDark}
@@ -189,7 +189,7 @@ export default function NewBourbonScreen() {
           name="proof"
           render={({ field: { onChange, onBlur, value } }) => (
             <LabeledTextInput
-              label="Proof *"
+              label="Proof" required
               error={errors.proof?.message}
               className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
               placeholderTextColor={colors.placeholderDark}
