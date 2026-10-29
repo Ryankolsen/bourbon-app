@@ -42,7 +42,12 @@ export function StarRating({
   const emptyClass = EMPTY_CLASS[variant];
 
   return (
-    <View className="flex-row">
+    <View
+      className="flex-row"
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={getAccessibilityLabel(value, count)}
+    >
       {Array.from({ length: count }, (_, i) => {
         const starState = getStarState(value, i);
         if (starState === "filled") {
@@ -79,6 +84,13 @@ export function StarRating({
       })}
     </View>
   );
+}
+
+/** Spoken value for the whole row; whole numbers print without a decimal. */
+function getAccessibilityLabel(value: number | null, count: number): string {
+  if (value === null) return "Not rated";
+  const text = Number.isInteger(value) ? String(value) : value.toFixed(1);
+  return `${text} out of ${count} stars`;
 }
 
 /** Determine filled / half / empty state for star at position `index`. */
