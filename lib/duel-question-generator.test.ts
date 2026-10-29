@@ -333,6 +333,43 @@ describe('generateDuelQuestions — edge cases', () => {
     expect(fakeCount).toBe(1);
   });
 
+  // 3b-2: padding with fallbacks must not repeat a note — the screen keys and answers by text
+  it('returns 3 distinct note texts when no tastings have note text', async () => {
+    const emptyTastings = [
+      makeTasting({ id: 't1', bourbon_id: 'b1', nose: null, palate: null, finish: null }),
+    ];
+
+    const { client } = createMockSupabaseClient();
+    client.from
+      .mockReturnValueOnce(makeQueryBuilder(FIVE_BOURBONS))
+      .mockReturnValueOnce(makeQueryBuilder(emptyTastings))
+      .mockReturnValueOnce(makeQueryBuilder(ONE_FAKE_NOTE));
+
+    const result = await generateDuelQuestions(3, 'standard', client as any);
+    const r3 = result.rounds[2] as FakeNoteRound;
+
+    expect(new Set(r3.notes.map((n) => n.text)).size).toBe(3);
+  });
+
+  it('returns 3 distinct note texts when two tastings share the same note', async () => {
+    const duplicateTastings = [
+      makeTasting({ id: 't1', bourbon_id: 'b1', nose: 'Caramel and vanilla' }),
+      makeTasting({ id: 't2', bourbon_id: 'b1', nose: 'Caramel and vanilla' }),
+    ];
+
+    const { client } = createMockSupabaseClient();
+    client.from
+      .mockReturnValueOnce(makeQueryBuilder(FIVE_BOURBONS))
+      .mockReturnValueOnce(makeQueryBuilder(duplicateTastings))
+      .mockReturnValueOnce(makeQueryBuilder(ONE_FAKE_NOTE));
+
+    const result = await generateDuelQuestions(3, 'standard', client as any);
+    const r3 = result.rounds[2] as FakeNoteRound;
+
+    expect(new Set(r3.notes.map((n) => n.text)).size).toBe(3);
+    expect(r3.notes.filter((n) => n.isFake)).toHaveLength(1);
+  });
+
   // 3c: duel_fake_notes returns empty → Round 3 still returns with emergency fallback note
   it('uses an emergency fallback fake note when duel_fake_notes returns empty', async () => {
     const { client } = createMockSupabaseClient();

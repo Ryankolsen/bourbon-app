@@ -257,18 +257,6 @@ function buildFakeNoteRound(
   const tastings = tastingsByBourbonId.get(noteBourbon.id) ?? [];
   const notedTastings = tastings.filter((t) => t.nose || t.palate || t.finish);
 
-  // Extract the first non-null note field from each tasting
-  const realNoteTexts = shuffle(notedTastings)
-    .slice(0, 2)
-    .map((t) => ([t.nose, t.palate, t.finish].find(Boolean) as string));
-
-  // Pad to 2 if we don't have enough
-  const FALLBACK_REAL_NOTE =
-    'Rich caramel sweetness with notes of vanilla and toasted oak, long warm finish.';
-  while (realNoteTexts.length < 2) {
-    realNoteTexts.push(FALLBACK_REAL_NOTE);
-  }
-
   if (fakeNotes.length === 0) {
     console.warn('[DuelQuestionGenerator] No fake notes found for this difficulty tier');
   }
@@ -277,6 +265,24 @@ function buildFakeNoteRound(
     fakeNotes.length > 0
       ? pickRandom(fakeNotes).note
       : 'Smells exactly like a Honda Civic with the windows up in July.';
+
+  // Extract the first non-null note field from each tasting. Note texts must be
+  // distinct: the round is keyed and answered by text.
+  const uniqueRealNotes = new Set(
+    shuffle(notedTastings).map((t) => [t.nose, t.palate, t.finish].find(Boolean) as string),
+  );
+  uniqueRealNotes.delete(fakeNoteText);
+  const realNoteTexts = [...uniqueRealNotes].slice(0, 2);
+
+  // Pad to 2 if we don't have enough
+  const FALLBACK_REAL_NOTES = [
+    'Rich caramel sweetness with notes of vanilla and toasted oak, long warm finish.',
+    'Baking spice and dried cherry on the nose, a peppery rye bite and a dry oak finish.',
+  ];
+  for (const fallback of FALLBACK_REAL_NOTES) {
+    if (realNoteTexts.length >= 2) break;
+    if (!realNoteTexts.includes(fallback)) realNoteTexts.push(fallback);
+  }
 
   const notes = shuffle([
     { text: realNoteTexts[0], isFake: false },
