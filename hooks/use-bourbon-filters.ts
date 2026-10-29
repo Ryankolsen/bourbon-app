@@ -101,6 +101,8 @@ export interface UseBourbonFiltersReturn {
   filters: BourbonFilterState;
   /** true when any filter or sort differs from the defaults. */
   hasActiveFilters: boolean;
+  /** Number of active filters; equals the number of chips ActiveFilterChips renders. */
+  activeFilterCount: number;
   /** Atomically replace the entire filter state. */
   applyFilters: (next: BourbonFilterState) => void;
   /** Merge a partial update into current state — unpatched fields are unchanged. */
@@ -134,6 +136,13 @@ export function useBourbonFilters(): UseBourbonFiltersReturn {
     filters.sortField !== null ||
     filters.friendsOnly;
 
+  const activeFilterCount =
+    filters.types.length +
+    (filters.proofMin !== null || filters.proofMax !== null ? 1 : 0) +
+    (filters.nasOnly || filters.ageMin !== null || filters.ageMax !== null ? 1 : 0) +
+    (filters.distillery !== null ? 1 : 0) +
+    (filters.sortField !== null ? 1 : 0);
+
   const applyFilters = useCallback(
     (next: BourbonFilterState) => dispatch({ type: 'APPLY', next }),
     [],
@@ -159,6 +168,7 @@ export function useBourbonFilters(): UseBourbonFiltersReturn {
   return {
     filters,
     hasActiveFilters,
+    activeFilterCount,
     applyFilters,
     patchFilters,
     resetFilters,

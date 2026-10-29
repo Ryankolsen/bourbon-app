@@ -240,4 +240,27 @@ describe('useBourbonFilters', () => {
     const filtered = result.current.filterItems(items);
     expect(filtered.map((i) => i.id)).toEqual(['nas']);
   });
+
+  describe('activeFilterCount', () => {
+    it('is 0 by default', () => {
+      const { result } = renderHook(() => useBourbonFilters());
+      expect(result.current.activeFilterCount).toBe(0);
+    });
+
+    it('counts a type and NAS only as 2', () => {
+      const { result } = renderHook(() => useBourbonFilters());
+      act(() => result.current.applyFilters(withFilters({ types: ['wheated'], nasOnly: true })));
+      expect(result.current.activeFilterCount).toBe(2);
+    });
+
+    it('counts each type, and a proof range, age range and sort as one each', () => {
+      const { result } = renderHook(() => useBourbonFilters());
+      act(() =>
+        result.current.applyFilters(
+          withFilters({ types: ['wheated', 'rye'], proofMin: 90, proofMax: 110, ageMin: 4, sortField: 'name' }),
+        ),
+      );
+      expect(result.current.activeFilterCount).toBe(5);
+    });
+  });
 });
