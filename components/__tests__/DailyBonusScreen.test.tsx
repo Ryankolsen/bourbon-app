@@ -170,6 +170,12 @@ describe("DailyBonusScreen", () => {
     expect(getByTestId("daily-bonus-hero")).toBeTruthy();
   });
 
+  it("hides the decorative hero image from accessibility", () => {
+    mockDailyBonus = { shouldShow: true, awardedPoints: 5, streakDays: 1 };
+    const { getByTestId } = render(<DailyBonusScreen />);
+    expect(getByTestId("daily-bonus-hero").props.accessible).toBe(false);
+  });
+
   // 9 — card background comes from theme token, not a hardcoded hex
   it("card background reads brand800 from activeTheme, not a hardcoded hex", () => {
     mockThemeColors = { ...mockDefaultColors, brand800: "#abcdef" };

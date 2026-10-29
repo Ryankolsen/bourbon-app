@@ -90,6 +90,8 @@ export function DailyBonusScreen() {
             source={HERO_SOURCE}
             style={styles.hero}
             testID="daily-bonus-hero"
+            accessible={false}
+            importantForAccessibility="no"
             resizeMode="contain"
           />
 

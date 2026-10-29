@@ -1,5 +1,7 @@
 import { Tabs, useRouter } from "expo-router";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, View } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { groupsTabLabel } from "@/lib/groups-tab-label";
 import { useAuth } from "@/hooks/use-auth";
 import { isAdmin } from "@/lib/admin";
 import { useGroupNotifications } from "@/hooks/use-group-notifications";
@@ -9,7 +11,7 @@ import { useTheme } from "@/lib/theme-provider";
 
 function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
   return (
-    <Text className={focused ? "text-2xl" : "text-2xl opacity-50"}>
+    <Text accessible={false} importantForAccessibility="no" className={focused ? "text-2xl" : "text-2xl opacity-50"}>
       {emoji}
     </Text>
   );
@@ -23,7 +25,7 @@ function GroupsTabIcon({ focused }: { focused: boolean }) {
 
   return (
     <View>
-      <Text className={focused ? "text-2xl" : "text-2xl opacity-50"}>🥃</Text>
+      <Text accessible={false} importantForAccessibility="no" className={focused ? "text-2xl" : "text-2xl opacity-50"}>🥃</Text>
       {unreadCount > 0 && (
         <View
           style={{
@@ -49,13 +51,13 @@ function BellIcon() {
   const unreadCount = notifications?.length ?? 0;
 
   return (
-    <TouchableOpacity
+    <AccessiblePressable
       onPress={() => router.push('/notifications' as never)}
       accessibilityLabel="Notifications"
       style={{ marginRight: 12 }}
     >
       <View>
-        <Text style={{ fontSize: 22 }}>🔔</Text>
+        <Text accessible={false} importantForAccessibility="no" style={{ fontSize: 22 }}>🔔</Text>
         {unreadCount > 0 && (
           <View
             style={{
@@ -70,7 +72,7 @@ function BellIcon() {
           />
         )}
       </View>
-    </TouchableOpacity>
+    </AccessiblePressable>
   );
 }
 
@@ -81,7 +83,7 @@ function AdminTabIcon({ focused }: { focused: boolean }) {
 
   return (
     <View>
-      <Text className={focused ? "text-2xl" : "text-2xl opacity-50"}>🔧</Text>
+      <Text accessible={false} importantForAccessibility="no" className={focused ? "text-2xl" : "text-2xl opacity-50"}>🔧</Text>
       {pendingCount > 0 && (
         <View
           style={{
@@ -110,6 +112,8 @@ export default function TabsLayout() {
   const { user } = useAuth();
   const { activeTheme } = useTheme();
   const adminUser = !!(user?.email && isAdmin(user.email));
+  const { data: groupNotifications } = useGroupNotifications(user?.id);
+  const groupsLabel = groupsTabLabel(groupNotifications?.length ?? 0);
 
   const c = activeTheme.colors;
 
@@ -152,6 +156,7 @@ export default function TabsLayout() {
         name="groups"
         options={{
           title: "Groups",
+          tabBarAccessibilityLabel: groupsLabel,
           tabBarIcon: ({ focused }) => <GroupsTabIcon focused={focused} />,
         }}
       />
