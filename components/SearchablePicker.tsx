@@ -13,6 +13,7 @@ interface SearchablePickerProps {
   placeholder?: string;
   isLoading?: boolean;
   testID?: string;
+  accessibilityLabel?: string;
   /** Override dropdown position. Use "top" when rendering inside a Modal to avoid coordinate miscalculation. */
   dropdownPosition?: 'auto' | 'top' | 'bottom';
 }
@@ -38,6 +39,7 @@ export function SearchablePicker({
   placeholder = 'Search...',
   isLoading = false,
   testID,
+  accessibilityLabel,
   dropdownPosition = 'auto',
 }: SearchablePickerProps) {
 
@@ -116,6 +118,7 @@ export function SearchablePicker({
   return (
     <Dropdown
       testID={testID}
+      accessibilityLabel={accessibilityLabel}
       dropdownPosition={dropdownPosition}
       data={items}
       labelField="label"

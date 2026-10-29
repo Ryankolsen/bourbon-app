@@ -2,8 +2,6 @@ import { colors } from "@/lib/colors";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -14,7 +12,7 @@ import { useRouter } from "expo-router";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Dropdown } from "react-native-element-dropdown";
 import { useAuth } from "@/hooks/use-auth";
 import { useAddBourbon, useSearchSimilarBourbons } from "@/hooks/use-bourbons";
@@ -23,10 +21,13 @@ import { useToast } from "@/lib/toast-provider";
 import { buildBourbonInsertPayload, BOURBON_TYPES } from "@/lib/bourbons";
 import { Database } from "@/types/database";
 import { WHISKEY_COUNTRIES, getProvincesForCountry } from "@/lib/location-data";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
+import { LabeledTextInput } from "@/components/LabeledTextInput";
+import { announce } from "@/lib/announce";
 import { SearchablePicker } from "@/components/SearchablePicker";
 
 type BourbonRow = Database["public"]["Tables"]["bourbons"]["Row"];
-
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -34,17 +35,23 @@ const schema = z.object({
   proof: z
     .string()
     .min(1, "Proof is required")
-    .refine((v) => !isNaN(parseFloat(v)), { message: "Proof must be a number" }),
+    .refine((v) => !isNaN(parseFloat(v)), {
+      message: "Proof must be a number",
+    }),
   type: z.string().optional(),
   age_statement: z
     .string()
     .optional()
-    .refine((v) => !v || !isNaN(parseFloat(v)), { message: "Age must be a number" }),
+    .refine((v) => !v || !isNaN(parseFloat(v)), {
+      message: "Age must be a number",
+    }),
   mashbill: z.string().optional(),
   msrp: z
     .string()
     .optional()
-    .refine((v) => !v || !isNaN(parseFloat(v)), { message: "MSRP must be a number" }),
+    .refine((v) => !v || !isNaN(parseFloat(v)), {
+      message: "MSRP must be a number",
+    }),
   description: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
@@ -88,7 +95,8 @@ export default function NewBourbonScreen() {
   const provinces = getProvincesForCountry(countryValue ?? "");
   const { data: similarBourbons = [] } = useSearchSimilarBourbons(nameValue);
   const [distillerySearch, setDistillerySearch] = useState("");
-  const { distilleries, isLoading: distilleriesLoading } = useDistilleries(distillerySearch);
+  const { distilleries, isLoading: distilleriesLoading } =
+    useDistilleries(distillerySearch);
 
   useEffect(() => {
     setValue("state", "");
@@ -123,25 +131,27 @@ export default function NewBourbonScreen() {
         contentContainerStyle={{ paddingTop: insets.top + 8 }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text className="text-brand-100 text-2xl font-bold mb-2">Add a Bourbon</Text>
+        <Heading className="text-brand-100 text-2xl font-bold mb-2">
+          Add a Bourbon
+        </Heading>
 
         {/* Required fields */}
-        <Field label="Name *" error={errors.name?.message}>
-          <Controller
-            control={control}
-            name="name"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="e.g. Blanton's Original"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        <Controller
+          control={control}
+          name="name"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <LabeledTextInput
+              label="Name *"
+              error={errors.name?.message}
+              className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+              placeholderTextColor={colors.placeholderDark}
+              placeholder="e.g. Blanton's Original"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
 
         {similarBourbons.length > 0 && (
           <View className="gap-2">
@@ -161,6 +171,7 @@ export default function NewBourbonScreen() {
             render={({ field: { onChange, value } }) => (
               <SearchablePicker
                 testID="distillery-picker"
+                accessibilityLabel="Distillery"
                 data={distilleries}
                 value={value ?? ""}
                 onChange={onChange}
@@ -173,23 +184,23 @@ export default function NewBourbonScreen() {
           />
         </Field>
 
-        <Field label="Proof *" error={errors.proof?.message}>
-          <Controller
-            control={control}
-            name="proof"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="e.g. 93"
-                keyboardType="decimal-pad"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        <Controller
+          control={control}
+          name="proof"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <LabeledTextInput
+              label="Proof *"
+              error={errors.proof?.message}
+              className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+              placeholderTextColor={colors.placeholderDark}
+              placeholder="e.g. 93"
+              keyboardType="decimal-pad"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
 
         {/* Optional fields */}
         <Text className="text-brand-400 text-xs uppercase tracking-widest mt-2">
@@ -203,9 +214,13 @@ export default function NewBourbonScreen() {
             render={({ field: { onChange, value } }) => (
               <View className="flex-row flex-wrap gap-2">
                 {BOURBON_TYPES.map(({ label, value: typeValue }) => (
-                  <TouchableOpacity
+                  <AccessiblePressable
                     key={typeValue}
-                    onPress={() => onChange(value === typeValue ? "" : typeValue)}
+                    accessibilityLabel={label}
+                    accessibilityState={{ selected: value === typeValue }}
+                    onPress={() =>
+                      onChange(value === typeValue ? "" : typeValue)
+                    }
                     className={`px-3 py-1.5 rounded-lg border ${
                       value === typeValue
                         ? "bg-brand-600 border-brand-500"
@@ -219,84 +234,84 @@ export default function NewBourbonScreen() {
                     >
                       {label}
                     </Text>
-                  </TouchableOpacity>
+                  </AccessiblePressable>
                 ))}
               </View>
             )}
           />
         </Field>
 
-        <Field label="Age Statement (years)" error={errors.age_statement?.message}>
-          <Controller
-            control={control}
-            name="age_statement"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="e.g. 12"
-                keyboardType="decimal-pad"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        <Controller
+          control={control}
+          name="age_statement"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <LabeledTextInput
+              label="Age Statement (years)"
+              error={errors.age_statement?.message}
+              className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+              placeholderTextColor={colors.placeholderDark}
+              placeholder="e.g. 12"
+              keyboardType="decimal-pad"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
 
-        <Field label="Mashbill" error={errors.mashbill?.message}>
-          <Controller
-            control={control}
-            name="mashbill"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="e.g. 75% corn, 13% rye, 12% barley"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        <Controller
+          control={control}
+          name="mashbill"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <LabeledTextInput
+              label="Mashbill"
+              error={errors.mashbill?.message}
+              className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+              placeholderTextColor={colors.placeholderDark}
+              placeholder="e.g. 75% corn, 13% rye, 12% barley"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
 
-        <Field label="MSRP ($)" error={errors.msrp?.message}>
-          <Controller
-            control={control}
-            name="msrp"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="e.g. 49.99"
-                keyboardType="decimal-pad"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        <Controller
+          control={control}
+          name="msrp"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <LabeledTextInput
+              label="MSRP ($)"
+              error={errors.msrp?.message}
+              className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+              placeholderTextColor={colors.placeholderDark}
+              placeholder="e.g. 49.99"
+              keyboardType="decimal-pad"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
 
-        <Field label="Description" error={errors.description?.message}>
-          <Controller
-            control={control}
-            name="description"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="Brief description of this bourbon"
-                multiline
-                numberOfLines={3}
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        <Controller
+          control={control}
+          name="description"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <LabeledTextInput
+              label="Description"
+              error={errors.description?.message}
+              className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+              placeholderTextColor={colors.placeholderDark}
+              placeholder="Brief description of this bourbon"
+              multiline
+              numberOfLines={3}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
 
         <Field label="Country" error={errors.country?.message}>
           <Controller
@@ -305,16 +320,29 @@ export default function NewBourbonScreen() {
             render={({ field: { onChange, value } }) => (
               <Dropdown
                 testID="country-dropdown"
+                accessibilityLabel="Country"
                 data={WHISKEY_COUNTRIES}
                 labelField="label"
                 valueField="value"
                 value={value ?? null}
                 onChange={(item) => onChange(item.value)}
                 placeholder="Select country"
-                style={{ backgroundColor: colors.brand800, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 4 }}
-                placeholderStyle={{ color: colors.placeholderDark, fontSize: 16 }}
+                style={{
+                  backgroundColor: colors.brand800,
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 4,
+                }}
+                placeholderStyle={{
+                  color: colors.placeholderDark,
+                  fontSize: 16,
+                }}
                 selectedTextStyle={{ color: colors.brand100, fontSize: 16 }}
-                containerStyle={{ backgroundColor: colors.brand800, borderRadius: 12, borderColor: colors.brand700 }}
+                containerStyle={{
+                  backgroundColor: colors.brand800,
+                  borderRadius: 12,
+                  borderColor: colors.brand700,
+                }}
                 itemTextStyle={{ color: colors.brand100, fontSize: 14 }}
               />
             )}
@@ -329,16 +357,29 @@ export default function NewBourbonScreen() {
               render={({ field: { onChange, value } }) => (
                 <Dropdown
                   testID="state-dropdown"
+                  accessibilityLabel="State / Province"
                   data={provinces}
                   labelField="label"
                   valueField="value"
                   value={value || null}
                   onChange={(item) => onChange(item.value)}
                   placeholder="Select state / province"
-                  style={{ backgroundColor: colors.brand800, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 4 }}
-                  placeholderStyle={{ color: colors.placeholderDark, fontSize: 16 }}
+                  style={{
+                    backgroundColor: colors.brand800,
+                    borderRadius: 12,
+                    paddingHorizontal: 16,
+                    paddingVertical: 4,
+                  }}
+                  placeholderStyle={{
+                    color: colors.placeholderDark,
+                    fontSize: 16,
+                  }}
                   selectedTextStyle={{ color: colors.brand100, fontSize: 16 }}
-                  containerStyle={{ backgroundColor: colors.brand800, borderRadius: 12, borderColor: colors.brand700 }}
+                  containerStyle={{
+                    backgroundColor: colors.brand800,
+                    borderRadius: 12,
+                    borderColor: colors.brand700,
+                  }}
                   itemTextStyle={{ color: colors.brand100, fontSize: 14 }}
                 />
               )}
@@ -346,24 +387,25 @@ export default function NewBourbonScreen() {
           </Field>
         )}
 
-        <Field label="City" error={errors.city?.message}>
-          <Controller
-            control={control}
-            name="city"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
-                placeholderTextColor={colors.placeholderDark}
-                placeholder="e.g. Frankfort"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-              />
-            )}
-          />
-        </Field>
+        <Controller
+          control={control}
+          name="city"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <LabeledTextInput
+              label="City"
+              error={errors.city?.message}
+              className="bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
+              placeholderTextColor={colors.placeholderDark}
+              placeholder="e.g. Frankfort"
+              onBlur={onBlur}
+              onChangeText={onChange}
+              value={value}
+            />
+          )}
+        />
 
-        <TouchableOpacity
+        <AccessiblePressable
+          accessibilityLabel="Add Bourbon"
           onPress={onSubmit}
           disabled={addBourbon.isPending}
           className="mt-4 bg-brand-600 rounded-xl py-4 items-center"
@@ -371,16 +413,19 @@ export default function NewBourbonScreen() {
           {addBourbon.isPending ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text className="text-white font-semibold text-base">Add Bourbon</Text>
+            <Text className="text-white font-semibold text-base">
+              Add Bourbon
+            </Text>
           )}
-        </TouchableOpacity>
+        </AccessiblePressable>
 
-        <TouchableOpacity
+        <AccessiblePressable
+          accessibilityLabel="Cancel"
           onPress={() => router.back()}
           className="py-3 items-center"
         >
           <Text className="text-brand-400 text-sm">Cancel</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -395,6 +440,14 @@ function Field({
   error?: string;
   children: React.ReactNode;
 }) {
+  // Used only for non-TextInput controls (pickers, chips, dropdowns), which
+  // cannot render their own label/error the way LabeledTextInput does.
+  const lastAnnounced = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (error && error !== lastAnnounced.current) announce(error);
+    lastAnnounced.current = error || undefined;
+  }, [error]);
+
   return (
     <View className="gap-1">
       <Text className="text-brand-300 text-sm font-medium">{label}</Text>
@@ -412,7 +465,9 @@ function DuplicateCard({ bourbon }: { bourbon: BourbonRow }) {
 
   return (
     <View className="bg-brand-800 border border-amber-700 rounded-xl px-4 py-3 gap-1">
-      <Text className="text-brand-100 font-semibold text-sm">{bourbon.name}</Text>
+      <Text className="text-brand-100 font-semibold text-sm">
+        {bourbon.name}
+      </Text>
       <View className="flex-row flex-wrap gap-x-3 gap-y-0.5">
         {bourbon.distillery ? (
           <Text className="text-brand-400 text-xs">{bourbon.distillery}</Text>
@@ -421,35 +476,54 @@ function DuplicateCard({ bourbon }: { bourbon: BourbonRow }) {
           <Text className="text-brand-400 text-xs">{bourbon.proof} proof</Text>
         ) : null}
         {bourbon.type ? (
-          <Text className="text-brand-400 text-xs">{formatType(bourbon.type)}</Text>
+          <Text className="text-brand-400 text-xs">
+            {formatType(bourbon.type)}
+          </Text>
         ) : null}
       </View>
 
       {expanded && (
         <View className="mt-1 gap-0.5">
           {bourbon.age_statement != null ? (
-            <Text className="text-brand-400 text-xs">Age: {bourbon.age_statement} years</Text>
+            <Text className="text-brand-400 text-xs">
+              Age: {bourbon.age_statement} years
+            </Text>
           ) : null}
           {bourbon.mashbill ? (
-            <Text className="text-brand-400 text-xs">Mashbill: {bourbon.mashbill}</Text>
+            <Text className="text-brand-400 text-xs">
+              Mashbill: {bourbon.mashbill}
+            </Text>
           ) : null}
           {bourbon.msrp != null ? (
-            <Text className="text-brand-400 text-xs">MSRP: ${bourbon.msrp}</Text>
+            <Text className="text-brand-400 text-xs">
+              MSRP: ${bourbon.msrp}
+            </Text>
           ) : null}
           {bourbon.city || bourbon.state || bourbon.country ? (
             <Text className="text-brand-400 text-xs">
-              {[bourbon.city, bourbon.state, bourbon.country].filter(Boolean).join(", ")}
+              {[bourbon.city, bourbon.state, bourbon.country]
+                .filter(Boolean)
+                .join(", ")}
             </Text>
           ) : null}
           {bourbon.description ? (
-            <Text className="text-brand-400 text-xs">{bourbon.description}</Text>
+            <Text className="text-brand-400 text-xs">
+              {bourbon.description}
+            </Text>
           ) : null}
         </View>
       )}
 
-      <TouchableOpacity onPress={() => setExpanded((v) => !v)} className="mt-1">
-        <Text className="text-accent-amber text-xs">{expanded ? "See less" : "See more"}</Text>
-      </TouchableOpacity>
+      <AccessiblePressable
+        accessibilityLabel={`${expanded ? "See less" : "See more"} about ${bourbon.name}`}
+        accessibilityState={{ expanded }}
+        onPress={() => setExpanded((v) => !v)}
+        className="mt-1"
+      >
+        <Text className="text-accent-amber text-xs">
+          {expanded ? "See less" : "See more"}
+        </Text>
+      </AccessiblePressable>
     </View>
   );
 }
