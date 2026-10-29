@@ -23,6 +23,7 @@ import Animated, {
   withTiming,
   runOnJS,
 } from "react-native-reanimated";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 export interface XpBurstHandle {
   trigger: () => void;
@@ -87,6 +88,7 @@ function ParticleView({ particle, onDone }: ParticleViewProps) {
 
   return (
     <Animated.View
+      testID="xp-particle"
       style={[
         styles.particle,
         { backgroundColor: particle.color },
@@ -100,9 +102,11 @@ export const XpBurst = forwardRef<XpBurstHandle>((_, ref) => {
   const [particles, setParticles] = useState<Particle[]>([]);
   const doneCount = React.useRef(0);
   const totalRef = React.useRef(0);
+  const reducedMotion = useReducedMotion();
 
   useImperativeHandle(ref, () => ({
     trigger() {
+      if (reducedMotion) return;
       const next = makeParticles();
       totalRef.current = next.length;
       doneCount.current = 0;

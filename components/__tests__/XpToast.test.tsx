@@ -6,6 +6,7 @@
  */
 
 import React from "react";
+import { Animated } from "react-native";
 import { render, act } from "@testing-library/react-native";
 
 // ── Mock XpBurst (uses react-native-reanimated native module) ────────────────
@@ -34,6 +35,11 @@ jest.mock("@/context/xp-context", () => ({
     current: mockCurrent,
     advance: mockAdvance,
   }),
+}));
+
+let mockReduced = false;
+jest.mock("@/hooks/use-reduced-motion", () => ({
+  useReducedMotion: () => mockReduced,
 }));
 
 jest.mock("@/lib/announce", () => ({ announce: jest.fn() }));
@@ -73,6 +79,7 @@ describe("XpToast", () => {
     jest.clearAllMocks();
     jest.useFakeTimers();
     mockCurrent = null;
+    mockReduced = false;
   });
 
   afterEach(() => {
@@ -190,5 +197,55 @@ describe("XpToast", () => {
     const { rerender } = render(<XpToast />);
     rerender(<XpToast />);
     expect(announce).toHaveBeenCalledTimes(1);
+  });
+
+  // ── Reduce Motion ──────────────────────────────────────────────────────────
+
+  it("slides in from translateY 80 when Reduce Motion is off", () => {
+    mockCurrent = makeNotification();
+    const spy = jest.spyOn(Animated, "timing");
+    render(<XpToast />);
+    // translateY and opacity both animated
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ toValue: 0, duration: 250 })
+    );
+    spy.mockRestore();
+  });
+
+  it("fades only (no slide) when Reduce Motion is on", () => {
+    mockReduced = true;
+    mockCurrent = makeNotification();
+    const spy = jest.spyOn(Animated, "timing");
+    const { toJSON } = render(<XpToast />);
+
+    // Only the opacity value is animated in: 0 -> 1 over 250ms.
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ toValue: 1, duration: 250 })
+    );
+    expect(spy).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ toValue: 0 })
+    );
+    expect(JSON.stringify(toJSON())).toContain('"translateY":0');
+
+    spy.mockClear();
+    act(() => {
+      jest.advanceTimersByTime(2500);
+    });
+    // Fade out only: one timing call, toValue 0 over 200ms (opacity), none to 80.
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ toValue: 0, duration: 200 })
+    );
+    expect(spy).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ toValue: 80 })
+    );
+    spy.mockRestore();
   });
 });

@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { useXpNotification } from "@/context/xp-context";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { useTheme } from "@/lib/theme-provider";
 
 // Swap this single reference to change the hero art without touching layout code.
@@ -18,6 +19,7 @@ export function DailyBonusScreen() {
   const { dailyBonus, claimDailyBonus } = useXpNotification();
   const { activeTheme } = useTheme();
   const c = activeTheme.colors;
+  const reducedMotion = useReducedMotion();
 
   const awardedPoints = dailyBonus?.awardedPoints ?? 0;
 
@@ -46,6 +48,12 @@ export function DailyBonusScreen() {
     }
 
     setClaiming(true);
+
+    if (reducedMotion) {
+      setDisplayPoints(awardedPoints);
+      claimDailyBonus();
+      return;
+    }
 
     const steps = Math.min(awardedPoints, 20);
     const stepInterval = Math.round(COUNT_UP_DURATION / steps);
