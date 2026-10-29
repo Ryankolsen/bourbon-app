@@ -5,6 +5,8 @@ import GroupsScreen from './groups';
 const mockRouterPush = jest.fn();
 const mockCreateMutate = jest.fn();
 const mockInvalidateQueries = jest.fn();
+const mockDismiss = jest.fn();
+let mockNotifications: unknown[] = [];
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockRouterPush, back: jest.fn(), replace: jest.fn() }),
@@ -23,8 +25,8 @@ jest.mock('@/hooks/use-groups', () => ({
 }));
 
 jest.mock('@/hooks/use-group-notifications', () => ({
-  useGroupNotifications: () => ({ data: [] }),
-  useDismissGroupNotification: () => ({ mutate: jest.fn(), isPending: false }),
+  useGroupNotifications: () => ({ data: mockNotifications }),
+  useDismissGroupNotification: () => ({ mutate: mockDismiss, isPending: false }),
   useGroupNotificationsRealtime: () => {},
 }));
 
@@ -85,5 +87,41 @@ describe('GroupsScreen — Create Group modal keyboard avoidance', () => {
     openModal();
     expect(screen.getAllByText('Create Group').length).toBeGreaterThan(0);
     expect(screen.getByText('Cancel')).toBeTruthy();
+  });
+});
+
+describe('GroupsScreen — accessibility', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockNotifications = [];
+  });
+
+  it('finds the create-group inputs by label', () => {
+    render(<GroupsScreen />);
+    openModal();
+    expect(screen.getByLabelText('Name (required)')).toBeTruthy();
+    expect(screen.getByLabelText('Description (optional)')).toBeTruthy();
+  });
+
+  it('titles the modal with a heading', () => {
+    render(<GroupsScreen />);
+    openModal();
+    expect(screen.getByRole('header', { name: 'Create Group' })).toBeTruthy();
+  });
+
+  it('closes the modal via the Cancel button', () => {
+    render(<GroupsScreen />);
+    openModal();
+    fireEvent.press(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByLabelText('Name (required)')).toBeNull();
+  });
+
+  it('labels the notification dismiss control "Close" and dismisses on press', () => {
+    mockNotifications = [
+      { id: 'n1', group_id: 'g1', profiles: { display_name: 'Ann' }, groups: { id: 'g1', name: 'Crew' } },
+    ];
+    render(<GroupsScreen />);
+    fireEvent.press(screen.getByRole('button', { name: 'Close' }));
+    expect(mockDismiss).toHaveBeenCalledWith({ notificationId: 'n1' });
   });
 });
