@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   FlatList,
   ActivityIndicator,
   Modal,
@@ -19,6 +17,9 @@ import { useCreateSaleAlert } from "@/hooks/use-sale-alerts";
 import { searchPlaces, hasPlacesApiKey } from "@/lib/places";
 import type { PlacePrediction } from "@/lib/places";
 import { useToast } from "@/lib/toast-provider";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
+import { LabeledTextInput } from "@/components/LabeledTextInput";
 
 interface SaleAlertFormProps {
   groupId: string;
@@ -207,10 +208,10 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
         >
           {/* Header */}
           <View className="flex-row items-center justify-between px-4 py-3 border-b border-brand-700">
-            <Text className="text-brand-100 font-bold text-base">Add Sale Alert</Text>
-            <TouchableOpacity onPress={handleClose} testID="sale-alert-form-close">
+            <Heading className="text-brand-100 font-bold text-base">Add Sale Alert</Heading>
+            <AccessiblePressable onPress={handleClose} accessibilityLabel="Close" testID="sale-alert-form-close">
               <Text className="text-brand-400 text-base">✕</Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           </View>
 
           <ScrollView
@@ -219,11 +220,9 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
             contentContainerStyle={{ paddingBottom: 32 }}
           >
             {/* ── Bourbon search ──────────────────────────────────────────── */}
-            <Text className="text-brand-300 text-sm font-semibold mb-1">
-              Bourbon *
-            </Text>
-
-            <TextInput
+            <LabeledTextInput
+              label="Bourbon *"
+              labelClassName="text-brand-300 text-sm font-semibold"
               value={bourbonQuery}
               onChangeText={handleBourbonQueryChange}
               placeholder="Search bourbons…"
@@ -255,7 +254,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
                     keyExtractor={(b) => b.id}
                     scrollEnabled={false}
                     renderItem={({ item: b }) => (
-                      <TouchableOpacity
+                      <AccessiblePressable
                         className="px-4 py-3 border-b border-brand-700"
                         onPress={() =>
                           handleSelectBourbon({
@@ -264,6 +263,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
                             distillery: b.distillery ?? null,
                           })
                         }
+                        accessibilityLabel={b.name}
                         testID={`bourbon-result-${b.id}`}
                       >
                         <Text className="text-brand-100 text-sm font-semibold">
@@ -274,7 +274,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
                             {b.distillery}
                           </Text>
                         ) : null}
-                      </TouchableOpacity>
+                      </AccessiblePressable>
                     )}
                   />
                 )}
@@ -287,15 +287,16 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
                 <Text className="text-brand-100 text-sm flex-1" numberOfLines={1}>
                   {selectedBourbon.name}
                 </Text>
-                <TouchableOpacity
+                <AccessiblePressable
                   onPress={() => {
                     setSelectedBourbon(null);
                     setBourbonQuery("");
                   }}
+                  accessibilityLabel="Clear bourbon"
                   testID="bourbon-clear"
                 >
                   <Text className="text-brand-500 text-xs">Clear</Text>
-                </TouchableOpacity>
+                </AccessiblePressable>
               </View>
             ) : null}
 
@@ -306,7 +307,9 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
 
             {usePlacesAutocomplete ? (
               <>
-                <TextInput
+                <LabeledTextInput
+                  label="Store search"
+                  hideLabel
                   value={storeQuery}
                   onChangeText={handleStoreQueryChange}
                   placeholder="Search for a store…"
@@ -336,9 +339,10 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
                       keyExtractor={(p) => p.place_id}
                       scrollEnabled={false}
                       renderItem={({ item: p }) => (
-                        <TouchableOpacity
+                        <AccessiblePressable
                           className="px-4 py-3 border-b border-brand-700"
                           onPress={() => handleSelectPlace(p)}
+                          accessibilityLabel={p.place_name}
                           testID={`place-result-${p.place_id}`}
                         >
                           <Text className="text-brand-100 text-sm font-semibold">
@@ -349,7 +353,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
                               {p.place_address}
                             </Text>
                           ) : null}
-                        </TouchableOpacity>
+                        </AccessiblePressable>
                       )}
                     />
                   </View>
@@ -368,22 +372,25 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
                         </Text>
                       ) : null}
                     </View>
-                    <TouchableOpacity
+                    <AccessiblePressable
                       onPress={() => {
                         setSelectedPlace(null);
                         setStoreQuery("");
                       }}
+                      accessibilityLabel="Clear store"
                       testID="place-clear"
                     >
                       <Text className="text-brand-500 text-xs">Clear</Text>
-                    </TouchableOpacity>
+                    </AccessiblePressable>
                   </View>
                 ) : null}
               </>
             ) : (
               /* Manual fallback when no Places API key */
               <>
-                <TextInput
+                <LabeledTextInput
+                  label="Store name"
+                  hideLabel
                   value={manualStoreName}
                   onChangeText={setManualStoreName}
                   placeholder="Store name"
@@ -394,7 +401,9 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
                   returnKeyType="next"
                   testID="manual-store-name-input"
                 />
-                <TextInput
+                <LabeledTextInput
+                  label="Store address"
+                  hideLabel
                   value={manualStoreAddress}
                   onChangeText={setManualStoreAddress}
                   placeholder="Store address"
@@ -409,10 +418,9 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
             )}
 
             {/* ── Price ──────────────────────────────────────────────────────── */}
-            <Text className="text-brand-300 text-sm font-semibold mb-1 mt-2">
-              Price *
-            </Text>
-            <TextInput
+            <LabeledTextInput
+              label="Price *"
+              labelClassName="text-brand-300 text-sm font-semibold mt-2"
               value={price}
               onChangeText={setPrice}
               placeholder="e.g. 49.99"
@@ -427,7 +435,9 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
             <Text className="text-brand-300 text-sm font-semibold mb-1">
               Note <Text className="text-brand-600 font-normal">(optional)</Text>
             </Text>
-            <TextInput
+            <LabeledTextInput
+              label="Note"
+              hideLabel
               value={note}
               onChangeText={setNote}
               placeholder="e.g. Limit 1 per customer"
@@ -441,10 +451,11 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
             />
 
             {/* ── Submit ─────────────────────────────────────────────────────── */}
-            <TouchableOpacity
+            <AccessiblePressable
               onPress={handleSubmit}
               disabled={!canSubmit}
               className={`rounded-xl py-4 items-center ${canSubmit ? "bg-amber-600" : "bg-brand-800"}`}
+              accessibilityLabel="Post Sale Alert"
               testID="submit-sale-alert"
             >
               {createAlert.isPending ? (
@@ -456,7 +467,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
                   Post Sale Alert
                 </Text>
               )}
-            </TouchableOpacity>
+            </AccessiblePressable>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
