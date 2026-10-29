@@ -57,3 +57,30 @@ export function userFacingText(content: string): TextSpan[] {
   visit(sf);
   return spans;
 }
+
+/**
+ * Named imports from `moduleName` whose imported (original) name is in
+ * `names`, each with the 1-based line of the specifier. Aliases are resolved
+ * to the original name; comments and strings are never matched.
+ */
+export function findBannedImports(
+  content: string,
+  moduleName: string,
+  names: string[],
+): { line: number; name: string }[] {
+  const sf = ts.createSourceFile("x.tsx", content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const hits: { line: number; name: string }[] = [];
+  for (const stmt of sf.statements) {
+    if (!ts.isImportDeclaration(stmt)) continue;
+    if (!ts.isStringLiteral(stmt.moduleSpecifier) || stmt.moduleSpecifier.text !== moduleName) continue;
+    const bindings = stmt.importClause?.namedBindings;
+    if (!bindings || !ts.isNamedImports(bindings)) continue;
+    for (const el of bindings.elements) {
+      const name = (el.propertyName ?? el.name).text;
+      if (!names.includes(name)) continue;
+      const { line } = sf.getLineAndCharacterOfPosition(el.getStart(sf));
+      hits.push({ line: line + 1, name });
+    }
+  }
+  return hits;
+}

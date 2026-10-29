@@ -11,13 +11,7 @@
  */
 
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+import { Modal, StyleSheet, Text, View } from "react-native";
 import { useXpNotification } from "@/context/xp-context";
 import { BeltBadge } from "@/components/BeltBadge";
 import { getBeltConfig, getBeltPromotionCopy } from "@/lib/belt-config";
@@ -59,54 +53,57 @@ export function BeltUpModal() {
       onRequestClose={dismiss}
       testID="belt-up-modal"
     >
-      <TouchableWithoutFeedback onPress={dismiss} testID="belt-up-backdrop">
-        <View style={styles.backdrop}>
-          {/* Inner card — taps here do NOT propagate to the backdrop */}
-          <TouchableWithoutFeedback>
-            <View style={styles.card}>
-              <BeltBadge level={promotion.belt} size={60} />
+      <View style={styles.backdrop}>
+        {/* Sibling of the card (not its parent), so taps on the card never reach it */}
+        <AccessiblePressable
+          accessibilityLabel="Dismiss belt promotion backdrop"
+          activeOpacity={1}
+          onPress={dismiss}
+          style={StyleSheet.absoluteFill}
+          testID="belt-up-backdrop"
+        />
+        <View style={styles.card}>
+          <BeltBadge level={promotion.belt} size={60} />
 
-              <Heading style={styles.headline} testID="belt-up-headline">
-                {belt.senpai
-                  ? `Senpai · ${belt.name}`
-                  : belt.sensei
-                    ? `Sensei · ${belt.name}`
-                    : belt.name}
-              </Heading>
+          <Heading style={styles.headline} testID="belt-up-headline">
+            {belt.senpai
+              ? `Senpai · ${belt.name}`
+              : belt.sensei
+                ? `Sensei · ${belt.name}`
+                : belt.name}
+          </Heading>
 
-              <Text style={styles.flavor} testID="belt-up-flavor">
-                {belt.flavor}
-              </Text>
+          <Text style={styles.flavor} testID="belt-up-flavor">
+            {belt.flavor}
+          </Text>
 
-              <Text style={styles.copy} testID="belt-up-copy">
-                {copy}
-              </Text>
+          <Text style={styles.copy} testID="belt-up-copy">
+            {copy}
+          </Text>
 
-              <AccessiblePressable
-                accessibilityLabel="Dismiss belt promotion"
-                style={[styles.ctaButton, { backgroundColor: belt.bgColor }]}
-                onPress={dismiss}
-                testID="belt-up-cta"
-                activeOpacity={0.85}
-              >
-                <Text style={[styles.ctaText, { color: belt.iconColor }]}>
-                  Let&apos;s go!
-                </Text>
-              </AccessiblePressable>
+          <AccessiblePressable
+            accessibilityLabel="Dismiss belt promotion"
+            style={[styles.ctaButton, { backgroundColor: belt.bgColor }]}
+            onPress={dismiss}
+            testID="belt-up-cta"
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.ctaText, { color: belt.iconColor }]}>
+              Let&apos;s go!
+            </Text>
+          </AccessiblePressable>
 
-              <AccessiblePressable
-                accessibilityLabel="Share your achievement"
-                style={styles.shareButton}
-                onPress={() => setShareOpen(true)}
-                testID="belt-up-share"
-                activeOpacity={0.75}
-              >
-                <Text style={styles.shareText}>Share Your Achievement</Text>
-              </AccessiblePressable>
-            </View>
-          </TouchableWithoutFeedback>
+          <AccessiblePressable
+            accessibilityLabel="Share your achievement"
+            style={styles.shareButton}
+            onPress={() => setShareOpen(true)}
+            testID="belt-up-share"
+            activeOpacity={0.75}
+          >
+            <Text style={styles.shareText}>Share Your Achievement</Text>
+          </AccessiblePressable>
         </View>
-      </TouchableWithoutFeedback>
+      </View>
 
       <AchievementShareSheet
         visible={shareOpen}
