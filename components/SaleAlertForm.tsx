@@ -62,6 +62,8 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
   const [price, setPrice] = useState("");
   const [note, setNote] = useState("");
 
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
   const placesDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const bourbonSearchQuery = useSearchSimilarBourbons(
@@ -80,6 +82,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
     setManualStoreAddress("");
     setPrice("");
     setNote("");
+    setSubmitAttempted(false);
   }
 
   function handleClose() {
@@ -153,8 +156,32 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
     price.trim().length > 0 &&
     !createAlert.isPending;
 
+  const errors = submitAttempted
+    ? {
+        bourbon: selectedBourbon === null ? "Bourbon is required" : undefined,
+        store: usePlacesAutocomplete
+          ? selectedPlace === null
+            ? "Store is required"
+            : undefined
+          : undefined,
+        storeName:
+          !usePlacesAutocomplete && manualStoreName.trim().length === 0
+            ? "Store name is required"
+            : undefined,
+        storeAddress:
+          !usePlacesAutocomplete && manualStoreAddress.trim().length === 0
+            ? "Store address is required"
+            : undefined,
+        price: price.trim().length === 0 ? "Price is required" : undefined,
+      }
+    : {};
+
   function handleSubmit() {
-    if (!canSubmit || !selectedBourbon) return;
+    if (createAlert.isPending) return;
+    if (!canSubmit || !selectedBourbon) {
+      setSubmitAttempted(true);
+      return;
+    }
 
     const placeId = selectedPlace?.place_id ?? `manual-${Date.now()}`;
     const placeName = selectedPlace?.place_name ?? manualStoreName.trim();
@@ -231,6 +258,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
               autoCapitalize="words"
               autoCorrect={false}
               returnKeyType="search"
+              error={errors.bourbon}
               testID="bourbon-search-input"
             />
 
@@ -318,6 +346,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
                   autoCapitalize="words"
                   autoCorrect={false}
                   returnKeyType="search"
+                  error={errors.store}
                   testID="store-search-input"
                 />
 
@@ -399,6 +428,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
                   autoCapitalize="words"
                   autoCorrect={false}
                   returnKeyType="next"
+                  error={errors.storeName}
                   testID="manual-store-name-input"
                 />
                 <LabeledTextInput
@@ -412,6 +442,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
                   autoCapitalize="sentences"
                   autoCorrect={false}
                   returnKeyType="next"
+                  error={errors.storeAddress}
                   testID="manual-store-address-input"
                 />
               </>
@@ -428,6 +459,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
               className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-3"
               keyboardType="decimal-pad"
               returnKeyType="next"
+              error={errors.price}
               testID="price-input"
             />
 
@@ -453,7 +485,7 @@ export function SaleAlertForm({ groupId, userId, visible, onClose }: SaleAlertFo
             {/* ── Submit ─────────────────────────────────────────────────────── */}
             <AccessiblePressable
               onPress={handleSubmit}
-              disabled={!canSubmit}
+              disabled={createAlert.isPending}
               className={`rounded-xl py-4 items-center ${canSubmit ? "bg-amber-600" : "bg-brand-800"}`}
               accessibilityLabel="Post Sale Alert"
               testID="submit-sale-alert"

@@ -29,6 +29,11 @@ jest.mock("@/lib/colors", () => ({
   colors: { spinnerDefault: "#fff", white: "#fff" },
 }));
 
+const mockAnnounce = jest.fn();
+jest.mock("@/lib/announce", () => ({
+  announce: (m: string) => mockAnnounce(m),
+}));
+
 const mockShowToast = jest.fn();
 jest.mock("@/lib/toast-provider", () => ({
   useToast: () => ({ showToast: mockShowToast }),
@@ -197,4 +202,21 @@ test("inputs are found by label and Close calls onClose", () => {
   expect(getByLabelText("Note")).toBeTruthy();
   fireEvent.press(getByRole("button", { name: "Close" }));
   expect(onClose).toHaveBeenCalledTimes(1);
+});
+
+test("submitting with missing required fields shows and announces errors, and does not submit", () => {
+  const { getByTestId, getAllByText, queryByText } = renderForm();
+  fireEvent.changeText(getByTestId("manual-store-name-input"), "Total Wine");
+  fireEvent.changeText(getByTestId("manual-store-address-input"), "Louisville, KY");
+
+  fireEvent.press(getByTestId("submit-sale-alert"));
+
+  expect(getAllByText("Bourbon is required")).toHaveLength(1);
+  expect(getAllByText("Price is required")).toHaveLength(1);
+  expect(mockAnnounce).toHaveBeenCalledWith("Bourbon is required");
+  expect(mockAnnounce).toHaveBeenCalledWith("Price is required");
+  expect(mockCreateMutate).not.toHaveBeenCalled();
+
+  fireEvent.changeText(getByTestId("price-input"), "49.99");
+  expect(queryByText("Price is required")).toBeNull();
 });
