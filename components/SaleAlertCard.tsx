@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Linking } from "react-native";
+import { View, Text, Linking } from "react-native";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/lib/theme-provider";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { useRemoveSaleAlert } from "@/hooks/use-sale-alerts";
 import type { SaleAlert } from "@/hooks/use-sale-alerts";
@@ -46,10 +47,11 @@ export function SaleAlertCard({ alert, currentUserId }: SaleAlertCardProps) {
   }
 
   return (
-    <TouchableOpacity
+    <AccessiblePressable
       className="rounded-2xl p-4 mx-4 mb-3 border border-amber-600/30"
       style={{ backgroundColor: activeTheme.colors.brand800 }}
       onPress={() => router.push(`/bourbon/${alert.bourbon_id}` as never)}
+      accessibilityLabel={`Sale alert for ${alert.bourbon_name}`}
       testID="sale-alert-card"
     >
       {/* Sale Alert badge */}
@@ -112,7 +114,7 @@ export function SaleAlertCard({ alert, currentUserId }: SaleAlertCardProps) {
         </Text>
 
         {/* Get Directions */}
-        <TouchableOpacity
+        <AccessiblePressable
           className="flex-row items-center rounded-lg px-3 py-1.5 mr-2"
           style={{ backgroundColor: activeTheme.colors.brand700 }}
           onPress={(e) => {
@@ -125,11 +127,11 @@ export function SaleAlertCard({ alert, currentUserId }: SaleAlertCardProps) {
           <Text style={{ color: activeTheme.colors.saleAlertDirectionsText }} className="text-xs font-semibold">
             Directions
           </Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
 
         {/* Remove */}
         {currentUserId ? (
-          <TouchableOpacity
+          <AccessiblePressable
             className="flex-row items-center rounded-lg px-3 py-1.5 bg-red-900/60"
             onPress={(e) => {
               e?.stopPropagation();
@@ -139,7 +141,7 @@ export function SaleAlertCard({ alert, currentUserId }: SaleAlertCardProps) {
             testID="sale-alert-remove"
           >
             <Text style={{ color: activeTheme.colors.saleAlertRemoveText }} className="text-xs font-semibold">Remove</Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
         ) : null}
       </View>
 
@@ -152,6 +154,6 @@ export function SaleAlertCard({ alert, currentUserId }: SaleAlertCardProps) {
         onConfirm={handleRemoveConfirm}
         onCancel={() => setConfirmVisible(false)}
       />
-    </TouchableOpacity>
+    </AccessiblePressable>
   );
 }

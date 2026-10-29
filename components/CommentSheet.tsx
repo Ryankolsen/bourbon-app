@@ -4,8 +4,6 @@ import {
   Text,
   Modal,
   FlatList,
-  TextInput,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -20,6 +18,9 @@ import {
 import { Database } from '@/types/database';
 import { useTheme } from '@/lib/theme-provider';
 import { BeltBadge } from '@/components/BeltBadge';
+import { AccessiblePressable } from '@/components/AccessiblePressable';
+import { Heading } from '@/components/Heading';
+import { LabeledTextInput } from '@/components/LabeledTextInput';
 
 type CommentRow = Database['public']['Tables']['tasting_comments']['Row'];
 
@@ -134,10 +135,10 @@ export function CommentSheet({
         <SafeAreaView className="flex-1 bg-brand-900">
           {/* Header */}
           <View className="flex-row items-center justify-between px-4 py-3 border-b border-brand-700">
-            <Text className="text-brand-100 font-bold text-base">Comments</Text>
-            <TouchableOpacity onPress={onClose} testID="comment-sheet-close">
+            <Heading className="text-brand-100 font-bold text-base">Comments</Heading>
+            <AccessiblePressable onPress={onClose} accessibilityLabel="Close" testID="comment-sheet-close">
               <Text className="text-brand-400 text-base">✕</Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           </View>
 
           {/* Comments list */}
@@ -157,8 +158,11 @@ export function CommentSheet({
 
           {/* Input bar */}
           <View className="flex-row items-center px-4 py-3 border-t border-brand-700 gap-2">
-            <TextInput
-              className="flex-1 bg-brand-800 text-brand-100 rounded-xl px-3 py-2 text-sm"
+            <View className="flex-1">
+            <LabeledTextInput
+              label="Add a comment"
+              hideLabel
+              className="bg-brand-800 text-brand-100 rounded-xl px-3 py-2 text-sm"
               placeholder="Add a comment…"
               placeholderTextColor="#9B8E7E"
               value={body}
@@ -167,14 +171,16 @@ export function CommentSheet({
               returnKeyType="send"
               onSubmitEditing={handleSend}
             />
-            <TouchableOpacity
+            </View>
+            <AccessiblePressable
               className="bg-brand-600 rounded-xl px-4 py-2"
               onPress={handleSend}
+              accessibilityLabel="Send"
               disabled={!body.trim() || postComment.isPending}
               testID="comment-send"
             >
               <Text className="text-brand-100 text-sm font-semibold">Send</Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           </View>
         </SafeAreaView>
       </KeyboardAvoidingView>

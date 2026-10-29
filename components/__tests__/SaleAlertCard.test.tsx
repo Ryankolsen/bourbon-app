@@ -159,4 +159,13 @@ describe("SaleAlertCard", () => {
     );
     expect(queryByTestId("sale-alert-remove")).toBeNull();
   });
+
+  it("exposes card, directions and remove as labelled buttons", () => {
+    const { getByRole, getByLabelText } = render(
+      <SaleAlertCard alert={makeAlert()} currentUserId="user-1" />
+    );
+    expect(getByRole("button", { name: "Sale alert for Buffalo Trace" })).toBeTruthy();
+    expect(getByLabelText("Get directions").props.accessibilityRole).toBe("button");
+    expect(getByLabelText("Remove sale alert").props.accessibilityRole).toBe("button");
+  });
 });

@@ -64,4 +64,25 @@ describe("ConfirmationModal", () => {
     // The destructive button should render with the destructive testID
     expect(screen.getByTestId("confirm-button-destructive")).toBeTruthy();
   });
+
+  it("exposes the title as a header and buttons by role and label", () => {
+    const onConfirm = jest.fn();
+    const onCancel = jest.fn();
+    render(
+      <ConfirmationModal
+        visible
+        title="Delete Bourbon"
+        message="Sure?"
+        confirmLabel="Yes"
+        cancelLabel="No"
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />
+    );
+    expect(screen.getByRole("header", { name: "Delete Bourbon" })).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "Yes" }));
+    fireEvent.press(screen.getByRole("button", { name: "No" }));
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
 });

@@ -6,7 +6,7 @@
  */
 
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { render, fireEvent } from "@testing-library/react-native";
 
 // ── Mock dependencies ─────────────────────────────────────────────────────────
 
@@ -114,5 +114,20 @@ describe("CommentSheet — BeltBadge", () => {
       />
     );
     expect(queryByLabelText(/belt/)).toBeNull();
+  });
+
+  it("has a labelled comment input and a Close button that calls onClose", () => {
+    const onClose = jest.fn();
+    const { getByLabelText, getByRole } = render(
+      <CommentSheet
+        tastingId="tasting-1"
+        currentUserId="current-user"
+        visible={true}
+        onClose={onClose}
+      />
+    );
+    expect(getByLabelText("Add a comment")).toBeTruthy();
+    fireEvent.press(getByRole("button", { name: "Close" }));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
