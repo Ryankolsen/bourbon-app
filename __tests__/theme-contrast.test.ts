@@ -13,6 +13,13 @@ const PAIRS: Pair[] = [
     (["brand900", "brand800"] as const).map((bg) => ({ fg, bg, min: TEXT })),
   ),
   { fg: "brand300", bg: "brand700", min: TEXT },
+  { fg: "surfaceText", bg: "brand700", min: TEXT },
+  // Input fields: primary text and placeholder on bg-brand-700 / bg-brand-800
+  { fg: "brand100", bg: "brand700", min: TEXT },
+  { fg: "placeholderGroup", bg: "brand700", min: TEXT },
+  { fg: "placeholderGroup", bg: "brand800", min: TEXT },
+  // Selected chips: text-white on bg-brand-600; unselected: text-surface-text on bg-brand-700
+  { fg: "white", bg: "brand600", min: TEXT },
   { fg: "tabActive", bg: "tabBar", min: TEXT },
   { fg: "tabInactive", bg: "tabBar", min: TEXT },
   { fg: "headerTint", bg: "brand900", min: TEXT },

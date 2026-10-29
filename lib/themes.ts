@@ -13,9 +13,10 @@
  * Light theme rules:
  *   brand-900  → off-white tinted background (#E0–#EE, NOT #F8 — needs contrast vs white cards)
  *   brand-800  → white card (#FFFFFF)
- *   brand-700  → medium tint of accent (~3:1 contrast on white) — visible buttons
+ *   brand-700  → tint of accent, visible as a button against white cards and the tinted bg.
+ *                Avoid mid-tones: no text colour reads well on them. Navy & Flax uses a pale tint (dark text ≥7:1).
  *   brand-600  → vivid/saturated accent (active chips, icons)
- *   brand-300  → dark shade (~10:1 on white AND ~4:1 on brand-700) — works in both roles
+ *   brand-300  → dark shade (~10:1 on white AND ≥4.5:1 on brand-700) — works in both roles
  *   brand-100  → near-black primary text (~15:1 on white)
  *   tabInactive → dark enough to read on tabBar background (~5:1)
  */
@@ -112,7 +113,7 @@ const charcoal: Theme = {
     brand300: "#bae8fd",
     brand400: "#38bdf8",
     brand500: "#0ea5e9",
-    brand600: "#0284c7",
+    brand600: "#0279bb",  // white text 4.7:1 on selected chips ✓
     brand700: "#0369a1",
     brand800: "#1a1a1a",
     brand900: "#0a0a0a",
@@ -140,11 +141,11 @@ const charcoal: Theme = {
     // Lightened — dark grey (#4a4a4a) was invisible on brand-800 #1a1a1a (near-black)
     placeholderDark:   "#8a8aaa",
     placeholderMuted:  "#7a7a8a",
-    // Lightened from #4a4a4a — dark grey was invisible on brand-700 #0369a1 (dark blue)
-    placeholderGroup:  "#7ab4d4",
+    // Pale sky blue — readable on brand-700 #0369a1 (4.9:1) and brand-800 #1a1a1a (14.5:1)
+    placeholderGroup:  "#d6eefa",
     placeholderSearch: "#5a5a9a",
-    // Light sky blue — readable on brand-700 #0369a1 dark bg (6.7:1 contrast)
-    surfaceText: "#bae6fd",
+    // White — readable on brand-700 #0369a1 (5.9:1)
+    surfaceText: "#ffffff",
     pickerBg:     "#0a0a0a",
     pickerBorder: "#0369a1",
     avatarText: "#e0f2fe",
@@ -169,7 +170,7 @@ const highContrast: Theme = {
     brand400: "#ffec40",
     brand500: "#ffd700",
     brand600: "#000000",  // black buttons — white text gives 21:1 contrast ✓
-    brand700: "#7f6b00",  // dark gold secondary surfaces — textOnBg gives black text ✓
+    brand700: "#5c4d00",  // dark gold secondary surfaces — white 8.3:1, brand300 7.2:1, brand500 6.0:1 ✓
     brand800: "#0a0a0a",
     brand900: "#000000",
     tabBar:       "#000000",
@@ -196,11 +197,11 @@ const highContrast: Theme = {
     // Brightened — dark olive was invisible on brand-800 #0a0a0a (near-black)
     placeholderDark:   "#999400",
     placeholderMuted:  "#888400",
-    // Darkened from #666600 — needs more contrast on brand-700 #ffd700 (yellow)
-    placeholderGroup:  "#3d3d00",
+    // Light olive — readable on brand-700 #5c4d00 (5.0:1) and brand-800 #0a0a0a (11.8:1)
+    placeholderGroup:  "#d4cd00",
     placeholderSearch: "#666600",
-    // Black — readable on brand-700 #ffd700 yellow bg (19.6:1 contrast)
-    surfaceText: "#000000",
+    // White — readable on brand-700 #5c4d00 (8.3:1)
+    surfaceText: "#ffffff",
     pickerBg:     "#000000",
     pickerBorder: "#1a1a1a",
     avatarText: "#fffd80",
@@ -216,8 +217,8 @@ const highContrast: Theme = {
 // Light themes — 8 variations of the Navy & Cream aesthetic
 //
 // For each theme:
-//   brand-700 = medium tint (~3:1 on white) → visible button backgrounds
-//   brand-300 = dark shade (~10:1 on white, ~4:1 on brand-700) → readable everywhere
+//   brand-700 = tint of accent → visible button backgrounds (Navy & Flax: pale tint, ~2:1 on white)
+//   brand-300 = dark shade (~10:1 on white, ≥4.5:1 on brand-700) → readable everywhere
 //   tabInactive = dark enough for 5:1 contrast on tabBar background
 // ---------------------------------------------------------------------------
 
@@ -233,11 +234,11 @@ const navyFlax: Theme = {
     brand50:  "#060810",
     brand100: "#0a1624",  // near-black navy — primary text
     brand200: "#142040",
-    brand300: "#101a30",  // dark navy: 17.3:1 on white ✓, 4.53:1 on brand-700 ✓
+    brand300: "#101a30",  // dark navy: 17.3:1 on white ✓, 8.4:1 on brand-700 #9fb6d8 ✓
     brand400: "#2a4470",  // secondary text: 8:1 on white ✓
     brand500: "#3a5a96",
     brand600: "#1e4080",  // vivid accent — active chips
-    brand700: "#6a84aa",  // button bg: 3.1:1 on white ✓
+    brand700: "#9fb6d8",  // pale steel-blue button bg: 2.1:1 on white, 1.7:1 on flax; dark text 8.4-8.8:1 ✓
     brand800: "#ffffff",
     brand900: "#eae6de",  // warm flax background
     tabBar:       "#eae6de",
@@ -263,11 +264,11 @@ const navyFlax: Theme = {
     starEmpty:  "#a4927f",  // warm tan — 3.0:1 on white (icon threshold) ✓
     placeholderDark:   "#4a6080",
     placeholderMuted:  "#5a7090",
-    // Light — needs to be near-white on brand-700 #6a84aa (medium steel blue)
-    placeholderGroup:  "#dce8f8",
+    // Mid-dark steel — 4.7:1 on brand-700 #9fb6d8 AND 9.7:1 on brand-800 #ffffff
+    placeholderGroup:  "#2a4470",
     placeholderSearch: "#3a5070",
-    // White — readable on brand-700 #6a84aa medium-blue bg (3.5:1 contrast)
-    surfaceText: "#ffffff",
+    // Dark navy (matches brand300) — 8.4:1 on brand-700 #9fb6d8
+    surfaceText: "#101a30",
     pickerBg:     "#eae6de",
     pickerBorder: "#d0cac0",
     // White text on brand-600 #1e4080 (dark navy): ~8:1 contrast ✓

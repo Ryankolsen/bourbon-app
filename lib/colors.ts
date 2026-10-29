@@ -12,7 +12,7 @@ export const colors = {
   brand300: "#bae8fd",
   brand400: "#38bdf8",
   brand500: "#0ea5e9",
-  brand600: "#0284c7",
+  brand600: "#0279bb",
   brand700: "#0369a1",
   brand800: "#1a1a1a",
   brand900: "#0a0a0a",
