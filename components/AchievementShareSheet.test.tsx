@@ -1,6 +1,6 @@
 import React from "react";
 import { Platform } from "react-native";
-import { render } from "@testing-library/react-native";
+import { render, fireEvent } from "@testing-library/react-native";
 import { BELTS, BELT_SHARE_COPY } from "@/lib/belt-config";
 import { LANDING_PAGE_URL } from "@/lib/public-links";
 
@@ -45,4 +45,26 @@ describe("AchievementShareSheet share text", () => {
       expect(shareText.endsWith(` ${LANDING}`)).toBe(true);
     },
   );
+});
+
+describe("AchievementShareSheet a11y", () => {
+  beforeEach(() => {
+    mockUseShareAchievement.mockReturnValue({
+      cardRef: { current: null },
+      share: jest.fn(),
+      isSharing: false,
+    });
+  });
+
+  it("Close button calls onClose", () => {
+    const onClose = jest.fn();
+    const { getByRole } = render(<AchievementShareSheet visible belt={belt} onClose={onClose} />);
+    fireEvent.press(getByRole("button", { name: "Close" }));
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it("title is a header", () => {
+    const { getByRole } = render(<AchievementShareSheet visible belt={belt} onClose={() => {}} />);
+    expect(getByRole("header", { name: "Share Your Achievement" })).toBeTruthy();
+  });
 });
