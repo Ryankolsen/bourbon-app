@@ -183,4 +183,16 @@ describe('AchievementSection', () => {
 
     expect(screen.getByText('Collection Achievement 0')).toBeTruthy();
   });
+
+  // 7 — Accessibility
+  it('renders the section title as a header', () => {
+    render(<AchievementSection userId="user-1" isOwnProfile />);
+    expect(screen.getByRole('header', { name: 'Achievements' })).toBeTruthy();
+  });
+
+  it('exposes the expand toggle as a named button', () => {
+    render(<AchievementSection userId="user-1" isOwnProfile />);
+    fireEvent.press(screen.getByRole('button', { name: 'Expand achievements' }));
+    expect(screen.getByRole('button', { name: 'Collapse achievements' })).toBeTruthy();
+  });
 });

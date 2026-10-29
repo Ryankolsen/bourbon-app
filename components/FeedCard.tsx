@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/lib/theme-provider";
 import { StarRating } from "@/components/StarRating";
@@ -66,7 +67,10 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
   }
 
   return (
-    <TouchableOpacity
+    <AccessiblePressable
+      // Not accessible itself: it wraps the like/comment/share buttons, which must stay focusable.
+      accessible={false}
+      accessibilityLabel={`Open ${item.bourbon_name}`}
       className="bg-brand-800 rounded-2xl p-4 mx-4 mb-3"
       onPress={() => router.push(`/bourbon/${item.bourbon_id}` as never)}
       testID="feed-card"
@@ -110,7 +114,7 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
       {/* Action row: like / comment / share */}
       <View className="flex-row gap-4">
         {/* Like button */}
-        <TouchableOpacity
+        <AccessiblePressable
           className="flex-row items-center gap-1"
           onPress={(e) => {
             e.stopPropagation();
@@ -123,10 +127,10 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
             {optimisticIsLiked ? "♥" : "♡"}
           </Text>
           <Text className="text-brand-400 text-xs">{optimisticLikeCount}</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
 
         {/* Comment button */}
-        <TouchableOpacity
+        <AccessiblePressable
           className="flex-row items-center gap-1"
           onPress={(e) => {
             e.stopPropagation();
@@ -137,10 +141,10 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
         >
           <Text className="text-brand-400 text-base">💬</Text>
           <Text className="text-brand-400 text-xs">{commentCount}</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
 
         {/* Share button */}
-        <TouchableOpacity
+        <AccessiblePressable
           className="flex-row items-center gap-1"
           onPress={(e) => {
             e.stopPropagation();
@@ -150,7 +154,7 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
           testID="feed-card-share"
         >
           <Text className="text-brand-400 text-base">↗</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </View>
 
       <CommentSheet
@@ -166,6 +170,6 @@ export function FeedCard({ item, currentUserId }: FeedCardProps) {
         visible={shareSheetOpen}
         onClose={() => setShareSheetOpen(false)}
       />
-    </TouchableOpacity>
+    </AccessiblePressable>
   );
 }
