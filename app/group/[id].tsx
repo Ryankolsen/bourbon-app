@@ -2,8 +2,6 @@ import { colors } from "@/lib/colors";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   ActivityIndicator,
   ScrollView,
   FlatList,
@@ -29,6 +27,9 @@ import { useGroupFeed, GroupFeedItem } from "@/hooks/use-group-feed";
 import { useSearchProfiles } from "@/hooks/use-profile";
 import { useToast } from "@/lib/toast-provider";
 import { useTheme } from "@/lib/theme-provider";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
+import { LabeledTextInput } from "@/components/LabeledTextInput";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { StarRating } from "@/components/StarRating";
 import { SaleAlertCard } from "@/components/SaleAlertCard";
@@ -67,7 +68,8 @@ function GroupFeedCard({ item }: { item: GroupFeedItem }) {
   const sharerName = item.sharer_display_name ?? item.sharer_username ?? "Unknown";
 
   return (
-    <TouchableOpacity
+    <AccessiblePressable
+      accessibilityLabel={`Open ${item.bourbon_name}`}
       className="bg-brand-800 rounded-2xl p-4 mb-3 mx-4"
       onPress={() => router.push(`/bourbon/${item.bourbon_id}` as never)}
     >
@@ -109,7 +111,7 @@ function GroupFeedCard({ item }: { item: GroupFeedItem }) {
 
       {/* Star rating */}
       <StarRating value={item.rating} variant="personal" size="sm" />
-    </TouchableOpacity>
+    </AccessiblePressable>
   );
 }
 
@@ -281,9 +283,9 @@ export default function GroupDetailScreen() {
         <Text className="text-red-400 text-center text-base">
           Group not found.
         </Text>
-        <TouchableOpacity onPress={() => router.back()} className="mt-4">
+        <AccessiblePressable accessibilityLabel="Go back" onPress={() => router.back()} className="mt-4">
           <Text className="text-brand-400 text-sm">Go back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </View>
     );
   }
@@ -303,25 +305,25 @@ export default function GroupDetailScreen() {
     <View className="flex-1 bg-brand-900">
       {/* Header */}
       <View className="px-4 pb-2" style={{ paddingTop: insets.top + 8 }}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+        <AccessiblePressable accessibilityLabel="Go back" onPress={() => router.back()} hitSlop={8}>
           <Text className="text-brand-400 text-base">← Back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </View>
 
       {/* Group name + description + edit button */}
       <View className="px-4 mt-4 mb-4">
         <View className="flex-row items-start justify-between">
-          <Text className="text-brand-100 text-2xl font-bold flex-1 mr-2">
+          <Heading className="text-brand-100 text-2xl font-bold flex-1 mr-2">
             {group.name}
-          </Text>
+          </Heading>
           {isOwner && (
-            <TouchableOpacity
+            <AccessiblePressable
               onPress={handleOpenEdit}
               className="bg-brand-700 rounded-xl px-3 py-1.5 mt-1"
               accessibilityLabel="Edit group"
             >
               <Text className="text-surface-text text-xs font-semibold">Edit</Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           )}
         </View>
         {group.description ? (
@@ -334,8 +336,10 @@ export default function GroupDetailScreen() {
       {/* Segmented control */}
       <View className="flex-row mx-4 mb-3 bg-brand-800 rounded-2xl p-1">
         {TABS.map((tab) => (
-          <TouchableOpacity
+          <AccessiblePressable
             key={tab.key}
+            accessibilityLabel={tab.label}
+            accessibilityState={{ selected: activeTab === tab.key }}
             className={`flex-1 py-2 rounded-xl items-center ${
               activeTab === tab.key ? "bg-brand-600" : ""
             }`}
@@ -348,7 +352,7 @@ export default function GroupDetailScreen() {
             >
               {tab.label}
             </Text>
-          </TouchableOpacity>
+          </AccessiblePressable>
         ))}
       </View>
 
@@ -359,17 +363,18 @@ export default function GroupDetailScreen() {
           {(saleAlerts.length > 0 || currentMember?.status === "accepted") && (
             <View testID="sale-alerts-section">
               <View className="flex-row items-center px-4 mb-2">
-                <Text className="text-brand-400 text-xs font-semibold uppercase tracking-widest flex-1">
+                <Heading className="text-brand-400 text-xs font-semibold uppercase tracking-widest flex-1">
                   Sale Alerts
-                </Text>
+                </Heading>
                 {currentMember?.status === "accepted" && user?.id && (
-                  <TouchableOpacity
+                  <AccessiblePressable
+                    accessibilityLabel="Add sale alert"
                     onPress={() => setShowSaleAlertForm(true)}
                     className="bg-amber-700/30 rounded-lg px-3 py-1"
                     testID="add-sale-alert-button"
                   >
                     <Text style={{ color: activeTheme.colors.saleAlertAddText }} className="text-xs font-semibold">+ Add</Text>
-                  </TouchableOpacity>
+                  </AccessiblePressable>
                 )}
               </View>
               {saleAlerts.map((alert) => (
@@ -431,8 +436,9 @@ export default function GroupDetailScreen() {
                 year: "numeric",
               });
               return (
-                <TouchableOpacity
+                <AccessiblePressable
                   key={recAny.id}
+                  accessibilityLabel={`Open ${bourbonName}`}
                   onPress={() => bourbonId ? router.push(`/bourbon/${bourbonId}` as never) : undefined}
                   className="bg-brand-800 rounded-2xl p-4 mb-2"
                 >
@@ -455,7 +461,7 @@ export default function GroupDetailScreen() {
                       <Text className="text-brand-500 text-xs mt-0.5">{date}</Text>
                     </View>
                   </View>
-                </TouchableOpacity>
+                </AccessiblePressable>
               );
             })
           )}
@@ -492,13 +498,15 @@ export default function GroupDetailScreen() {
                   key={m.user_id}
                   className="flex-row items-center bg-brand-800 rounded-2xl p-3 mb-2"
                 >
-                  <TouchableOpacity
+                  <AccessiblePressable
+                    accessibilityLabel={`View ${name}'s profile`}
                     onPress={() => router.push(`/user/${m.user_id}` as never)}
                     className="flex-row items-center flex-1"
                   >
                     {profile?.avatar_url ? (
                       <Image
                         source={{ uri: profile.avatar_url }}
+                        accessible={false}
                         className="w-10 h-10 rounded-full"
                       />
                     ) : (
@@ -524,16 +532,16 @@ export default function GroupDetailScreen() {
                         <Text className="text-white text-xs">Owner</Text>
                       </View>
                     )}
-                  </TouchableOpacity>
+                  </AccessiblePressable>
                   {isOwner && !isMe && m.role !== "owner" && (
-                    <TouchableOpacity
+                    <AccessiblePressable
                       onPress={() => handleRemoveMember(m.user_id, name)}
                       disabled={removeGroupMember.isPending}
                       className="ml-2 bg-red-800 rounded-lg px-2 py-1"
                       accessibilityLabel={`Remove ${name}`}
                     >
                       <Text className="text-white text-xs font-semibold">Remove</Text>
-                    </TouchableOpacity>
+                    </AccessiblePressable>
                   )}
                 </View>
               );
@@ -543,9 +551,9 @@ export default function GroupDetailScreen() {
           {/* Pending invites (owner only) */}
           {isOwner && pendingMembers.length > 0 && (
             <View className="mb-6">
-              <Text className="text-brand-400 text-xs font-semibold uppercase mb-2">
+              <Heading className="text-brand-400 text-xs font-semibold uppercase mb-2">
                 Pending Invites
-              </Text>
+              </Heading>
               {pendingMembers.map((m) => {
                 const profile = m.profiles as
                   | {
@@ -580,12 +588,14 @@ export default function GroupDetailScreen() {
           {/* Invite by username (owner only) */}
           {isOwner && (
             <View className="bg-brand-800 rounded-2xl p-4 mb-4">
-              <Text className="text-brand-300 text-sm font-semibold mb-3">
+              <Heading className="text-brand-300 text-sm font-semibold mb-3">
                 Invite Member
-              </Text>
+              </Heading>
 
               <View className="flex-row gap-2 mb-3">
-                <TextInput
+                <LabeledTextInput
+                  label="Invite by username or email"
+                  hideLabel
                   value={inviteInput}
                   onChangeText={(v) => {
                     setInviteInput(v);
@@ -600,7 +610,8 @@ export default function GroupDetailScreen() {
                   returnKeyType="search"
                   onSubmitEditing={handleFindUser}
                 />
-                <TouchableOpacity
+                <AccessiblePressable
+                  accessibilityLabel="Find user"
                   onPress={handleFindUser}
                   disabled={!inviteInput.trim() || profileFetching}
                   className="bg-brand-700 rounded-xl px-4 py-3 justify-center"
@@ -612,7 +623,7 @@ export default function GroupDetailScreen() {
                       Find
                     </Text>
                   )}
-                </TouchableOpacity>
+                </AccessiblePressable>
               </View>
 
               {/* Lookup result */}
@@ -623,6 +634,7 @@ export default function GroupDetailScreen() {
                       {foundProfile.avatar_url ? (
                         <Image
                           source={{ uri: foundProfile.avatar_url }}
+                          accessible={false}
                           className="w-9 h-9 rounded-full"
                         />
                       ) : (
@@ -655,7 +667,8 @@ export default function GroupDetailScreen() {
                 </>
               )}
 
-              <TouchableOpacity
+              <AccessiblePressable
+                accessibilityLabel={foundProfile ? `Invite ${inviteeName ?? "User"}` : "Send Invite"}
                 onPress={handleInvite}
                 disabled={!foundProfile || inviteToGroup.isPending}
                 className={`rounded-xl py-3 items-center ${
@@ -675,13 +688,14 @@ export default function GroupDetailScreen() {
                       : "Send Invite"}
                   </Text>
                 )}
-              </TouchableOpacity>
+              </AccessiblePressable>
             </View>
           )}
 
           {/* Leave group (non-owner accepted members) */}
           {currentMember?.status === "accepted" && !isOwner && (
-            <TouchableOpacity
+            <AccessiblePressable
+              accessibilityLabel="Leave Group"
               onPress={handleLeave}
               disabled={leaveGroup.isPending}
               className="border border-red-700 rounded-2xl py-4 items-center"
@@ -693,7 +707,7 @@ export default function GroupDetailScreen() {
                   Leave Group
                 </Text>
               )}
-            </TouchableOpacity>
+            </AccessiblePressable>
           )}
         </ScrollView>
       )}
@@ -718,20 +732,19 @@ export default function GroupDetailScreen() {
               className="bg-gray-950 rounded-t-2xl"
             >
               <View className="flex-row items-center justify-between mb-4 pt-4">
-                <Text className="text-white font-bold text-base">Edit Group</Text>
-                <TouchableOpacity
+                <Heading className="text-white font-bold text-base">Edit Group</Heading>
+                <AccessiblePressable
                   onPress={() => setEditModalVisible(false)}
                   className="p-1"
                   accessibilityLabel="Close edit modal"
                 >
                   <Text className="text-gray-400 text-xl leading-none">✕</Text>
-                </TouchableOpacity>
+                </AccessiblePressable>
               </View>
 
-              <Text className="text-brand-300 text-sm font-semibold mb-1">
-                Group Name *
-              </Text>
-              <TextInput
+              <LabeledTextInput
+                label="Group name"
+                labelClassName="text-brand-300 text-sm font-semibold mb-1"
                 value={editName}
                 onChangeText={setEditName}
                 placeholder="Group name"
@@ -740,10 +753,9 @@ export default function GroupDetailScreen() {
                 className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-sm mb-4"
               />
 
-              <Text className="text-brand-300 text-sm font-semibold mb-1">
-                Description
-              </Text>
-              <TextInput
+              <LabeledTextInput
+                label="Group description"
+                labelClassName="text-brand-300 text-sm font-semibold mb-1"
                 value={editDescription}
                 onChangeText={setEditDescription}
                 placeholder="Optional description"
@@ -756,13 +768,15 @@ export default function GroupDetailScreen() {
               />
 
               <View className="flex-row gap-3">
-                <TouchableOpacity
+                <AccessiblePressable
+                  accessibilityLabel="Cancel"
                   onPress={() => setEditModalVisible(false)}
                   className="flex-1 border border-brand-700 rounded-xl py-3 items-center"
                 >
                   <Text className="text-brand-300 font-semibold text-sm">Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </AccessiblePressable>
+                <AccessiblePressable
+                  accessibilityLabel="Save"
                   onPress={handleSaveEdit}
                   disabled={!editName.trim() || updateGroup.isPending}
                   className={`flex-1 rounded-xl py-3 items-center ${
@@ -782,7 +796,7 @@ export default function GroupDetailScreen() {
                       Save
                     </Text>
                   )}
-                </TouchableOpacity>
+                </AccessiblePressable>
               </View>
             </ScrollView>
           </View>

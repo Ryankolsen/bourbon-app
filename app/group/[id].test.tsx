@@ -11,6 +11,7 @@
  */
 
 import React from 'react';
+import { Image } from 'react-native';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 import GroupDetailScreen from './[id]';
 
@@ -139,13 +140,13 @@ describe('GroupDetailScreen — Edit Group modal keyboard avoidance', () => {
 
   it('renders KeyboardAvoidingView with testID when edit modal opens', () => {
     render(<GroupDetailScreen />);
-    fireEvent.press(screen.getByLabelText('Edit group'));
+    fireEvent.press(screen.getByRole('button', { name: 'Edit group' }));
     expect(screen.getByTestId('edit-group-kav')).toBeTruthy();
   });
 
   it('renders ScrollView with keyboardShouldPersistTaps=handled when edit modal opens', () => {
     render(<GroupDetailScreen />);
-    fireEvent.press(screen.getByLabelText('Edit group'));
+    fireEvent.press(screen.getByRole('button', { name: 'Edit group' }));
     const scroll = screen.getByTestId('edit-group-scroll');
     expect(scroll).toBeTruthy();
     expect(scroll.props.keyboardShouldPersistTaps).toBe('handled');
@@ -153,16 +154,16 @@ describe('GroupDetailScreen — Edit Group modal keyboard avoidance', () => {
 
   it('renders Group Name and Description inputs inside the open modal', () => {
     render(<GroupDetailScreen />);
-    fireEvent.press(screen.getByLabelText('Edit group'));
-    expect(screen.getByPlaceholderText('Group name')).toBeTruthy();
-    expect(screen.getByPlaceholderText('Optional description')).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Edit group' }));
+    expect(screen.getByLabelText('Group name')).toBeTruthy();
+    expect(screen.getByLabelText('Group description')).toBeTruthy();
   });
 
   it('renders Cancel and Save buttons inside the open modal', () => {
     render(<GroupDetailScreen />);
-    fireEvent.press(screen.getByLabelText('Edit group'));
-    expect(screen.getByText('Cancel')).toBeTruthy();
-    expect(screen.getByText('Save')).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Edit group' }));
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Save' })).toBeTruthy();
   });
 });
 
@@ -175,14 +176,14 @@ describe('GroupDetailScreen — Remove Member (owner flow)', () => {
 
   it('shows a Remove button for a non-owner accepted member', () => {
     render(<GroupDetailScreen />);
-    fireEvent.press(screen.getByText('Members'));
-    expect(screen.getByLabelText('Remove Bob')).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Members' }));
+    expect(screen.getByRole('button', { name: 'Remove Bob' })).toBeTruthy();
   });
 
   it('opens the Remove Member ConfirmationModal when Remove is tapped', () => {
     render(<GroupDetailScreen />);
-    fireEvent.press(screen.getByText('Members'));
-    fireEvent.press(screen.getByLabelText('Remove Bob'));
+    fireEvent.press(screen.getByRole('button', { name: 'Members' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Remove Bob' }));
 
     expect(screen.getByText('Remove Member')).toBeTruthy();
     expect(screen.getByText('Remove Bob from this group?')).toBeTruthy();
@@ -190,19 +191,20 @@ describe('GroupDetailScreen — Remove Member (owner flow)', () => {
 
   it('does NOT call removeGroupMember when Cancel is pressed', () => {
     render(<GroupDetailScreen />);
-    fireEvent.press(screen.getByText('Members'));
-    fireEvent.press(screen.getByLabelText('Remove Bob'));
+    fireEvent.press(screen.getByRole('button', { name: 'Members' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Remove Bob' }));
 
-    fireEvent.press(screen.getByLabelText('Cancel'));
+    fireEvent.press(screen.getByRole('button', { name: 'Cancel' }));
     expect(mockRemoveMutate).not.toHaveBeenCalled();
   });
 
   it('calls removeGroupMember.mutate with the correct args when Remove is confirmed', () => {
     render(<GroupDetailScreen />);
-    fireEvent.press(screen.getByText('Members'));
-    fireEvent.press(screen.getByLabelText('Remove Bob'));
+    fireEvent.press(screen.getByRole('button', { name: 'Members' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Remove Bob' }));
 
-    fireEvent.press(screen.getByLabelText('Remove'));
+    // The row's Remove button also carries the text "Remove"; the modal's confirm is last.
+    fireEvent.press(screen.getAllByRole('button', { name: 'Remove' }).at(-1)!);
     expect(mockRemoveMutate).toHaveBeenCalledWith(
       { groupId: mockGroupId, userId: mockMemberUserId },
       expect.any(Object)
@@ -219,14 +221,14 @@ describe('GroupDetailScreen — Leave Group (member flow)', () => {
 
   it('shows the Leave Group button for a non-owner accepted member', () => {
     render(<GroupDetailScreen />);
-    fireEvent.press(screen.getByText('Members'));
-    expect(screen.getByText('Leave Group')).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Members' }));
+    expect(screen.getByRole('button', { name: 'Leave Group' })).toBeTruthy();
   });
 
   it('opens the Leave Group ConfirmationModal when Leave Group is tapped', () => {
     render(<GroupDetailScreen />);
-    fireEvent.press(screen.getByText('Members'));
-    fireEvent.press(screen.getByText('Leave Group'));
+    fireEvent.press(screen.getByRole('button', { name: 'Members' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Leave Group' }));
 
     // Both the button text and modal title say "Leave Group"; check the modal message
     expect(screen.getByText('Are you sure you want to leave this group?')).toBeTruthy();
@@ -234,19 +236,19 @@ describe('GroupDetailScreen — Leave Group (member flow)', () => {
 
   it('does NOT call leaveGroup when Cancel is pressed', () => {
     render(<GroupDetailScreen />);
-    fireEvent.press(screen.getByText('Members'));
-    fireEvent.press(screen.getByText('Leave Group'));
+    fireEvent.press(screen.getByRole('button', { name: 'Members' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Leave Group' }));
 
-    fireEvent.press(screen.getByLabelText('Cancel'));
+    fireEvent.press(screen.getByRole('button', { name: 'Cancel' }));
     expect(mockLeaveMutate).not.toHaveBeenCalled();
   });
 
   it('calls leaveGroup.mutate with the correct args when Leave is confirmed', () => {
     render(<GroupDetailScreen />);
-    fireEvent.press(screen.getByText('Members'));
-    fireEvent.press(screen.getByText('Leave Group'));
+    fireEvent.press(screen.getByRole('button', { name: 'Members' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Leave Group' }));
 
-    fireEvent.press(screen.getByLabelText('Leave'));
+    fireEvent.press(screen.getByRole('button', { name: 'Leave' }));
     expect(mockLeaveMutate).toHaveBeenCalledWith(
       { groupId: mockGroupId, userId: mockMemberUserId },
       expect.any(Object)
@@ -266,20 +268,59 @@ describe('GroupDetailScreen — invite toast (owner flow)', () => {
 
   it('shows an error toast when inviting a user already in the group', () => {
     render(<GroupDetailScreen />);
-    fireEvent.press(screen.getByText('Members'));
+    fireEvent.press(screen.getByRole('button', { name: 'Members' }));
 
     // Type a username and press Find to set lookupQuery (making the result visible)
-    const input = screen.getByPlaceholderText('@username or email');
+    const input = screen.getByLabelText('Invite by username or email');
     fireEvent.changeText(input, 'bob');
-    fireEvent.press(screen.getByText('Find'));
+    fireEvent.press(screen.getByRole('button', { name: 'Find user' }));
 
     // Bob is already a member; pressing Invite should show a toast, not call mutate
-    fireEvent.press(screen.getByText('Invite Bob'));
+    fireEvent.press(screen.getByRole('button', { name: 'Invite Bob' }));
 
     expect(mockShowToast).toHaveBeenCalledWith(
       'Bob is already in this group.',
       'error'
     );
     expect(mockInviteMutate).not.toHaveBeenCalled();
+  });
+});
+
+describe('GroupDetailScreen — accessibility', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCurrentUserId = mockOwnerUserId;
+    mockProfileSearchResults = [];
+  });
+
+  it('exposes the group name as a header', () => {
+    render(<GroupDetailScreen />);
+    expect(screen.getByRole('header', { name: 'Test Group' })).toBeTruthy();
+  });
+
+  it('exposes the Edit Group modal title as a header', () => {
+    render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByRole('button', { name: 'Edit group' }));
+    expect(screen.getByRole('header', { name: 'Edit Group' })).toBeTruthy();
+  });
+
+  it('exposes the Back button and tabs by role and name', () => {
+    render(<GroupDetailScreen />);
+    expect(screen.getByRole('button', { name: 'Go back' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Feed' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Recommendations' })).toBeTruthy();
+  });
+
+  it('hides avatar images from accessibility', () => {
+    mockProfileSearchResults = [
+      { id: 'u-x', display_name: 'Xavier', username: 'x', avatar_url: 'https://example.com/x.png' },
+    ];
+    render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByRole('button', { name: 'Members' }));
+    fireEvent.changeText(screen.getByLabelText('Invite by username or email'), 'x');
+    fireEvent.press(screen.getByRole('button', { name: 'Find user' }));
+    const images = screen.UNSAFE_getAllByType(Image);
+    expect(images.length).toBeGreaterThan(0);
+    images.forEach((img) => expect(img.props.accessible).toBe(false));
   });
 });
