@@ -3,11 +3,12 @@ import {
   View,
   Text,
   Modal,
-  TouchableOpacity,
   ScrollView,
   Switch,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
 import { colors } from "@/lib/colors";
 import { Slider } from "@miblanchard/react-native-slider";
 import { SearchablePicker } from "@/components/SearchablePicker";
@@ -159,13 +160,17 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
       onRequestClose={onClose}
       onShow={handleShow}
     >
-      <TouchableOpacity
+      <AccessiblePressable
+        accessibilityLabel="Dismiss filters"
+        accessible={false}
         className="flex-1 justify-end bg-black/60"
         activeOpacity={1}
         onPress={onClose}
       >
         {/* Prevent taps inside the sheet from propagating to the overlay */}
-        <TouchableOpacity
+        <AccessiblePressable
+          accessibilityLabel="Filter and sort options"
+          accessible={false}
           activeOpacity={1}
           onPress={() => {}}
           className="bg-brand-900 rounded-t-2xl"
@@ -173,10 +178,14 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
         >
           {/* Header */}
           <View className="flex-row items-center justify-between px-4 pt-4 pb-3 border-b border-brand-700">
-            <Text className="text-brand-100 text-lg font-bold">Filter & Sort</Text>
-            <TouchableOpacity onPress={onClose} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Heading className="text-brand-100 text-lg font-bold">Filter & Sort</Heading>
+            <AccessiblePressable
+              accessibilityLabel="Close"
+              onPress={onClose}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               <Text className="text-brand-400 text-xl">✕</Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           </View>
 
           <ScrollView
@@ -190,8 +199,10 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
                 {BOURBON_TYPES.map(({ label, value }) => {
                   const selected = draft.types.includes(value);
                   return (
-                    <TouchableOpacity
+                    <AccessiblePressable
                       key={value}
+                      accessibilityLabel={label}
+                      accessibilityState={{ selected }}
                       onPress={() => toggleType(value)}
                       className={`px-3 py-1.5 rounded-full border ${
                         selected
@@ -206,7 +217,7 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
                       >
                         {label}
                       </Text>
-                    </TouchableOpacity>
+                    </AccessiblePressable>
                   );
                 })}
               </View>
@@ -278,8 +289,10 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
                 {sortFields.map((sf) => {
                   const selected = draft.sortField === sf.value;
                   return (
-                    <TouchableOpacity
+                    <AccessiblePressable
                       key={sf.value}
+                      accessibilityLabel={sf.label}
+                      accessibilityState={{ selected }}
                       onPress={() => selectSortField(sf.value)}
                       className={`px-3 py-1.5 rounded-full border ${
                         selected
@@ -294,19 +307,21 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
                       >
                         {sf.label}
                       </Text>
-                    </TouchableOpacity>
+                    </AccessiblePressable>
                   );
                 })}
               </View>
               {draft.sortField && draft.sortField !== "social" && (
-                <TouchableOpacity
+                <AccessiblePressable
+                  accessibilityLabel={draft.sortAscending ? "Sort direction: ascending" : "Sort direction: descending"}
+                  accessibilityHint="Toggles sort direction"
                   onPress={toggleSortDirection}
                   className="flex-row items-center gap-2"
                 >
                   <Text className="text-brand-400 text-sm">
                     {draft.sortAscending ? "↑ Ascending" : "↓ Descending"}
                   </Text>
-                </TouchableOpacity>
+                </AccessiblePressable>
               )}
             </Section>
 
@@ -333,21 +348,23 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
 
           {/* ---- Action buttons ---- */}
           <View className="flex-row gap-3 px-4 pt-3 border-t border-brand-700">
-            <TouchableOpacity
+            <AccessiblePressable
+              accessibilityLabel="Clear All"
               onPress={handleClear}
               className="flex-1 border border-brand-600 rounded-xl py-3 items-center"
             >
               <Text className="text-brand-300 font-medium">Clear All</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </AccessiblePressable>
+            <AccessiblePressable
+              accessibilityLabel="Apply"
               onPress={handleApply}
               className="flex-1 bg-brand-600 rounded-xl py-3 items-center"
             >
               <Text className="text-white font-bold">Apply</Text>
-            </TouchableOpacity>
+            </AccessiblePressable>
           </View>
-        </TouchableOpacity>
-      </TouchableOpacity>
+        </AccessiblePressable>
+      </AccessiblePressable>
     </Modal>
   );
 }

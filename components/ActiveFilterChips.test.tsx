@@ -4,8 +4,9 @@
  */
 
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react-native";
+import { render, renderHook, act, screen, fireEvent } from "@testing-library/react-native";
 import { ActiveFilterChips } from "./ActiveFilterChips";
+import { useBourbonFilters } from "@/hooks/use-bourbon-filters";
 import { DEFAULT_BOURBON_FILTERS, BourbonFilterState } from "@/lib/bourbons";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -62,5 +63,27 @@ describe("ActiveFilterChips", () => {
   it("renders a distillery chip when distillery is set", () => {
     renderChips(makeFilters({ distillery: "Buffalo Trace" }));
     expect(screen.getByText("Buffalo Trace")).toBeTruthy();
+  });
+
+  it("labels each chip's remove button 'Remove <label> filter' and calls the handler", () => {
+    const onClearType = jest.fn();
+    renderChips(makeFilters({ types: ["wheated"] }), { onClearType });
+    fireEvent.press(screen.getByRole("button", { name: "Remove Wheated filter" }));
+    expect(onClearType).toHaveBeenCalledWith("wheated");
+  });
+
+  it("renders as many chips as useBourbonFilters().activeFilterCount", () => {
+    const filters = makeFilters({
+      types: ["wheated", "rye"],
+      proofMin: 90,
+      nasOnly: true,
+      ageMin: 3,
+      distillery: "Buffalo Trace",
+      sortField: "name",
+    });
+    const { result } = renderHook(() => useBourbonFilters());
+    act(() => result.current.applyFilters(filters));
+    renderChips(result.current.filters);
+    expect(screen.getAllByRole("button")).toHaveLength(result.current.activeFilterCount);
   });
 });

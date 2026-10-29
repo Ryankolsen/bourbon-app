@@ -2,7 +2,6 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
 import { useState, useMemo } from "react";
@@ -11,6 +10,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useCollection, useRemoveFromCollection } from "@/hooks/use-collection";
 import { useBourbonFilters } from "@/hooks/use-bourbon-filters";
 import { useUserRatings, useAllBourbonRatingStats } from "@/hooks/use-ratings";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { FilterButton } from "@/components/FilterButton";
 import { FilterSheet } from "@/components/FilterSheet";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { BourbonCard } from "@/components/BourbonCard";
@@ -29,6 +30,7 @@ export default function CollectionTab() {
   const {
     filters,
     hasActiveFilters,
+    activeFilterCount,
     applyFilters,
     patchFilters,
     resetFilters,
@@ -68,17 +70,10 @@ export default function CollectionTab() {
     <View className="flex-1 bg-brand-900">
       {/* Filter icon row */}
       <View className="px-4 pt-4 pb-2 flex-row justify-end">
-        <TouchableOpacity
+        <FilterButton
+          activeFilterCount={activeFilterCount}
           onPress={() => setFilterSheetVisible(true)}
-          className={`rounded-xl px-3 py-2 items-center justify-center ${
-            hasActiveFilters ? "bg-brand-600" : "bg-brand-800"
-          }`}
-        >
-          <Text className="text-xl">⚙️</Text>
-          {hasActiveFilters && (
-            <View className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-accent-amber rounded-full" />
-          )}
-        </TouchableOpacity>
+        />
       </View>
 
       {/* Active filter chips */}
@@ -98,9 +93,9 @@ export default function CollectionTab() {
               <Text className="text-brand-500 text-sm text-center">
                 No bourbons in your collection match the active filters.
               </Text>
-              <TouchableOpacity onPress={resetFilters} className="mt-2">
+              <AccessiblePressable accessibilityLabel="Clear filters" onPress={resetFilters} className="mt-2">
                 <Text className="text-brand-400 text-sm underline">Clear filters</Text>
-              </TouchableOpacity>
+              </AccessiblePressable>
             </>
           ) : (
             <>
@@ -139,7 +134,8 @@ export default function CollectionTab() {
                 communityRating={communityRatingsMap.get(item.bourbon_id) ?? null}
                 onPress={() => router.push(`/bourbon/${item.bourbon_id}`)}
               >
-                <TouchableOpacity
+                <AccessiblePressable
+                  accessibilityLabel={`Remove ${bourbonName} from vault`}
                   onPress={() => {
                     if (!user) return;
                     setConfirmRemoveItem({ id: item.id, bourbonName });
@@ -148,7 +144,7 @@ export default function CollectionTab() {
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
                   <Text className="text-white text-xs font-medium">Remove from Vault</Text>
-                </TouchableOpacity>
+                </AccessiblePressable>
               </BourbonCard>
             );
           }}

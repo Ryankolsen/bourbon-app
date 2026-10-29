@@ -1,9 +1,7 @@
 import {
   View,
   Text,
-  TextInput,
   FlatList,
-  TouchableOpacity,
   ActivityIndicator,
   ScrollView,
 } from "react-native";
@@ -18,6 +16,9 @@ import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from "@/hooks/us
 import { useToast } from "@/lib/toast-provider";
 import { buildAddToWishlistPayload } from "@/lib/wishlist";
 import { buildAddToCollectionPayload } from "@/lib/collection";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { LabeledTextInput } from "@/components/LabeledTextInput";
+import { FilterButton } from "@/components/FilterButton";
 import { FilterSheet } from "@/components/FilterSheet";
 import { ActiveFilterChips } from "@/components/ActiveFilterChips";
 import { BourbonCard } from "@/components/BourbonCard";
@@ -36,6 +37,7 @@ export default function ExploreScreen() {
   const {
     filters,
     hasActiveFilters,
+    activeFilterCount,
     applyFilters,
     patchFilters,
     resetFilters,
@@ -114,25 +116,20 @@ export default function ExploreScreen() {
       <View className="px-4 pt-4 pb-2 gap-2">
         {/* Search bar + filter icon row */}
         <View className="flex-row gap-2">
-          <TextInput
+          <LabeledTextInput
+            label="Search bourbons"
+            hideLabel
             value={search}
             onChangeText={setSearch}
             placeholder="Search bourbons..."
             placeholderTextColor={colors.placeholderDark}
             className="flex-1 bg-brand-800 text-brand-100 rounded-xl px-4 py-3 text-base"
           />
-          <TouchableOpacity
+          <FilterButton
+            activeFilterCount={activeFilterCount}
             onPress={() => setFilterSheetVisible(true)}
-            className={`rounded-xl px-3 items-center justify-center ${
-              hasActiveFilters ? "bg-brand-600" : "bg-brand-800"
-            }`}
-          >
-            {/* Funnel icon — unicode approximation */}
-            <Text className="text-xl">⚙️</Text>
-            {hasActiveFilters && (
-              <View className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-accent-amber rounded-full" />
-            )}
-          </TouchableOpacity>
+            className="px-3"
+          />
         </View>
 
         {/* Active filter chips — only visible when filters are non-default */}
@@ -145,12 +142,13 @@ export default function ExploreScreen() {
           onClearSort={() => patchFilters({ sortField: null })}
         />
 
-        <TouchableOpacity
+        <AccessiblePressable
+          accessibilityLabel="Add a Bourbon"
           onPress={() => router.push("/bourbon/new")}
           className="bg-brand-600 rounded-xl py-2.5 items-center"
         >
           <Text className="text-white font-medium text-sm">+ Add a Bourbon</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </View>
 
       {isLoading ? (
@@ -176,8 +174,10 @@ export default function ExploreScreen() {
                       const label = key === "taste_count" ? "Most Tasted" : "Highest Rated";
                       const active = trendingToggle === key;
                       return (
-                        <TouchableOpacity
+                        <AccessiblePressable
                           key={key}
+                          accessibilityLabel={label}
+                          accessibilityState={{ selected: active }}
                           onPress={() => setTrendingToggle(key)}
                           className={`px-3 py-1.5 rounded-full border ${
                             active
@@ -192,7 +192,7 @@ export default function ExploreScreen() {
                           >
                             {label}
                           </Text>
-                        </TouchableOpacity>
+                        </AccessiblePressable>
                       );
                     })}
                   </View>
@@ -205,8 +205,9 @@ export default function ExploreScreen() {
                       const b = bourbonLookup.get(bourbonId);
                       if (!b) return null;
                       return (
-                        <TouchableOpacity
+                        <AccessiblePressable
                           key={bourbonId}
+                          accessibilityLabel={b.name}
                           onPress={() => router.push(`/bourbon/${bourbonId}`)}
                           className="bg-brand-800 rounded-xl p-3 mr-3 w-44"
                         >
@@ -218,7 +219,7 @@ export default function ExploreScreen() {
                               {b.distillery}
                             </Text>
                           ) : null}
-                        </TouchableOpacity>
+                        </AccessiblePressable>
                       );
                     })}
                   </ScrollView>
@@ -251,7 +252,8 @@ export default function ExploreScreen() {
               >
                 <View className="flex-row items-center justify-between mt-3">
                   {/* Wishlist heart toggle */}
-                  <TouchableOpacity
+                  <AccessiblePressable
+                    accessibilityLabel={wishlisted ? `Remove ${item.name} from wishlist` : `Add ${item.name} to wishlist`}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     onPress={(e) => {
                       e.stopPropagation();
@@ -268,9 +270,10 @@ export default function ExploreScreen() {
                     }}
                   >
                     <Text className="text-xl">{wishlisted ? "★" : "☆"}</Text>
-                  </TouchableOpacity>
+                  </AccessiblePressable>
                   {/* Add to Collection button */}
-                  <TouchableOpacity
+                  <AccessiblePressable
+                    accessibilityLabel={`Add ${item.name} to collection`}
                     onPress={() => {
                       if (!user || isAdding) return;
                       setAddingIds((prev) => new Set(prev).add(item.id));
@@ -304,7 +307,7 @@ export default function ExploreScreen() {
                     <Text className="text-white font-medium text-sm">
                       {isAdding ? "Adding..." : "+ Add to Collection"}
                     </Text>
-                  </TouchableOpacity>
+                  </AccessiblePressable>
                 </View>
               </BourbonCard>
             );
@@ -317,9 +320,9 @@ export default function ExploreScreen() {
                   : "No bourbons in the database yet."}
               </Text>
               {hasActiveFilters && (
-                <TouchableOpacity onPress={resetFilters} className="mt-2">
+                <AccessiblePressable accessibilityLabel="Clear filters" onPress={resetFilters} className="mt-2">
                   <Text className="text-brand-400 text-sm underline">Clear filters</Text>
-                </TouchableOpacity>
+                </AccessiblePressable>
               )}
             </View>
           }

@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
 import { BourbonFilterState, BourbonTypeValue, DEFAULT_BOURBON_FILTERS, getBourbonTypeLabel } from "@/lib/bourbons";
 
 export interface ActiveFilterChipsProps {
@@ -140,9 +141,14 @@ function Chip({ label, clearTestId, onClear }: ChipProps) {
   return (
     <View className="flex-row items-center bg-brand-700 rounded-full px-3 py-1 gap-1">
       <Text className="text-surface-text text-xs">{label}</Text>
-      <TouchableOpacity testID={clearTestId} onPress={onClear} hitSlop={4}>
+      <AccessiblePressable
+        testID={clearTestId}
+        accessibilityLabel={`Remove ${label} filter`}
+        onPress={onClear}
+        hitSlop={4}
+      >
         <Text className="text-surface-text text-xs">×</Text>
-      </TouchableOpacity>
+      </AccessiblePressable>
     </View>
   );
 }
