@@ -2,10 +2,11 @@ import {
   View,
   Text,
   Image,
-  TouchableOpacity,
   ActivityIndicator,
   ScrollView,
 } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "@/hooks/use-auth";
@@ -72,9 +73,9 @@ export default function PublicProfileScreen() {
         <Text className="text-red-400 text-center text-base">
           User not found.
         </Text>
-        <TouchableOpacity onPress={() => router.back()} className="mt-4">
+        <AccessiblePressable onPress={() => router.back()} className="mt-4" accessibilityLabel="Go back">
           <Text className="text-brand-400 text-sm">Go back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </View>
     );
   }
@@ -86,9 +87,9 @@ export default function PublicProfileScreen() {
     <View className="flex-1 bg-brand-900">
       {/* Header */}
       <View className="px-4 pb-2" style={{ paddingTop: insets.top + 8 }}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={8}>
+        <AccessiblePressable onPress={() => router.back()} hitSlop={8} accessibilityLabel="Go back">
           <Text className="text-brand-400 text-base">← Back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </View>
 
       <ScrollView contentContainerClassName="px-4 pb-8">
@@ -96,6 +97,7 @@ export default function PublicProfileScreen() {
         <View className="items-center mt-4 mb-6">
           {profile.avatar_url ? (
             <Image
+              accessible={false}
               source={{ uri: profile.avatar_url }}
               className="w-24 h-24 rounded-full"
             />
@@ -107,9 +109,9 @@ export default function PublicProfileScreen() {
             </View>
           )}
 
-          <Text className="text-brand-100 text-xl font-bold mt-3">
+          <Heading className="text-brand-100 text-xl font-bold mt-3">
             {displayName}
-          </Text>
+          </Heading>
           {profile.username && (
             <Text className="text-brand-400 text-sm mt-0.5">
               @{profile.username}
@@ -173,7 +175,8 @@ export default function PublicProfileScreen() {
 
         {/* Follow / unfollow button (hidden on own profile) */}
         {!isOwnProfile && user && (
-          <TouchableOpacity
+          <AccessiblePressable
+            accessibilityLabel={isFollowing ? "Unfollow" : "Follow"}
             onPress={handleFollowToggle}
             disabled={followUser.isPending || unfollowUser.isPending}
             className={`rounded-2xl py-4 items-center ${
@@ -191,7 +194,7 @@ export default function PublicProfileScreen() {
                 {isFollowing ? "Following" : "Follow"}
               </Text>
             )}
-          </TouchableOpacity>
+          </AccessiblePressable>
         )}
 
         {isOwnProfile && (
@@ -217,8 +220,9 @@ export default function PublicProfileScreen() {
                   | null
                   | undefined;
                 return (
-                  <TouchableOpacity
+                  <AccessiblePressable
                     key={item.id}
+                    accessibilityLabel={bourbon?.name ?? "Unknown Bourbon"}
                     onPress={() =>
                       bourbon?.id
                         ? router.push(`/bourbon/${bourbon.id}` as never)
@@ -234,7 +238,7 @@ export default function PublicProfileScreen() {
                         {bourbon.distillery}
                       </Text>
                     ) : null}
-                  </TouchableOpacity>
+                  </AccessiblePressable>
                 );
               })
             )}
@@ -265,8 +269,9 @@ export default function PublicProfileScreen() {
                   year: "numeric",
                 });
                 return (
-                  <TouchableOpacity
+                  <AccessiblePressable
                     key={tasting.id}
+                    accessibilityLabel={`${bourbon?.name ?? "Unknown Bourbon"}, tasted ${date}`}
                     onPress={() =>
                       bourbon?.id
                         ? router.push(`/bourbon/${bourbon.id}` as never)
@@ -292,7 +297,7 @@ export default function PublicProfileScreen() {
                     <Text className="text-brand-500 text-xs mt-0.5">
                       {date}
                     </Text>
-                  </TouchableOpacity>
+                  </AccessiblePressable>
                 );
               })
             )}

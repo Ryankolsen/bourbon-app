@@ -238,8 +238,8 @@ describe("email sign-in", () => {
   it("signs in with the trimmed email and the password", async () => {
     render(<LoginScreen />);
     fireEvent.press(screen.getByText("Sign in with email"));
-    fireEvent.changeText(screen.getByPlaceholderText("Email"), "  reviewer@example.com ");
-    fireEvent.changeText(screen.getByPlaceholderText("Password"), "secret");
+    fireEvent.changeText(screen.getByLabelText("Email"), "  reviewer@example.com ");
+    fireEvent.changeText(screen.getByLabelText("Password"), "secret");
     fireEvent.press(screen.getByText("Sign In"));
     await waitFor(() =>
       expect(mockAuth.signInWithPassword).toHaveBeenCalledWith({
@@ -247,6 +247,25 @@ describe("email sign-in", () => {
         password: "secret",
       })
     );
+  });
+});
+
+describe("email sign-in fields", () => {
+  it("keeps the placeholders and exposes the inputs by label", () => {
+    render(<LoginScreen />);
+    fireEvent.press(screen.getByText("Sign in with email"));
+    expect(screen.getByLabelText("Email").props.placeholder).toBe("Email");
+    expect(screen.getByLabelText("Password").props.placeholder).toBe("Password");
+  });
+
+  it("shows a sign-in error from Supabase", async () => {
+    mockAuth.signInWithPassword.mockResolvedValue({ error: new Error("Invalid login") });
+    render(<LoginScreen />);
+    fireEvent.press(screen.getByText("Sign in with email"));
+    fireEvent.changeText(screen.getByLabelText("Email"), "a@b.co");
+    fireEvent.changeText(screen.getByLabelText("Password"), "bad");
+    fireEvent.press(screen.getByText("Sign In"));
+    expect(await screen.findByText("Invalid login")).toBeTruthy();
   });
 });
 

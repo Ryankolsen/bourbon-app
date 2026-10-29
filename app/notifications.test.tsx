@@ -119,4 +119,42 @@ describe('NotificationsScreen — achievement_unlocked type', () => {
     expect(screen.getByTestId('actor-avatar')).toBeTruthy();
     expect(screen.getByText('@alice is now following you')).toBeTruthy();
   });
+
+  // 4 — Content: whole row is a button named by its text
+  it('exposes each row as a button named by its text', () => {
+    mockUseSocialNotifications.mockReturnValue({
+      data: [makeAchievementNotification()],
+      isLoading: false,
+    });
+
+    render(<NotificationsScreen />);
+
+    expect(
+      screen.getByRole('button', { name: /Achievement Unlocked: Freshman Sipper/ })
+    ).toBeTruthy();
+  });
+
+  it('hides the placeholder avatar glyph from accessibility', () => {
+    mockUseSocialNotifications.mockReturnValue({
+      data: [
+        {
+          id: 'notif-1',
+          recipient_id: 'user-1',
+          actor_id: 'actor-1',
+          type: 'new_follower' as const,
+          tasting_id: null,
+          metadata: null,
+          created_at: '2026-01-01T00:00:00Z',
+          dismissed_at: null,
+          profiles: { display_name: 'Alice', username: 'alice', avatar_url: null },
+        },
+      ],
+      isLoading: false,
+    });
+
+    render(<NotificationsScreen />);
+
+    expect(screen.getByRole('button', { name: /@alice is now following you/ })).toBeTruthy();
+    expect(screen.getByTestId('actor-avatar').props.accessible).toBe(false);
+  });
 });

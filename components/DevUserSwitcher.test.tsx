@@ -90,6 +90,26 @@ describe("DevUserSwitcher — open state", () => {
   });
 });
 
+describe("DevUserSwitcher — roles", () => {
+  it("exposes toggle, close and sign out as buttons", () => {
+    renderSwitcher();
+    expect(screen.getByRole("button", { name: "Open dev user switcher" })).toBeTruthy();
+    openPanel();
+    expect(screen.getByRole("button", { name: "Close switcher" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Sign out and return to admin login" })
+    ).toBeTruthy();
+  });
+
+  it("exposes each dev user as a named button", () => {
+    renderSwitcher();
+    openPanel();
+    for (const user of DEV_USERS) {
+      expect(screen.getByRole("button", { name: new RegExp(user.name) })).toBeTruthy();
+    }
+  });
+});
+
 describe("DevUserSwitcher — switching user", () => {
   it("calls signInWithPassword with the correct email and DEV_PASSWORD", async () => {
     renderSwitcher();
