@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
 import { useAuth } from "@/hooks/use-auth";
 import { useGameDailySession, DAILY_CAP, type GameType } from "@/hooks/use-game-daily-session";
 import { useTheme } from "@/lib/theme-provider";
@@ -47,6 +49,7 @@ function GameCard({ emoji, title, tagline, gameType, userId, onPlay }: GameCardP
       : `${session.playsRemaining} / ${DAILY_CAP} plays left`;
 
   const playable = session.canPlay && !session.isLoading && !!userId;
+  const buttonLabel = !userId ? "Sign in to play" : session.canPlay ? "Play" : "Come back tomorrow";
 
   return (
     <View
@@ -56,7 +59,7 @@ function GameCard({ emoji, title, tagline, gameType, userId, onPlay }: GameCardP
       <View className="flex-row items-center mb-3">
         <Text style={{ fontSize: 36, marginRight: 12 }}>{emoji}</Text>
         <View className="flex-1">
-          <Text className="text-brand-100 text-xl font-bold">{title}</Text>
+          <Heading className="text-brand-100 text-xl font-bold">{title}</Heading>
           <Text className="text-brand-400 text-sm mt-0.5">{tagline}</Text>
         </View>
       </View>
@@ -83,7 +86,8 @@ function GameCard({ emoji, title, tagline, gameType, userId, onPlay }: GameCardP
         />
       </View>
 
-      <TouchableOpacity
+      <AccessiblePressable
+        accessibilityLabel={playable ? `Play ${title}` : buttonLabel}
         onPress={onPlay}
         disabled={!playable}
         className="rounded-xl py-3 items-center"
@@ -100,13 +104,9 @@ function GameCard({ emoji, title, tagline, gameType, userId, onPlay }: GameCardP
           className="font-bold text-base"
           style={{ color: playable ? c.white : c.tabInactive }}
         >
-          {!userId
-            ? "Sign in to play"
-            : session.canPlay
-            ? "Play"
-            : "Come back tomorrow"}
+          {buttonLabel}
         </Text>
-      </TouchableOpacity>
+      </AccessiblePressable>
     </View>
   );
 }
@@ -178,7 +178,7 @@ export default function DojoScreen() {
     <>
       <ScrollView className="flex-1 bg-brand-900" contentContainerStyle={{ padding: 16 }}>
         <View className="mb-6 mt-2">
-          <Text className="text-brand-100 text-3xl font-bold">The Dojo</Text>
+          <Heading className="text-brand-100 text-3xl font-bold">The Dojo</Heading>
           <Text className="text-brand-400 text-sm mt-1">
             Sharpen your bourbon knowledge. Two games, five plays each, every day.
           </Text>

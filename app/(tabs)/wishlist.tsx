@@ -1,4 +1,6 @@
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, ActivityIndicator } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useWishlist, useRemoveFromWishlist } from "@/hooks/use-wishlist";
@@ -37,7 +39,7 @@ export default function WishlistScreen() {
     return (
       <View className="flex-1 bg-brand-900 items-center justify-center px-8">
         <Text className="text-5xl mb-4">⭐</Text>
-        <Text className="text-brand-100 text-xl font-bold mb-2">Wishlist is empty</Text>
+        <Heading className="text-brand-100 text-xl font-bold mb-2">Wishlist is empty</Heading>
         <Text className="text-brand-400 text-center text-sm">
           Browse Explore and add bourbons you want to try.
         </Text>
@@ -64,7 +66,8 @@ export default function WishlistScreen() {
               communityRating={communityRatingsMap.get(item.bourbon_id) ?? null}
               onPress={() => router.push(`/bourbon/${item.bourbon_id}`)}
             >
-              <TouchableOpacity
+              <AccessiblePressable
+                accessibilityLabel={`Remove ${bourbon?.name ?? "bourbon"} from wishlist`}
                 onPress={() => {
                   if (!user) return;
                   removeFromWishlist.mutate({
@@ -77,7 +80,7 @@ export default function WishlistScreen() {
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <Text className="text-white text-xs font-medium">Remove from Wishlist</Text>
-              </TouchableOpacity>
+              </AccessiblePressable>
             </BourbonCard>
           );
         }}

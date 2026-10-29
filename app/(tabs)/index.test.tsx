@@ -11,6 +11,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 import CollectionScreen from '@/components/CollectionTab';
+import HomeScreen from './index';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -83,6 +84,23 @@ jest.mock('@/hooks/use-ratings', () => ({
 }));
 
 const mockShowToast = jest.fn();
+jest.mock('@/lib/supabase', () => ({ supabase: { from: jest.fn() } }));
+
+jest.mock('@/hooks/use-following-feed', () => ({
+  useFollowingFeed: () => ({ data: [], isLoading: false }),
+}));
+
+jest.mock('@/hooks/use-wishlist', () => ({
+  useWishlist: () => ({ data: [], isLoading: false, isError: false }),
+  useRemoveFromWishlist: () => ({ mutate: jest.fn() }),
+}));
+
+jest.mock('@/lib/theme-provider', () => ({
+  useTheme: () => ({
+    activeTheme: { colors: { brand800: '#222', tabActive: '#c60', tabInactive: '#888', white: '#fff' } },
+  }),
+}));
+
 jest.mock('@/lib/toast-provider', () => ({
   useToast: () => ({ showToast: mockShowToast }),
 }));
@@ -97,6 +115,16 @@ jest.mock('@/components/ActiveFilterChips', () => ({
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
+// The bourbon card's own button also contains this label via its children,
+// so select the button whose own label is exact.
+function pressRemoveFromVault() {
+  const label = `Remove ${BOURBON_NAME} from vault`;
+  const button = screen
+    .getAllByRole('button', { name: label })
+    .find((e) => e.props.accessibilityLabel === label)!;
+  fireEvent.press(button);
+}
+
 describe('CollectionTab — Remove from Vault confirmation', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -106,7 +134,7 @@ describe('CollectionTab — Remove from Vault confirmation', () => {
     render(<CollectionScreen />);
 
     // Button text
-    fireEvent.press(screen.getByText('Remove from Vault'));
+    pressRemoveFromVault();
 
     // Modal message with bourbon name
     expect(
@@ -117,7 +145,7 @@ describe('CollectionTab — Remove from Vault confirmation', () => {
   it('does NOT call removeFromCollection when Cancel is pressed', () => {
     render(<CollectionScreen />);
 
-    fireEvent.press(screen.getByText('Remove from Vault'));
+    pressRemoveFromVault();
     fireEvent.press(screen.getByLabelText('Cancel'));
 
     expect(mockRemoveMutate).not.toHaveBeenCalled();
@@ -126,12 +154,25 @@ describe('CollectionTab — Remove from Vault confirmation', () => {
   it('calls removeFromCollection.mutate with correct id when Remove is confirmed', () => {
     render(<CollectionScreen />);
 
-    fireEvent.press(screen.getByText('Remove from Vault'));
+    pressRemoveFromVault();
     fireEvent.press(screen.getByLabelText('Remove'));
 
     expect(mockRemoveMutate).toHaveBeenCalledWith(
       { id: COLLECTION_ENTRY_ID, userId: USER_ID },
       expect.any(Object)
     );
+  });
+});
+
+describe('HomeScreen — accessibility', () => {
+  it('exposes the empty feed title as a header', () => {
+    render(<HomeScreen />);
+    expect(screen.getByRole('header', { name: 'Nothing here yet' })).toBeTruthy();
+  });
+
+  it('exposes the segment switches as tabs with names', () => {
+    render(<HomeScreen />);
+    fireEvent.press(screen.getByRole('tab', { name: 'My Collection' }));
+    expect(screen.getByRole('tab', { name: 'My Collection', selected: true })).toBeTruthy();
   });
 });

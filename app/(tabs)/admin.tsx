@@ -1,4 +1,6 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { Heading } from "@/components/Heading";
 import { useRouter } from "expo-router";
 import { useBourbonSuggestions } from "@/hooks/use-bourbon-suggestions";
 import { colors } from "@/lib/colors";
@@ -10,9 +12,12 @@ export default function AdminScreen() {
 
   return (
     <View className="flex-1 items-center justify-center bg-gray-950 gap-4">
-      <Text className="text-2xl font-bold text-white mb-2">Admin</Text>
+      <Heading className="text-2xl font-bold text-white mb-2">Admin</Heading>
 
-      <TouchableOpacity
+      <AccessiblePressable
+        accessibilityLabel={
+          pendingCount > 0 ? `Review Suggestions, ${pendingCount} pending` : "Review Suggestions"
+        }
         onPress={() => router.push("/admin/suggestions" as never)}
         className="bg-brand-800 border border-brand-600 px-6 py-4 rounded-xl w-64 flex-row items-center justify-between"
         testID="suggestions-nav-button"
@@ -38,14 +43,15 @@ export default function AdminScreen() {
             </Text>
           </View>
         )}
-      </TouchableOpacity>
+      </AccessiblePressable>
 
-      <TouchableOpacity
+      <AccessiblePressable
+        accessibilityLabel="Theme Picker"
         onPress={() => router.push("/dev/themes")}
         className="bg-brand-600 px-6 py-3 rounded-xl"
       >
         <Text className="text-white font-semibold text-base">🎨 Theme Picker</Text>
-      </TouchableOpacity>
+      </AccessiblePressable>
     </View>
   );
 }
