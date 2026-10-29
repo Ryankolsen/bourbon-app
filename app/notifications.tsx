@@ -3,9 +3,9 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import { AccessiblePressable } from '@/components/AccessiblePressable';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/use-auth';
@@ -63,13 +63,19 @@ function NotificationRow({
   }
 
   return (
-    <TouchableOpacity
+    <AccessiblePressable
       className="flex-row items-center bg-brand-800 rounded-2xl p-4 mx-4 mb-3"
       onPress={handlePress}
+      accessibilityLabel={label}
       testID="notification-row"
     >
       {!isAchievement && item.actor_id && (
-        <View testID="actor-avatar" className="mr-3">
+        <View
+          testID="actor-avatar"
+          className="mr-3"
+          accessible={false}
+          importantForAccessibility="no"
+        >
           <Text className="text-brand-400 text-base">👤</Text>
         </View>
       )}
@@ -79,7 +85,7 @@ function NotificationRow({
         </Text>
         <Text className="text-brand-400 text-xs mt-1">{formatDate(item.created_at)}</Text>
       </View>
-      <TouchableOpacity
+      <AccessiblePressable
         onPress={(e) => {
           e.stopPropagation();
           onDismiss(item.id);
@@ -89,8 +95,8 @@ function NotificationRow({
         className="ml-3 p-1"
       >
         <Text className="text-brand-400 text-base">✕</Text>
-      </TouchableOpacity>
-    </TouchableOpacity>
+      </AccessiblePressable>
+    </AccessiblePressable>
   );
 }
 
@@ -134,13 +140,13 @@ export default function NotificationsScreen() {
         className="flex-row items-center px-4 py-3 border-b"
         style={{ borderBottomColor: c.tabBorder }}
       >
-        <TouchableOpacity
+        <AccessiblePressable
           onPress={() => router.back()}
           className="mr-3"
           accessibilityLabel="Go back"
         >
           <Text className="text-brand-400 text-base">‹ Back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
         <Text className="text-brand-100 text-lg font-bold flex-1">Notifications</Text>
       </View>
 

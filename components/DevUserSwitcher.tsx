@@ -10,11 +10,11 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   Modal,
-  Pressable,
   ScrollView,
   Text,
   View,
 } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
 import { useRouter } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { DEV_USERS, DEV_PASSWORD } from "@/lib/dev-users";
@@ -66,13 +66,13 @@ function DevUserSwitcherPanel() {
     <>
       {/* Floating toggle button */}
       <View className="absolute bottom-24 right-4 z-50">
-        <Pressable
+        <AccessiblePressable
           onPress={() => setOpen(true)}
           className="bg-indigo-700 rounded-full w-10 h-10 items-center justify-center shadow-lg"
           accessibilityLabel="Open dev user switcher"
         >
           <Text className="text-white text-lg">👤</Text>
-        </Pressable>
+        </AccessiblePressable>
       </View>
 
       {/* Switcher modal */}
@@ -82,25 +82,35 @@ function DevUserSwitcherPanel() {
         animationType="fade"
         onRequestClose={() => setOpen(false)}
       >
-        <Pressable
+        <AccessiblePressable
           className="flex-1 bg-black/60 justify-end"
           onPress={() => setOpen(false)}
+          activeOpacity={1}
+          accessible={false}
+          accessibilityRole="none"
+          accessibilityLabel="Dismiss dev user switcher"
         >
           {/* Panel — stop propagation so taps inside don't close */}
-          <Pressable onPress={(e) => e.stopPropagation()}>
+          <AccessiblePressable
+            onPress={(e) => e.stopPropagation()}
+            activeOpacity={1}
+            accessible={false}
+            accessibilityRole="none"
+            accessibilityLabel="Dev user switcher panel"
+          >
             <View className="bg-gray-950 rounded-t-2xl px-4 pt-4 pb-8">
               {/* Header */}
               <View className="flex-row items-center justify-between mb-3">
                 <Text className="text-white font-bold text-base">
                   Dev: Switch User
                 </Text>
-                <Pressable
+                <AccessiblePressable
                   onPress={() => setOpen(false)}
                   className="p-1"
                   accessibilityLabel="Close switcher"
                 >
                   <Text className="text-gray-400 text-xl leading-none">✕</Text>
-                </Pressable>
+                </AccessiblePressable>
               </View>
 
               {/* Error message */}
@@ -116,8 +126,9 @@ function DevUserSwitcherPanel() {
                 {DEV_USERS.map((devUser) => {
                   const isLoading = switching === devUser.email;
                   return (
-                    <Pressable
+                    <AccessiblePressable
                       key={devUser.id}
+                      accessibilityLabel={`Switch to ${devUser.name}, ${devUser.role}`}
                       onPress={() => switchTo(devUser.email)}
                       disabled={switching !== null}
                       className="flex-row items-center justify-between py-3 border-b border-gray-800"
@@ -135,22 +146,22 @@ function DevUserSwitcherPanel() {
                       ) : (
                         <Text className="text-indigo-400 text-xs">Switch</Text>
                       )}
-                    </Pressable>
+                    </AccessiblePressable>
                   );
                 })}
               </ScrollView>
 
               {/* Theme picker link */}
-              <Pressable
+              <AccessiblePressable
                 onPress={() => { setOpen(false); router.push("/dev/themes"); }}
                 className="mt-4 bg-gray-800 rounded-xl py-3 items-center"
                 accessibilityLabel="Open theme picker"
               >
                 <Text className="text-indigo-300 font-medium">🎨 Theme Picker</Text>
-              </Pressable>
+              </AccessiblePressable>
 
               {/* Sign out / back to admin */}
-              <Pressable
+              <AccessiblePressable
                 onPress={signOut}
                 disabled={switching !== null}
                 className="mt-2 bg-gray-800 rounded-xl py-3 items-center"
@@ -163,10 +174,10 @@ function DevUserSwitcherPanel() {
                     Sign Out (Return to Admin Login)
                   </Text>
                 )}
-              </Pressable>
+              </AccessiblePressable>
             </View>
-          </Pressable>
-        </Pressable>
+          </AccessiblePressable>
+        </AccessiblePressable>
       </Modal>
     </>
   );

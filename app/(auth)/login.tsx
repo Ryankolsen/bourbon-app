@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Platform, ActivityIndicator, ScrollView, TextInput, LayoutAnimation, Linking } from "react-native";
+import { View, Text, Platform, ActivityIndicator, ScrollView, LayoutAnimation, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import * as WebBrowser from "expo-web-browser";
@@ -7,6 +7,8 @@ import { makeRedirectUri } from "expo-auth-session";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { supabase } from "@/lib/supabase";
 import { DEV_USERS, DEV_PASSWORD } from "@/lib/dev-users";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
+import { LabeledTextInput } from "@/components/LabeledTextInput";
 import { colors } from "@/lib/colors";
 import { PRIVACY_POLICY_URL, WEBSITE_URL } from "@/lib/public-links";
 
@@ -165,7 +167,8 @@ export default function LoginScreen() {
             </Text>
           </View>
         ) : (
-          <TouchableOpacity
+          <AccessiblePressable
+            accessibilityLabel="Continue with Google"
             onPress={signInWithGoogle}
             disabled={loading}
             className="bg-brand-600 rounded-xl py-4 flex-row items-center justify-center gap-2"
@@ -177,7 +180,7 @@ export default function LoginScreen() {
                 Continue with Google
               </Text>
             )}
-          </TouchableOpacity>
+          </AccessiblePressable>
         )}
       </View>
 
@@ -189,15 +192,20 @@ export default function LoginScreen() {
           <View className="flex-1 h-px bg-brand-700" />
         </View>
 
-        <TouchableOpacity onPress={toggleEmailExpanded}>
+        <AccessiblePressable
+          onPress={toggleEmailExpanded}
+          accessibilityLabel={emailExpanded ? "Hide email sign-in" : "Sign in with email"}
+        >
           <Text className="text-brand-400 text-sm text-center">
             {emailExpanded ? "Hide email sign-in" : "Sign in with email"}
           </Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
 
         {emailExpanded && (
           <View className="mt-4 gap-3">
-            <TextInput
+            <LabeledTextInput
+              label="Email"
+              hideLabel
               className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-base"
               placeholder="Email"
               placeholderTextColor={colors.brand500}
@@ -207,7 +215,9 @@ export default function LoginScreen() {
               value={emailInput}
               onChangeText={setEmailInput}
             />
-            <TextInput
+            <LabeledTextInput
+              label="Password"
+              hideLabel
               className="bg-brand-800 rounded-xl px-4 py-3 text-brand-100 text-base"
               placeholder="Password"
               placeholderTextColor={colors.brand500}
@@ -217,10 +227,13 @@ export default function LoginScreen() {
             />
 
             {emailSignInError && (
-              <Text className="text-red-400 text-xs text-center">{emailSignInError}</Text>
+              <Text accessibilityLiveRegion="polite" className="text-red-400 text-xs text-center">
+                {emailSignInError}
+              </Text>
             )}
 
-            <TouchableOpacity
+            <AccessiblePressable
+              accessibilityLabel="Sign In"
               onPress={signInWithEmailPassword}
               disabled={emailSignInLoading}
               className="bg-brand-700 rounded-xl py-4 items-center justify-center"
@@ -230,7 +243,7 @@ export default function LoginScreen() {
               ) : (
                 <Text className="text-brand-100 font-semibold text-base">Sign In</Text>
               )}
-            </TouchableOpacity>
+            </AccessiblePressable>
           </View>
         )}
       </View>
@@ -258,8 +271,9 @@ export default function LoginScreen() {
         <View className="mt-8 w-full border-t border-brand-700 pt-6">
           <Text className="text-brand-500 text-xs text-center mb-3">DEV — sign in as</Text>
           {DEV_USERS.map((u) => (
-            <TouchableOpacity
+            <AccessiblePressable
               key={u.id}
+              accessibilityLabel={`Sign in as ${u.name}`}
               onPress={() => signInWithEmail(u.email)}
               disabled={loadingEmail !== null}
               className="bg-brand-800 rounded-xl px-4 py-3 mb-2 flex-row items-center justify-between"
@@ -273,7 +287,7 @@ export default function LoginScreen() {
               ) : (
                 <Text className="text-brand-500 text-xs">{u.email}</Text>
               )}
-            </TouchableOpacity>
+            </AccessiblePressable>
           ))}
         </View>
       )}

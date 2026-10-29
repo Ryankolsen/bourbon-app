@@ -8,7 +8,8 @@
  * DevUserSwitcher (if added). The ThemeProvider and profile selector remain.
  */
 
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/lib/theme-provider";
 import { THEMES, type Theme } from "@/lib/themes";
@@ -33,9 +34,9 @@ export default function DevThemePickerScreen() {
     <View className="flex-1 bg-brand-900">
       {/* Header */}
       <View className="flex-row items-center px-4 pt-14 pb-4 border-b border-brand-700">
-        <TouchableOpacity onPress={() => router.back()} className="mr-4 p-2">
+        <AccessiblePressable onPress={() => router.back()} className="mr-4 p-2" accessibilityLabel="Go back">
           <Text className="text-brand-300 text-base">← Back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
         <Text className="text-brand-100 font-bold text-lg flex-1">
           Dev: Theme Picker
         </Text>
@@ -184,8 +185,9 @@ function ThemeCard({
       </View>
 
       {/* Apply button */}
-      <TouchableOpacity
+      <AccessiblePressable
         onPress={onApply}
+        accessibilityLabel={isActive ? "Active theme" : "Apply theme"}
         style={{
           margin: 12,
           marginTop: 0,
@@ -198,7 +200,7 @@ function ThemeCard({
         <Text style={{ color: textOnBg(isActive ? c.brand500 : c.brand700), fontWeight: "600" }}>
           {isActive ? "✓ Active" : "Apply"}
         </Text>
-      </TouchableOpacity>
+      </AccessiblePressable>
     </View>
   );
 }

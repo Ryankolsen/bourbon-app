@@ -1,9 +1,9 @@
 import { useState } from "react";
+import { AccessiblePressable } from "@/components/AccessiblePressable";
 import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
 } from "react-native";
@@ -114,22 +114,22 @@ function SuggestionCard({
       </View>
 
       <View className="flex-row gap-3 mt-1">
-        <TouchableOpacity
+        <AccessiblePressable
           onPress={() => onApprove(suggestion.id)}
           className="flex-1 bg-brand-600 rounded-xl py-2 items-center"
           testID="approve-button"
           accessibilityLabel="Approve suggestion"
         >
           <Text className="text-white font-semibold text-sm">Approve</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </AccessiblePressable>
+        <AccessiblePressable
           onPress={() => onReject(suggestion.id)}
           className="flex-1 bg-brand-800 border border-brand-600 rounded-xl py-2 items-center"
           testID="reject-button"
           accessibilityLabel="Reject suggestion"
         >
           <Text className="text-brand-300 font-semibold text-sm">Reject</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
       </View>
     </View>
   );
@@ -239,13 +239,13 @@ export default function SuggestionsScreen() {
         className="flex-row items-center px-4 py-3 border-b"
         style={{ borderBottomColor: c.tabBorder }}
       >
-        <TouchableOpacity
+        <AccessiblePressable
           onPress={() => router.back()}
           className="mr-3"
           accessibilityLabel="Go back"
         >
           <Text className="text-brand-400 text-base">‹ Back</Text>
-        </TouchableOpacity>
+        </AccessiblePressable>
         <Text className="text-brand-100 text-lg font-bold flex-1">
           Pending Suggestions
         </Text>
