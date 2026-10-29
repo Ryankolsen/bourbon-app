@@ -14,6 +14,9 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import EditBourbonScreen from './edit';
+import { announce } from '@/lib/announce';
+
+jest.mock('@/lib/announce', () => ({ announce: jest.fn() }));
 
 // ── Variable-driven mock state ────────────────────────────────────────────────
 
@@ -202,13 +205,28 @@ describe('EditBourbonScreen — admin mode', () => {
   // Slice 1 — core wiring: screen renders with heading
   it('renders the Edit Bourbon heading', () => {
     render(<EditBourbonScreen />);
-    expect(screen.getByText('Edit Bourbon')).toBeTruthy();
+    expect(screen.getByRole('header', { name: 'Edit Bourbon' })).toBeTruthy();
   });
 
   // Slice 2 — pre-filled: proof input shows current bourbon proof
   it('pre-fills the proof field with the bourbon current proof value', () => {
     render(<EditBourbonScreen />);
     expect(screen.getByDisplayValue('107')).toBeTruthy();
+  });
+
+  it('finds every admin text field by label', () => {
+    render(<EditBourbonScreen />);
+    for (const label of ['Name *', 'Proof', 'Age Statement (years)', 'Mashbill', 'MSRP ($)', 'Description', 'Image URL', 'City']) {
+      expect(screen.getByLabelText(label)).toBeTruthy();
+    }
+  });
+
+  it('shows the name error once and announces it when name is cleared', async () => {
+    render(<EditBourbonScreen />);
+    fireEvent.changeText(screen.getByLabelText('Name *'), '');
+    fireEvent.press(screen.getByRole('button', { name: 'Save Changes' }));
+    expect(await screen.findAllByText('Name is required')).toHaveLength(1);
+    expect(announce).toHaveBeenCalledWith('Name is required');
   });
 
   // Slice 3 — pre-filled: name input shows current bourbon name
@@ -239,12 +257,12 @@ describe('EditBourbonScreen — community mode', () => {
     render(<EditBourbonScreen />);
 
     // Proof field should be empty (null → "")
-    const proofInput = screen.getByPlaceholderText('e.g. 93');
+    const proofInput = screen.getByLabelText('Proof');
     expect(proofInput.props.value).toBe('');
 
     // User enters a new proof value
     fireEvent.changeText(proofInput, '95');
-    fireEvent.press(screen.getByText('Save Changes'));
+    fireEvent.press(screen.getByRole('button', { name: 'Save Changes' }));
 
     await waitFor(() => expect(mockUpdateMutateAsync).toHaveBeenCalledTimes(1));
 
@@ -262,11 +280,11 @@ describe('EditBourbonScreen — community mode', () => {
 
     render(<EditBourbonScreen />);
 
-    const proofInput = screen.getByPlaceholderText('e.g. 93');
+    const proofInput = screen.getByLabelText('Proof');
     expect(proofInput.props.value).toBe('90');
 
     fireEvent.changeText(proofInput, '95');
-    fireEvent.press(screen.getByText('Save Changes'));
+    fireEvent.press(screen.getByRole('button', { name: 'Save Changes' }));
 
     await waitFor(() => expect(mockSuggestionMutateAsync).toHaveBeenCalledTimes(1));
 
@@ -294,12 +312,12 @@ describe('EditBourbonScreen — community mode', () => {
 
     render(<EditBourbonScreen />);
 
-    const proofInput = screen.getByPlaceholderText('e.g. 93');
+    const proofInput = screen.getByLabelText('Proof');
     // Form shows "0" as the current value
     expect(proofInput.props.value).toBe('0');
 
     fireEvent.changeText(proofInput, '95');
-    fireEvent.press(screen.getByText('Save Changes'));
+    fireEvent.press(screen.getByRole('button', { name: 'Save Changes' }));
 
     await waitFor(() => expect(mockUpdateMutateAsync).toHaveBeenCalledTimes(1));
 
@@ -319,12 +337,12 @@ describe('EditBourbonScreen — community mode', () => {
     render(<EditBourbonScreen />);
 
     // Change proof (Tier 1: was null)
-    fireEvent.changeText(screen.getByPlaceholderText('e.g. 93'), '95');
+    fireEvent.changeText(screen.getByLabelText('Proof'), '95');
 
     // Change distillery (Tier 2: was "Buffalo Trace")
     fireEvent.changeText(screen.getByTestId('distillery-picker-input'), 'Four Roses');
 
-    fireEvent.press(screen.getByText('Save Changes'));
+    fireEvent.press(screen.getByRole('button', { name: 'Save Changes' }));
 
     await waitFor(() => {
       expect(mockUpdateMutateAsync).toHaveBeenCalledTimes(1);
@@ -343,7 +361,7 @@ describe('EditBourbonScreen — community mode', () => {
     render(<EditBourbonScreen />);
 
     // Submit without changing anything (all form values match bourbon values)
-    fireEvent.press(screen.getByText('Save Changes'));
+    fireEvent.press(screen.getByRole('button', { name: 'Save Changes' }));
 
     // Allow any async work to settle
     await waitFor(() => {});

@@ -10,6 +10,9 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 import NewBourbonScreen from './new';
+import { announce } from '@/lib/announce';
+
+jest.mock('@/lib/announce', () => ({ announce: jest.fn() }));
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -99,5 +102,44 @@ describe('NewBourbonScreen — country/state dropdowns', () => {
     // Change to Japan (also has provinces, so the dropdown stays visible — but value resets)
     fireEvent.press(screen.getByTestId('country-dropdown-option-JP'));
     expect(screen.getByTestId('state-dropdown-selected').props.children).toBe('');
+  });
+});
+
+describe('NewBourbonScreen — accessibility', () => {
+  beforeEach(() => (announce as jest.Mock).mockClear());
+
+  it('finds text fields by label and accepts input', () => {
+    render(<NewBourbonScreen />);
+    for (const label of ['Name *', 'Proof *', 'Age Statement (years)', 'Mashbill', 'MSRP ($)', 'Description', 'City']) {
+      expect(screen.getByLabelText(label)).toBeTruthy();
+    }
+    fireEvent.changeText(screen.getByLabelText('Name *'), "Blanton's");
+    expect(screen.getByLabelText('Name *').props.value).toBe("Blanton's");
+  });
+
+  it('renders the title as a header', () => {
+    render(<NewBourbonScreen />);
+    expect(screen.getByRole('header', { name: 'Add a Bourbon' })).toBeTruthy();
+  });
+
+  it('finds the submit and cancel buttons by role', () => {
+    render(<NewBourbonScreen />);
+    expect(screen.getByRole('button', { name: 'Add Bourbon' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
+  });
+
+  it('exposes type chips as buttons with selected state', () => {
+    render(<NewBourbonScreen />);
+    fireEvent.press(screen.getByRole('button', { name: 'Small Batch' }));
+    expect(screen.getByRole('button', { name: 'Small Batch' }).props.accessibilityState).toEqual(
+      expect.objectContaining({ selected: true })
+    );
+  });
+
+  it('shows a missing-required error once and announces it', async () => {
+    render(<NewBourbonScreen />);
+    fireEvent.press(screen.getByRole('button', { name: 'Add Bourbon' }));
+    expect(await screen.findAllByText('Name is required')).toHaveLength(1);
+    expect(announce).toHaveBeenCalledWith('Name is required');
   });
 });
