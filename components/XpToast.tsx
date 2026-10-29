@@ -14,6 +14,7 @@ import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import { useXpNotification } from "@/context/xp-context";
 import { XpBurst, XpBurstHandle } from "@/components/XpBurst";
+import { announce } from "@/lib/announce";
 import { TomorrowXp } from "@/lib/streak-utils";
 
 const AUTO_DISMISS_MS = 2500;
@@ -46,6 +47,15 @@ export function XpToast() {
     if (!current || current.xpAwarded === 0) return;
 
     burstRef.current?.trigger();
+
+    const line =
+      current.eventType === "daily_checkin"
+        ? buildStreakLine(current.streakDays, current.isReset, current.tomorrowXp)
+        : null;
+    announce(
+      `+${current.xpAwarded} Barrel Points, ${current.label}` +
+        (line ? `. ${line}` : "")
+    );
 
     // Slide in
     Animated.parallel([
