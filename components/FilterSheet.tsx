@@ -244,6 +244,7 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
               <View className="flex-row items-center justify-between mb-2">
                 <Text className="text-brand-300 text-sm">No Age Statement</Text>
                 <Switch
+                  accessibilityLabel="No Age Statement"
                   value={draft.nasOnly}
                   onValueChange={(v) => setDraft((d) => ({ ...d, nasOnly: v }))}
                   trackColor={{ false: colors.sliderTrackEmpty, true: colors.sliderTrackFilled }}
@@ -333,6 +334,7 @@ export function FilterSheet({ visible, filters, onApply, onClose, showSocialSort
                     Only show bourbons tried by people I follow
                   </Text>
                   <Switch
+                    accessibilityLabel="Only show bourbons tried by people I follow"
                     value={draft.friendsOnly}
                     onValueChange={(v) => setDraft((d) => ({ ...d, friendsOnly: v }))}
                     trackColor={{ false: colors.sliderTrackEmpty, true: colors.sliderTrackFilled }}

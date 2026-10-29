@@ -21,4 +21,19 @@ describe("FilterSheet accessibility", () => {
     render(<FilterSheet visible filters={{ ...DEFAULT_BOURBON_FILTERS, types: ["wheated"] }} onApply={jest.fn()} onClose={jest.fn()} />);
     expect(screen.getByRole("button", { name: "Wheated" }).props.accessibilityState).toMatchObject({ selected: true });
   });
+
+  it("names the No Age Statement switch and exposes its state", () => {
+    render(<FilterSheet visible filters={DEFAULT_BOURBON_FILTERS} onApply={jest.fn()} onClose={jest.fn()} />);
+    const sw = screen.getByRole("switch", { name: "No Age Statement" });
+    expect(sw.props.value).toBe(false);
+    fireEvent(sw, "valueChange", true);
+    expect(screen.getByRole("switch", { name: "No Age Statement" }).props.value).toBe(true);
+  });
+
+  it("names the friends-only switch", () => {
+    render(<FilterSheet visible showSocialSort filters={DEFAULT_BOURBON_FILTERS} onApply={jest.fn()} onClose={jest.fn()} />);
+    expect(
+      screen.getByRole("switch", { name: "Only show bourbons tried by people I follow" })
+    ).toBeTruthy();
+  });
 });

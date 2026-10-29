@@ -26,12 +26,24 @@ describe("ToastProvider", () => {
     expect(announce).toHaveBeenCalledWith("Added to your vault");
   });
 
-  it("labels the tappable toast with its message", () => {
+  it("includes the action in the tappable toast's spoken name", () => {
     const { getByLabelText } = render(
       <ToastProvider>
         <Trigger onPress={() => {}} />
       </ToastProvider>
     );
-    expect(getByLabelText("Added to your vault")).toBeTruthy();
+    expect(getByLabelText("Added to your vault, Manage")).toBeTruthy();
+  });
+
+  it("announces each toast once and hides the plain toast from focus", () => {
+    const { getByText } = render(
+      <ToastProvider>
+        <Trigger />
+      </ToastProvider>
+    );
+    expect(announce).toHaveBeenCalledTimes(1);
+    const view = getByText("Added to your vault", { includeHiddenElements: true }).parent!.parent!;
+    expect(view.props.accessibilityElementsHidden).toBe(true);
+    expect(view.props.importantForAccessibility).toBe("no-hide-descendants");
   });
 });

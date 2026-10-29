@@ -74,7 +74,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         >
           {current.onPress ? (
             <AccessiblePressable
-              accessibilityLabel={current.message}
+              accessibilityLabel={`${current.message}, Manage`}
               onPress={current.onPress}
               activeOpacity={0.85}
               style={[
@@ -86,7 +86,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               <Text style={styles.actionText}>Manage →</Text>
             </AccessiblePressable>
           ) : (
+            // Already spoken once by announce(); hide so it isn't read again on focus.
             <View
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
               style={[
                 styles.pill,
                 current.type === "success" ? styles.success : styles.error,
